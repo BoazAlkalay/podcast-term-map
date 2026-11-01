@@ -1,0 +1,5 @@
+*.tmp*
+*.part
+.DS_Store
+Thumbs.db
+data/*/*/*.json

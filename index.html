@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podcast Term Map</title>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f3ef; --surface: #fcfcfb; --border: #dcdad3;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #85837c;
+  --node: #b9b7af; --node-edge: #6e6c66; --edge: #c9c7bf;
+  --a: #2a78d6; --b: #eb6834; --c: #6250d6; --d: #1baf7a;
+  --shade: rgba(42,120,214,0.10); --mark: #fde9a8;
+  --warn-bg: #fff1d6; --warn-text: #6b4a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211; --surface: #1a1a19; --border: #33322f;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8d85;
+    --node: #5b5a55; --node-edge: #a9a79f; --edge: #3d3c38;
+    --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
+    --shade: rgba(57,135,229,0.16); --mark: #5a4a12;
+    --warn-bg: #3a2c0a; --warn-text: #f3d48a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --border: #33322f;
+  --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8d85;
+  --node: #5b5a55; --node-edge: #a9a79f; --edge: #3d3c38;
+  --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
+  --shade: rgba(57,135,229,0.16); --mark: #5a4a12;
+  --warn-bg: #3a2c0a; --warn-text: #f3d48a;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 14px 16px 8px; position: relative; }
+#themeBtn { position: absolute; top: 14px; right: 16px; }
+h1 { font-size: 18px; margin: 0 0 2px; }
+#status { color: var(--text-2); }
+#banner { display: none; margin: 8px 16px 0; padding: 8px 12px; border-radius: 6px;
+  background: var(--warn-bg); color: var(--warn-text); font-weight: 600; }
+main { display: grid; gap: 12px; padding: 12px 16px 24px;
+  grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "rail map map" "rail words ts" "rail pas pas"; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; min-width: 0; }
+#rail { grid-area: rail; display: flex; flex-direction: column; gap: 12px; align-self: start;
+  position: sticky; top: 12px; }
+#rail select.rsel { width: 100%; font-weight: 600; }
+#mapPanel { grid-area: map; } #wordsPanel { grid-area: words; }
+#tsPanel { grid-area: ts; } #pasPanel { grid-area: pas; }
+.ph { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.ph h2 { font-size: 14px; margin: 0; }
+.ph select.view { font-weight: 700; max-width: 100%; }
+.chip { font-size: 12px; color: var(--text-2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+details.help { margin: 0 0 8px; color: var(--text-2); font-size: 13px; }
+details.help summary { cursor: pointer; list-style: none; border: 1px solid var(--border);
+  border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 18px; font-weight: 700; }
+details.help summary::-webkit-details-marker { display: none; }
+details.help[open] summary { margin-bottom: 4px; }
+label.f { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 2px; }
+.val { font-weight: 600; }
+select, button { font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; }
+button { cursor: pointer; }
+input[type=range] { width: 100%; }
+.btnrow { display: flex; gap: 6px; margin-top: 6px; }
+#refSel { width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; padding: 3px 10px; }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.selrow { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.selrow select { max-width: 210px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; flex: none; }
+.ring { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 3px solid; margin-right: 4px; flex: none; }
+.mapwrap { position: relative; }
+#cy { height: 460px; width: 100%; }
+.axl { position: absolute; font-size: 12px; color: var(--text-2); background: var(--surface);
+  padding: 1px 6px; border-radius: 4px; max-width: 45%; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; pointer-events: auto; z-index: 2; }
+.axl b { color: var(--text); font-weight: 600; }
+#axL { left: 0; top: 50%; transform: translateY(-50%); }
+#axR { right: 0; top: 50%; transform: translateY(-50%); text-align: right; }
+#axT { top: 0; left: 50%; transform: translateX(-50%); }
+#axB { bottom: 0; left: 50%; transform: translateX(-50%); }
+#shiftLine { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+#shiftLine b { color: var(--text); }
+#axisNote { font-size: 12px; color: var(--muted); margin-top: 4px; }
+#words, #ts { height: 360px; width: 100%; overflow: auto; }
+.empty { color: var(--muted); padding: 24px 4px; }
+.small { font-size: 12px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.cols h3, h3.sub { font-size: 13px; margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
+ol.words { margin: 4px 0 0; padding-left: 30px; }
+ol.words li { margin: 1px 0; }
+table.trend { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.trend td { padding: 4px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.trend tr.cur td { background: var(--shade); }
+table.trend td:first-child { white-space: nowrap; color: var(--text-2); }
+ul.pas { list-style: none; margin: 0; padding: 0; }
+ul.pas li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.meta { font-size: 12px; color: var(--text-2); }
+.ctx { margin-top: 2px; }
+.ctx mark { background: var(--mark); color: inherit; padding: 0 2px; border-radius: 3px; font-weight: 700; }
+.ctx mark.w { background: transparent; text-decoration: underline 2px; text-underline-offset: 3px; }
+.wcount { font-size: 13px; color: var(--text-2); margin: 0 0 10px; }
+.wcount b { color: var(--text); }
+h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0 2px; }
+@media (max-width: 900px) {
+  main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "map" "rail" "words" "ts" "pas"; }
+  #rail { position: static; }
+  #cy { height: 380px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>How shows use a term, and how far apart they are</h1>
+  <div id="status">Loading…</div>
+  <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
+</header>
+<div id="banner"></div>
+<main>
+  <aside id="rail" class="panel" aria-label="Controls">
+    <div><label class="f" for="snapSel">Data snapshot</label>
+      <select id="snapSel" class="rsel" hidden></select><span class="val" id="snap"></span></div>
+    <div><label class="f" for="termSel">Term</label>
+      <select id="termSel" class="rsel" hidden></select><span class="val" id="term"></span></div>
+    <div><label class="f" for="hostsSel">Shows on the map</label>
+      <select id="hostsSel" class="rsel" hidden></select><span class="val" id="group"></span></div>
+    <div><label class="f" for="daysSel">Period length · minimum episodes</label>
+      <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span></div>
+    <div>
+      <label class="f" for="slider">Period shown</label>
+      <input id="slider" type="range" min="0" max="0" step="1">
+      <div class="val" id="pdates"></div>
+      <div class="btnrow">
+        <button id="prev" type="button" aria-label="Previous period">◀</button>
+        <button id="play" type="button">▶ Play</button>
+        <button id="next" type="button" aria-label="Next period">▶</button>
+      </div>
+    </div>
+    <div>
+      <label class="f" for="refSel">Change is measured from</label>
+      <select id="refSel"><option value="">The previous period</option></select>
+      <p class="small" style="margin:4px 0 0">Used by "change" charts, before/after passages and the hollow ring on each selected show's trail.</p>
+    </div>
+    <p class="small" id="mapshare"></p>
+    <p class="small">This describes the vocabulary and topics near the term, not stance or ideology.</p>
+  </aside>
+
+  <section id="mapPanel" class="panel" aria-label="Map">
+    <div class="ph"><h2>Map</h2>
+      <div class="seg" role="group" aria-label="Compare">
+        <button type="button" id="modeShows" aria-pressed="true">Compare shows</button>
+        <button type="button" id="modeGroups" aria-pressed="false">Compare groups</button>
+      </div>
+      <label>Map <select id="mapMode">
+        <option value="overall">Overall similarity</option>
+        <option value="centred">Relative to the pack</option>
+        <option value="anchored">Anchored axes (draft)</option>
+      </select></label>
+      <span id="axPick" hidden><label>X <select id="axX"></select></label> <label>Y <select id="axY"></select></label></span>
+      <span class="chip" id="mapChip">Compared with: all placed shows</span>
+      <button type="button" id="zoomBtn" style="margin-left:auto">Show all periods</button></div>
+    <details class="help"><summary aria-label="About the map">?</summary>
+      Each dot is one show in the period shown: the average of its episodes' use of the term.<br>
+      <b>Overall similarity:</b> closer dots use the term with more similar vocabulary. The axes are the directions
+      that spread the shows out most; the words at each edge describe what each end of an axis leans toward
+      (a description of a mixture, not a definition). The picture keeps only part of the variation, so read the
+      distances in the charts below.<br>
+      <b>Relative to the pack:</b> each period's average across the shows on the map is subtracted first, so
+      movement shared by everyone (usually the news cycle) is removed and trails show who moved relative to the
+      others. The shared movement itself is described under the map. Needs 3+ shows in a period.<br>
+      <b>Anchored axes:</b> each axis is defined in advance by two sets of anchor words (e.g. diplomacy words
+      vs military words); a show's position is how far its use of the term leans toward one set or the other.
+      Positions mean the same thing in every period and for every term, but closeness on this map is only
+      closeness on these two dimensions. The current axes are drafts.<br>
+      Selected shows get a faint trail through their own other periods; the hollow ring marks the period
+      change is measured from. There are no lines between different shows: closeness is shown by position,
+      and the exact distances are in the charts below. Labels that would overlap are hidden; hover a dot to see its name.<br>
+      <b>Compare shows:</b> click a show for Show A, a second show for Show B, empty space to clear.
+      Shift-click a show to set Show C (compared with Show A). For two unrelated pairs, use the
+      "Second pair" menus. A second pair that shares a show with the first answers "is it closer to one or the other?".<br>
+      <b>Compare groups:</b> pick two groups. Their shows are ringed on the map. Each group is the
+      equal-weight average of its shows placed in that period.
+    </details>
+    <div id="showSel">
+      <div class="selrow">
+        <label><span class="swatch" style="background:var(--a)"></span>Show A
+          <select id="selA"><option value="">(none)</option></select></label>
+        <label><span class="swatch" style="background:var(--b)"></span>Show B
+          <select id="selB"><option value="">(none)</option></select></label>
+      </div>
+      <div class="selrow">
+        <span class="small">Second pair:</span>
+        <label><span class="ring" style="border-color:var(--c)"></span>Show C
+          <select id="selC"><option value="">(none)</option></select></label>
+        <label>with <select id="selD"><option value="">Show A (shared)</option></select></label>
+      </div>
+    </div>
+    <div id="groupSel" class="selrow" hidden>
+      <label><span class="swatch" style="background:var(--a)"></span>Group A
+        <select id="selGA"><option value="">(none)</option></select></label>
+      <label><span class="swatch" style="background:var(--b)"></span>Group B
+        <select id="selGB"><option value="">(none)</option></select></label>
+    </div>
+    <div class="mapwrap">
+      <div id="cy" role="img" aria-label="Map of shows for the period shown"></div>
+      <div class="axl" id="axL"></div><div class="axl" id="axR"></div>
+      <div class="axl" id="axT"></div><div class="axl" id="axB"></div>
+    </div>
+    <div class="small" id="absent"></div>
+    <div id="shiftLine"></div>
+    <div id="axisNote"></div>
+  </section>
+
+  <section id="wordsPanel" class="panel" aria-label="Words">
+    <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span></div>
+    <details class="help"><summary aria-label="About this view">?</summary><span id="wordsHelp"></span></details>
+    <div id="words"></div>
+  </section>
+
+  <section id="tsPanel" class="panel" aria-label="Over time">
+    <div class="ph"><span id="tsTitle"></span><span class="chip" id="tsChip"></span></div>
+    <details class="help"><summary aria-label="About this view">?</summary><span id="tsHelp"></span></details>
+    <div id="ts"></div>
+  </section>
+
+  <section id="pasPanel" class="panel" aria-label="Passages">
+    <div class="ph"><span id="pasTitle"></span><span class="chip" id="pasChip"></span></div>
+    <details class="help"><summary aria-label="About passages">?</summary><span id="pasHelp"></span></details>
+    <div id="pas"></div>
+  </section>
+</main>
+
+<script>
+(async function () {
+  // ── libraries: try a second source if the first did not load ──────────
+  const loadScript = src => new Promise(r => { const t = document.createElement('script');
+    t.src = src; t.onload = () => r(true); t.onerror = () => r(false); document.head.appendChild(t); });
+  if (!window.cytoscape) await loadScript('https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js');
+  if (!window.Plotly) await loadScript('https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js');
+  if (!window.cytoscape || !window.Plotly) {
+    document.getElementById('status').textContent = 'Could not load the chart libraries ' +
+      (window.cytoscape ? '(Plotly)' : '(Cytoscape)') + '. Check the internet connection and refresh.';
+    return;
+  }
+
+  // ── data ──────────────────────────────────────────────────────────────
+  // ?b=<snapshot>/<term>_<days>d picks a bundle (set by the menus); otherwise the latest export.
+  // Bundles are loaded as .js so the page also works when opened from disk.
+  const PICK = (() => { const b = new URLSearchParams(location.search).get('b');
+    return b && /^[\w.-]+\/[\w.-]+$/.test(b) ? b : null; })();
+  await loadScript('data/index.js');
+  const INDEX = Array.isArray(window.BUNDLE_INDEX) ? window.BUNDLE_INDEX : [];
+  // Without ?b=, open a fixed starting view from the newest snapshot (not whichever bundle
+  // happened to be exported last), so a shared link always lands in the same place.
+  const DEFAULT_VIEW = { term: 'iran', days: 91, hosts: 'Conservative Media' };
+  let CHOSEN = PICK;
+  if (!CHOSEN && INDEX.length) {
+    const newest = INDEX.map(e => e.snapshot).sort().slice(-1)[0];
+    const inNewest = INDEX.filter(e => e.snapshot === newest);
+    const d = inNewest.find(e => e.term === DEFAULT_VIEW.term && e.days === DEFAULT_VIEW.days && e.hosts === DEFAULT_VIEW.hosts)
+      || inNewest.find(e => e.hosts === DEFAULT_VIEW.hosts) || inNewest[0];
+    CHOSEN = d.path;
+  }
+  let BASE = CHOSEN ? `data/${CHOSEN}/` : null;
+  await loadScript(CHOSEN ? BASE + 'bundle.js' : 'data/bundle_latest.js');
+  let B = window.BUNDLE;
+  if (!B) {
+    try {
+      if (!BASE) {
+        const latest = await (await fetch('data/latest.json')).json();
+        BASE = 'data/' + latest.bundle + '/';
+      }
+      const parts = ['manifest', 'nodes', 'edges', 'gnodes', 'gedges', 'leans', 'drifts', 'shifts'];
+      const got = await Promise.all(parts.map(n => fetch(BASE + n + '.json').then(r => r.ok ? r.json() : [])));
+      B = Object.fromEntries(parts.map((n, i) => [n, got[i]]));
+      if (!B.manifest || !B.manifest.term) throw new Error('no manifest');
+    } catch (e) {
+      document.getElementById('status').textContent = PICK
+        ? `Could not load the bundle '${PICK}'. It may be missing from the "data" folder, or was made before the menus existed (re-export it).`
+        : 'Could not load data. Put the exporter output in a "data" folder next to this page.';
+      return;
+    }
+  }
+  const PAS_SRC = CHOSEN ? BASE + 'passages.js' : 'data/passages_latest.js';
+  const WX_SRC = CHOSEN ? BASE + 'wordex.js' : 'data/wordex_latest.js';
+  const M = B.manifest, NODES = B.nodes, EDGES = B.edges;
+  const GNODES = B.gnodes || [], GEDGES = B.gedges || [], LEANS = B.leans || [], DRIFTS = B.drifts || [];
+  const SHIFTS = B.shifts || [], AXES = M.anchor_axes || [], MAP_AXES = M.map_axes || {};
+  const GROUPS = M.groups || {}, HOSTS = M.hosts, HIDX = Object.fromEntries(HOSTS.map((s, i) => [s, i]));
+  const periods = M.periods, TERM = M.term;
+  const short = s => s.replace(/^The /, '').replace(/ (Show|Podcast|Program)$/, '').slice(0, 24);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const fmtP = p => `${periods[p].start} to ${periods[p].end}`;
+  const midP = p => new Date((Date.parse(periods[p].start) + Date.parse(periods[p].end)) / 2).toISOString().slice(0, 10);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const placedPeriods = [...new Set([...NODES, ...GNODES].map(n => n.period))].sort((a, b) => a - b);
+  const nodeAt = (s, p) => NODES.find(n => n.show === s && n.period === p);
+  const gnodeAt = (g, p) => GNODES.find(n => n.group === g && n.period === p);
+  const findEdge = (list, a, b, p) => list.find(e => e.period === p && ((e.a === a && e.b === b) || (e.a === b && e.b === a)));
+  const edgeFor = (a, b, p) => findEdge(EDGES, a, b, p);
+  const gedgeFor = (a, b, p) => findEdge(GEDGES, a, b, p);
+  const DRIFT = new Map(DRIFTS.map(r => [`${r[0]}|${r[1]}|${r[2]}`, r]));
+  const driftBetween = (s, p0, p1) => { const i = HIDX[s];
+    return DRIFT.get(`${i}|${Math.min(p0, p1)}|${Math.max(p0, p1)}`); };
+  const LEAN = new Map(LEANS.map(r => [`${r[0]}|${r[1]}|${r[2]}|${r[3]}`, r]));
+
+  // passages load on first use (script works from disk; fetch is the fallback)
+  let PAS = null, pasLoading = null;
+  function loadPassages() {
+    if (PAS || pasLoading) return pasLoading;
+    pasLoading = new Promise(res => {
+      const s = document.createElement('script');
+      s.src = PAS_SRC;
+      s.onload = () => { PAS = window.PASSAGES; res(); };
+      s.onerror = async () => {
+        try { if (BASE) PAS = await (await fetch(BASE + 'passages.json')).json(); } catch (e) {}
+        res();
+      };
+      document.head.appendChild(s);
+    }).then(() => { pasLoading = null; render(); });
+    return pasLoading;
+  }
+
+  // Word examples (for clicks on the word-pull chart) load on first use.
+  let WX = null, wxLoading = null;
+  function loadWordex() {
+    if (WX || wxLoading) return wxLoading;
+    wxLoading = new Promise(res => {
+      const s = document.createElement('script');
+      s.src = WX_SRC;
+      s.onload = () => { WX = window.WORDEX; res(); };
+      s.onerror = async () => {
+        try { if (BASE) WX = await (await fetch(BASE + 'wordex.json')).json(); } catch (e) {}
+        res();
+      };
+      document.head.appendChild(s);
+    }).then(() => { wxLoading = null; render(); });
+    return wxLoading;
+  }
+
+  if (M.snapshot === 'SYNTHETIC') {
+    const b = document.getElementById('banner');
+    b.style.display = 'block';
+    b.textContent = 'Synthetic demo data with made-up shows. These are not results.';
+  }
+  document.title = `'${TERM}', ${M.period_days} days · Podcast Term Map`;
+  document.getElementById('snap').textContent = M.snapshot;
+  document.getElementById('term').textContent = `'${TERM}'`;
+  document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
+  document.getElementById('plen').textContent = `${M.period_days} days · ${M.settings.min_episodes} episodes`;
+  document.getElementById('mapshare').textContent =
+    `The 2-D map keeps ${Math.round(M.map_share * 100)}% of the variation; trust the distances over the picture.`;
+
+  // ── bundle menus (shows on the map, term, period length, snapshot), from data/index.js ──
+  // Picking a value reloads the page with that bundle. Other menus keep their value where possible.
+  (function buildBundleMenus() {
+    if (!INDEX.length) return;
+    const cur = { snapshot: M.snapshot, term: M.term, days: M.period_days, hosts: M.host_group };
+    const uniq = a => [...new Set(a)];
+    const nearDays = (list, d) => list.sort((x, y) => Math.abs(x.days - d) - Math.abs(y.days - d))[0];
+    const go = want => {
+      const pool = INDEX.filter(e => e.snapshot === want.snapshot);
+      const hosts = pool.filter(e => e.hosts === want.hosts);
+      const hit = hosts.find(e => e.term === want.term && e.days === want.days)
+        || nearDays(hosts.filter(e => e.term === want.term), want.days)
+        || nearDays(hosts.filter(e => e.term === cur.term), cur.days)
+        || hosts[0]
+        || pool.find(e => e.term === want.term && e.days === want.days)
+        || pool[0];
+      if (hit) location.search = '?b=' + encodeURIComponent(hit.path);
+    };
+    const inSnapAll = INDEX.filter(e => e.snapshot === cur.snapshot);
+    const hostList = uniq(inSnapAll.map(e => e.hosts))
+      .sort((a, b) => (b === 'All shows') - (a === 'All shows') || a.localeCompare(b));
+    const hostsSel = document.getElementById('hostsSel');
+    if (hostList.length > 1 || !hostList.includes(cur.hosts)) {
+      if (!hostList.includes(cur.hosts)) hostList.unshift(cur.hosts);
+      for (const h of hostList) hostsSel.add(new Option(h, h));
+      hostsSel.value = cur.hosts;
+      hostsSel.hidden = false;
+      const g = document.getElementById('group');
+      g.textContent = `${HOSTS.length} shows in this group`;
+      g.className = 'small';
+      hostsSel.addEventListener('change', () => go(Object.assign({}, cur, { hosts: hostsSel.value })));
+    }
+    const sameHosts = inSnapAll.filter(e => e.hosts === cur.hosts).concat(
+      INDEX.filter(e => e.snapshot !== cur.snapshot && e.hosts === cur.hosts));
+    const fill = (sel, vals, curVal, label) => {
+      if (!vals.includes(curVal)) vals = [curVal, ...vals];
+      for (const v of vals) sel.add(new Option(label(v), v));
+      sel.value = String(curVal);
+      sel.hidden = false;
+    };
+    const snaps = uniq(sameHosts.map(e => e.snapshot)).sort().reverse();
+    const inSnap = sameHosts.filter(e => e.snapshot === cur.snapshot);
+    const terms = uniq(inSnap.map(e => e.term)).sort();
+    const days = uniq(inSnap.filter(e => e.term === cur.term).map(e => e.days)).sort((a, b) => a - b);
+    const termSel = document.getElementById('termSel'), daysSel = document.getElementById('daysSel'),
+      snapSel = document.getElementById('snapSel');
+    if (terms.length > 1 || !terms.includes(cur.term)) {
+      fill(termSel, terms, cur.term, t => `'${t}'`);
+      document.getElementById('term').hidden = true;
+      termSel.addEventListener('change', () => go(Object.assign({}, cur, { term: termSel.value })));
+    }
+    if (days.length > 1 || !days.includes(cur.days)) {
+      fill(daysSel, days, cur.days, d => `${d} days`);
+      document.getElementById('plen').textContent = `Minimum ${M.settings.min_episodes} episodes per show and period`;
+      document.getElementById('plen').className = 'small';
+      daysSel.addEventListener('change', () => go(Object.assign({}, cur, { days: +daysSel.value })));
+    }
+    if (snaps.length > 1) {
+      fill(snapSel, snaps, cur.snapshot, s => s);
+      document.getElementById('snap').hidden = true;
+      snapSel.addEventListener('change', () => go(Object.assign({}, cur, { snapshot: snapSel.value })));
+    }
+  })();
+
+  const countIn = p => NODES.filter(n => n.period === p).length;
+  const fullish = placedPeriods.filter(p => countIn(p) >= 3);
+  const state = { p: (fullish.length ? fullish : placedPeriods).slice(-1)[0], mode: 'shows', ref: '',
+    a: '', b: '', c: '', d: '', ga: '', gb: '', zoomAll: false, word: null, mapMode: 'overall', axX: 0, axY: 1, view: { ts: {}, words: {}, pas: {} } };
+  // Open with two shows selected (the two placed in the most periods), so every panel has content.
+  const nPer = {};
+  NODES.forEach(n => { nPer[n.show] = (nPer[n.show] || 0) + 1; });
+  const inP = NODES.filter(n => n.period === state.p).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]);
+  if (inP.length >= 2) { state.a = inP[0]; state.b = inP[1]; }
+  const slider = document.getElementById('slider');
+  slider.min = placedPeriods[0]; slider.max = placedPeriods[placedPeriods.length - 1];
+
+  // ── selection logic ───────────────────────────────────────────────────
+  // Second pair: Show C with Show D (or with Show A when D is left blank).
+  function tie2() {
+    if (!state.a || !state.b || !state.c) return null;
+    const x = state.d || state.a, y = state.c;
+    if (x === y) return null;
+    if ([x, y].sort().join('|') === [state.a, state.b].sort().join('|')) return null;
+    return [x, y];
+  }
+  // When the two pairs share one show: that show is the anchor; o1, o2 are the others.
+  function tri() {
+    const t = tie2(); if (!t) return null;
+    const common = [state.a, state.b].filter(s => t.includes(s));
+    if (common.length !== 1) return null;
+    const anchor = common[0];
+    return { anchor, o1: anchor === state.a ? state.b : state.a, o2: t[0] === anchor ? t[1] : t[0] };
+  }
+  function kind() {
+    if (state.mode === 'groups') return state.ga && state.gb ? 'gpair' : state.ga ? 'gone' : 'gnone';
+    if (!state.a) return 'none';
+    if (!state.b) return 'one';
+    if (!tie2()) return 'pair';
+    return tri() ? 'tri' : 'ties';
+  }
+  const refFor = () => state.ref === '' ? state.p - 1 : +state.ref;
+  const refLabel = () => state.ref === '' ? 'the previous period' : fmtP(+state.ref);
+  const refShort = () => state.ref === '' ? 'the previous period' : `the period starting ${periods[+state.ref].start}`;
+  // One colour per selected show or group, used on the map and in every chart.
+  const colorOf = n => {
+    if (state.mode === 'groups') return n === state.ga ? css('--a') : css('--b');
+    if (n === state.a) return css('--a');
+    if (n === state.b) return css('--b');
+    if (n === state.c) return css('--c');
+    return css('--d');
+  };
+  const selectedShows = () => state.mode !== 'shows' ? [] :
+    [...new Set([state.a, state.b, ...(tie2() || [])].filter(Boolean))];
+
+  // ── selectors ─────────────────────────────────────────────────────────
+  const shows = [...new Set(NODES.map(n => n.show))].sort();
+  for (const id of ['selA', 'selB', 'selC', 'selD']) {
+    const sel = document.getElementById(id);
+    for (const s of shows) sel.add(new Option(short(s), s));
+    sel.addEventListener('change', () => {
+      state[id.slice(3).toLowerCase()] = sel.value;
+      if (state.a && state.a === state.b) state.b = '';
+      if (!state.a && state.b) { state.a = state.b; state.b = ''; }
+      if (!state.b) state.c = '';
+      if (!state.c) state.d = '';
+      render();
+    });
+  }
+  const refSel = document.getElementById('refSel');
+  for (const p of placedPeriods) refSel.add(new Option(fmtP(p), p));
+  refSel.addEventListener('change', () => { state.ref = refSel.value; render(); });
+  const groupNames = Object.keys(GROUPS).filter(g => GNODES.some(n => n.group === g));
+  for (const id of ['selGA', 'selGB']) {
+    const sel = document.getElementById(id);
+    for (const g of groupNames) sel.add(new Option(`${g} (${GROUPS[g].length})`, g));
+    sel.addEventListener('change', () => { state[id === 'selGA' ? 'ga' : 'gb'] = sel.value; render(); });
+  }
+  const setMode = m => {
+    state.mode = m;
+    document.getElementById('modeShows').setAttribute('aria-pressed', m === 'shows');
+    document.getElementById('modeGroups').setAttribute('aria-pressed', m === 'groups');
+    document.getElementById('showSel').hidden = m !== 'shows';
+    document.getElementById('groupSel').hidden = m !== 'groups';
+    render();
+  };
+  document.getElementById('modeShows').addEventListener('click', () => setMode('shows'));
+  document.getElementById('modeGroups').addEventListener('click', () => setMode('groups'));
+  if (!groupNames.length) document.getElementById('modeGroups').disabled = true;
+  slider.addEventListener('input', () => { state.p = +slider.value; render(); });
+  const step = d => { const i = placedPeriods.indexOf(state.p) + d;
+    if (i >= 0 && i < placedPeriods.length) { state.p = placedPeriods[i]; render(); } };
+  document.getElementById('prev').addEventListener('click', () => step(-1));
+  document.getElementById('next').addEventListener('click', () => step(1));
+  let timer = null;
+  document.getElementById('play').addEventListener('click', e => {
+    if (timer) { clearInterval(timer); timer = null; e.target.textContent = '▶ Play'; return; }
+    e.target.textContent = '❚❚ Pause';
+    timer = setInterval(() => {
+      const i = placedPeriods.indexOf(state.p);
+      state.p = placedPeriods[(i + 1) % placedPeriods.length];
+      render();
+    }, 1400);
+  });
+
+  // ── map ───────────────────────────────────────────────────────────────
+  // Coordinates depend on the map mode; each mode has one fixed frame across all periods.
+  const coords = n => {
+    if (state.mapMode === 'centred') return n.cx === null || n.cx === undefined ? null : [n.cx, n.cy];
+    if (state.mapMode === 'anchored') {
+      const a = n.ax && n.ax[state.axX], b = n.ax && n.ax[state.axY];
+      return a && b ? [a[0], b[0]] : null;
+    }
+    return [n.x, n.y];
+  };
+  const hasXY = n => coords(n) !== null;
+  let frame = null, frameKey = '';
+  function getFrame() {
+    const key = `${state.mapMode}|${state.axX}|${state.axY}`;
+    if (key !== frameKey) {
+      const pts = NODES.map(coords).filter(Boolean);
+      const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+      const x0 = Math.min(...xs), y0 = Math.min(...ys);
+      frame = { x0, y0, span: Math.max(Math.max(...xs) - x0, Math.max(...ys) - y0) || 1 };
+      frameKey = key;
+    }
+    return frame;
+  }
+  const box = document.getElementById('cy');
+  const SCALE = 600;
+  const pos = n => { const f = getFrame(), c = coords(n);
+    return { x: (c[0] - f.x0) / f.span * SCALE, y: -(c[1] - f.y0) / f.span * SCALE }; };
+  const cy = cytoscape({ container: box, wheelSensitivity: 0.2, boxSelectionEnabled: false,
+    autoungrabify: true, layout: { name: 'preset' }, style: [], elements: [] });
+  // Sizes are divided by the zoom so dots, lines and labels keep the same size on screen.
+  function cyStyle() {
+    const f = 1 / cy.zoom(), z = v => v * f;
+    const big = { width: z(18), height: z(18), color: css('--text'), 'font-weight': 700 };
+    const ring = c => Object.assign({ 'border-color': c, 'border-width': z(4) }, big);
+    cy.style([
+      { selector: 'node', style: { 'background-color': css('--node'), 'border-width': z(1),
+        'border-color': css('--node-edge'), width: z(14), height: z(14), label: 'data(label)',
+        'font-size': z(11), color: css('--text-2'), 'text-valign': 'top', 'text-margin-y': z(-4),
+        'text-background-color': css('--surface'), 'text-background-opacity': 0.7, 'text-background-padding': z(1) } },
+      { selector: 'node.mid', style: { 'border-style': 'dashed' } },
+      { selector: 'node.A', style: Object.assign({ 'background-color': css('--a'), 'border-color': css('--surface'), 'border-width': z(2) }, big) },
+      { selector: 'node.B', style: Object.assign({ 'background-color': css('--b'), 'border-color': css('--surface'), 'border-width': z(2) }, big) },
+      { selector: 'node.C', style: ring(css('--c')) },
+      { selector: 'node.D', style: ring(css('--d')) },
+      { selector: 'node.gA', style: ring(css('--a')) },
+      { selector: 'node.gB', style: ring(css('--b')) },
+      { selector: 'node.ghost', style: { width: z(7), height: z(7), 'background-color': 'data(color)', 'border-width': 0,
+        opacity: 0.45, label: '', events: 'no' } },
+      { selector: 'node.ghost.ref', style: { width: z(13), height: z(13), 'background-opacity': 0, 'border-width': z(2),
+        'border-color': 'data(color)', opacity: 0.9 } },
+      { selector: 'edge', style: { width: z(2), 'line-color': css('--edge'), 'curve-style': 'straight' } },
+      { selector: 'edge.trail', style: { width: z(2), 'line-color': 'data(color)', opacity: 0.5, events: 'no',
+        'curve-style': 'straight', 'target-arrow-shape': 'triangle', 'target-arrow-color': 'data(color)',
+        'arrow-scale': 0.8 } }
+    ]);
+  }
+  cyStyle();
+  cy.on('tap', 'node', ev => {
+    if (state.mode !== 'shows') return;
+    const s = ev.target.id();
+    if (ev.originalEvent && ev.originalEvent.shiftKey && state.a && state.b) {
+      state.c = s === state.c ? '' : s; state.d = ''; render(); return;
+    }
+    if (!state.a) state.a = s;
+    else if (s === state.a) { state.a = state.b; state.b = ''; state.c = state.d = ''; }
+    else if (s === state.b) { state.b = ''; state.c = state.d = ''; }
+    else state.b = s;
+    render();
+  });
+  cy.on('tap', ev => { if (ev.target === cy && state.mode === 'shows') {
+    state.a = state.b = state.c = state.d = ''; render(); } });
+  cy.on('mouseover', 'node', ev => ev.target.data('label', ev.target.data('full') || ''));
+  cy.on('mouseout', 'node', () => declutter());
+  let dz = null;
+  cy.on('zoom', () => { clearTimeout(dz); dz = setTimeout(() => { cyStyle(); declutter(); }, 60); });
+
+  // Hide labels that would overlap; selected shows always keep theirs.
+  function declutter() {
+    const fs = 11, placed = [];
+    const ns = cy.nodes().not('.ghost').toArray().sort((x, y) =>
+      (y.hasClass('sel') - x.hasClass('sel')) || (y.data('n') - x.data('n')));
+    for (const n of ns) {
+      const full = n.data('full'), p = n.renderedPosition();
+      const w = full.length * fs * 0.56, h = fs * 1.25;
+      const bx = { x1: p.x - w / 2, x2: p.x + w / 2, y1: p.y - h - 10, y2: p.y - 4 };
+      const hit = placed.some(b => !(bx.x2 < b.x1 || bx.x1 > b.x2 || bx.y2 < b.y1 || bx.y1 > b.y2));
+      if (hit && !n.hasClass('sel')) n.data('label', '');
+      else { n.data('label', full); placed.push(bx); }
+    }
+  }
+
+  let fitted = false, lastFit = '';
+  const mapModeSel = document.getElementById('mapMode'), axXSel = document.getElementById('axX'), axYSel = document.getElementById('axY');
+  const okAxes = AXES.map((a, i) => [a, i]).filter(([a]) => !a.error);
+  for (const sel of [axXSel, axYSel]) for (const [a, i] of okAxes) sel.add(new Option(a.name, i));
+  if (okAxes.length < 2) mapModeSel.querySelector('option[value="anchored"]').disabled = true;
+  else { state.axX = okAxes[0][1]; state.axY = okAxes[1][1]; }
+  if (!MAP_AXES.centred) mapModeSel.querySelector('option[value="centred"]').disabled = true;
+  mapModeSel.addEventListener('change', () => { state.mapMode = mapModeSel.value; fitted = false; render(); });
+  axXSel.addEventListener('change', () => { state.axX = +axXSel.value;
+    if (state.axX === state.axY) state.axY = okAxes.find(([, i]) => i !== state.axX)[1]; fitted = false; render(); });
+  axYSel.addEventListener('change', () => { state.axY = +axYSel.value;
+    if (state.axX === state.axY) state.axX = okAxes.find(([, i]) => i !== state.axY)[1]; fitted = false; render(); });
+  document.getElementById('zoomBtn').addEventListener('click', e => {
+    state.zoomAll = !state.zoomAll; fitted = false;
+    e.target.textContent = state.zoomAll ? 'Zoom to this period' : 'Show all periods';
+    render();
+  });
+
+  // Axis-end labels, the shared-shift line and notes about the anchored axes.
+  function drawMapExtras() {
+    const set = (id, html, title) => { const el = document.getElementById(id); el.innerHTML = html; el.title = title || ''; el.hidden = !html; };
+    const words = ws => (ws || []).slice(0, 4).map(esc).join(', ');
+    document.getElementById('mapChip').textContent = 'Compared with: ' +
+      { overall: 'all placed shows', centred: 'the pack (each period\'s average)', anchored: 'the anchor words' }[state.mapMode];
+    const note = document.getElementById('axisNote');
+    if (state.mapMode === 'anchored') {
+      const ax = AXES[state.axX], ay = AXES[state.axY];
+      set('axL', `← <b>${esc(ax.neg_label)}</b>`, `Anchor words: ${ax.neg.join(', ')}`);
+      set('axR', `<b>${esc(ax.pos_label)}</b> →`, `Anchor words: ${ax.pos.join(', ')}`);
+      set('axT', `↑ <b>${esc(ay.pos_label)}</b>`, `Anchor words: ${ay.pos.join(', ')}`);
+      set('axB', `↓ <b>${esc(ay.neg_label)}</b>`, `Anchor words: ${ay.neg.join(', ')}`);
+      const desc = a => `<b>${esc(a.name)}</b>: ${esc(a.neg_label)} = ${a.neg.map(esc).join(', ')}; ${esc(a.pos_label)} = ${a.pos.map(esc).join(', ')}` +
+        (a.neg_skipped.length + a.pos_skipped.length ? ` (skipped as missing or rare: ${[...a.neg_skipped, ...a.pos_skipped].map(esc).join(', ')})` : '');
+      note.innerHTML = `Draft axes, not yet validated. X ${desc(ax)}. Y ${desc(ay)}.`;
+    } else {
+      const lab = MAP_AXES[state.mapMode === 'centred' ? 'centred' : 'overall'];
+      if (lab) {
+        set('axL', `← ${words(lab[0].neg)}`, (lab[0].neg || []).join(', '));
+        set('axR', `${words(lab[0].pos)} →`, (lab[0].pos || []).join(', '));
+        set('axT', `↑ ${words(lab[1].pos)}`, (lab[1].pos || []).join(', '));
+        set('axB', `↓ ${words(lab[1].neg)}`, (lab[1].neg || []).join(', '));
+      } else ['axL', 'axR', 'axT', 'axB'].forEach(id => set(id, ''));
+      const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
+      note.textContent = `Edge words describe what each end of an axis leans toward. This picture keeps ` +
+        `${share === null || share === undefined ? '?' : Math.round(share * 100)}% of the variation.`;
+    }
+    const sh = SHIFTS.find(x => x.period === state.p);
+    document.getElementById('shiftLine').innerHTML = sh
+      ? `<b>Shared shift</b> since the previous period (the ${sh.n_shows} shows on the map in both): ` +
+        `${sh.dist.toFixed(3)} (90%: ${sh.lo.toFixed(3)} to ${sh.hi.toFixed(3)})` +
+        (sh.lo <= 1e-9
+          ? `, not distinguishable from noise, so read these words as weak hints only. Leaned toward: ${words(sh.toward)}; away from: ${words(sh.away)}.`
+          : `. Moved toward: <b>${words(sh.toward)}</b>; away from: ${words(sh.away)}.`)
+      : 'No shared-shift estimate for this period (needs 2+ shows placed in this and the previous period).';
+  }
+
+  function drawMap() {
+    const here = NODES.filter(n => n.period === state.p && hasXY(n));
+    const present = new Set(here.map(n => n.show));
+    const k = kind(), t2 = tie2(), sel = selectedShows();
+    const memA = new Set(state.mode === 'groups' && state.ga ? GROUPS[state.ga] : []);
+    const memB = new Set(state.mode === 'groups' && state.gb ? GROUPS[state.gb] : []);
+    const els = here.map(n => {
+      const cls = [n.tier];
+      if (state.mode === 'shows') {
+        if (n.show === state.a) cls.push('A', 'sel');
+        else if (n.show === state.b) cls.push('B', 'sel');
+        else if (n.show === state.c && t2) cls.push('C', 'sel');
+        else if (t2 && t2.includes(n.show)) cls.push('D', 'sel');
+      } else {
+        if (memA.has(n.show)) cls.push('gA', 'sel');
+        if (memB.has(n.show)) cls.push('gB', 'sel');
+      }
+      const full = short(n.show) + (n.tier === 'mid' ? ` (n=${n.n})` : '');
+      return { group: 'nodes', data: { id: n.show, label: full, full, n: n.n }, position: pos(n), classes: cls.join(' ') };
+    });
+    // Trails: each selected show's positions in every period, in time order.
+    const ref = refFor();
+    for (const s of sel) {
+      const pts = NODES.filter(n => n.show === s && hasXY(n)).sort((a, b) => a.period - b.period);
+      const color = colorOf(s);
+      pts.forEach((n, i) => {
+        if (n.period !== state.p) els.push({ group: 'nodes', data: { id: `_g|${s}|${n.period}`, color, n: 0, full: '' },
+          position: pos(n), classes: 'ghost' + (n.period === ref ? ' ref' : '') });
+        if (i > 0) {
+          const a = pts[i - 1].period === state.p ? s : `_g|${s}|${pts[i - 1].period}`;
+          const b = n.period === state.p ? s : `_g|${s}|${n.period}`;
+          if (els.some(e => e.data.id === a) || a === s) els.push({ group: 'edges',
+            data: { id: `_t|${s}|${i}`, source: a, target: b, color }, classes: 'trail' });
+        }
+      });
+    }
+    // No lines between different shows: in a network picture a line reads as a relationship,
+    // which these are not. Only each selected show's own trail through time is drawn.
+    // Trails whose current-period end is missing would point at nothing: drop those edges.
+    const ids = new Set(els.filter(e => e.group === 'nodes').map(e => e.data.id));
+    cy.elements().remove();
+    cy.add(els.filter(e => e.group === 'nodes' || (ids.has(e.data.source) && ids.has(e.data.target))));
+    cyStyle();
+    // Positions come from one fixed frame for all periods. By default the view zooms to the
+    // period shown (plus selected trails); "Show all periods" shows the whole frame.
+    const fitKey = `${state.p}|${state.zoomAll}|${sel.join(',')}|${box.clientWidth}|${frameKey}`;
+    if (!fitted || fitKey !== lastFit) {
+      if (state.zoomAll) {
+        const ghosts = cy.add(NODES.filter(hasXY).map((n, i) => ({ group: 'nodes', data: { id: '_f' + i, full: '', n: 0 }, position: pos(n) })));
+        cy.fit(ghosts, 30); cy.remove(ghosts);
+      } else if (cy.nodes().length) {
+        cy.fit(cy.elements(), 50);
+        if (cy.zoom() > 2.5) { cy.zoom(2.5); cy.center(cy.nodes()); }
+      }
+      fitted = true; lastFit = fitKey;
+    }
+    cyStyle();
+    declutter();
+    drawMapExtras(here.length);
+    const want = state.mode === 'shows' ? sel : [];
+    const missing = want.filter(s => !present.has(s));
+    if (!here.length && state.mapMode === 'centred') {
+      document.getElementById('absent').textContent = 'Fewer than 3 shows are placed in this period, so there is no pack to measure against.';
+      return;
+    }
+    document.getElementById('absent').textContent = missing.length
+      ? `Not placed in this period (fewer than ${M.settings.min_episodes} qualifying episodes): ${missing.map(short).join(', ')}.`
+      : state.mode === 'groups' && (state.ga || state.gb)
+        ? 'Ringed: the selected groups\' shows that are on this map. Groups can include shows that are not on the map.' : '';
+  }
+
+  // ── view menus: each panel offers the views that fit the selection ─────
+  const L = () => { const t = tri(), t2 = tie2();
+    return { a: short(state.a), b: short(state.b), ga: state.ga, gb: state.gb,
+      t2: t2 ? `${short(t2[0])} vs ${short(t2[1])}` : '',
+      x: t ? short(t.anchor) : '', y1: t ? short(t.o1) : '', y2: t ? short(t.o2) : '' }; };
+  const chg = (who) => state.ref === '' ? `${who}: change from the previous period` : `${who}: change from ${periods[+state.ref].start}`;
+  const VIEWS = {
+    ts: {
+      none: [], gnone: [], gone: [['gcomp1', l => `Shows placed in ${l.ga}`, 'nothing']],
+      one: [['loo', l => `${l.a}: distance from the rest of the group`, 'the group'],
+            ['drift', l => chg(l.a), 'own past']],
+      pair: [['pair', l => `${l.a} vs ${l.b}: distance over time`, 'the other show'],
+             ['loo2', () => 'Each show\'s distance from the group', 'the group'],
+             ['drift2', () => chg('Each show'), 'own past']],
+      tri: [['lean', l => `Is ${l.x} closer to ${l.y1} or ${l.y2}?`, 'the other shows'],
+            ['ties', l => `${l.x}'s distance to each`, 'the other shows'],
+            ['loo3', () => 'Each selected show\'s distance from the group', 'the group']],
+      ties: [['ties', () => 'Both pairs: distance over time', 'the other show'],
+             ['loo3', () => 'Each selected show\'s distance from the group', 'the group']],
+      gpair: [['gpair', l => `${l.ga} vs ${l.gb}: distance over time`, 'the other group'],
+              ['gcomp', () => 'Shows placed in each group', 'nothing']]
+    },
+    words: {
+      none: [], gnone: [], gone: [['gtop1', l => `${l.ga}: top words`, 'nothing (own average)']],
+      one: [['top', l => `${l.a}: top words, this period`, 'nothing (own average)'],
+            ['trend', l => `${l.a}: top words in every period`, 'nothing (own average)']],
+      pair: [['pull', () => 'Words that pull toward each side', 'the other show'],
+             ['top2', () => 'Each show\'s top words', 'nothing (own average)']],
+      tri: [['pullbc', l => `What separates ${l.y1} from ${l.y2}`, 'the other show'],
+            ['pull', l => `${l.a} vs ${l.b}: words that pull`, 'the other show'],
+            ['pull2', l => `${l.t2}: words that pull`, 'the other show']],
+      ties: [['pull', l => `First pair (${l.a} vs ${l.b}): words that pull`, 'the other show'],
+             ['pull2', l => `Second pair (${l.t2}): words that pull`, 'the other show']],
+      gpair: [['gpull', () => 'Words that pull toward each group', 'the other group'],
+              ['gtop', () => 'Each group\'s top words', 'nothing (own average)']]
+    },
+    pas: {
+      none: [], gnone: [], gone: [],
+      one: [['typical', () => 'Typical passages, this period', 'nothing (own average)'],
+            ['drift', () => `Before and after: change from ${refShort()}`, 'own past']],
+      pair: [['contrast', () => 'Contrast passages: what sets each show apart', 'the other show'],
+             ['typical2', () => 'Typical passages for each show', 'nothing (own average)'],
+             ['drift2', () => `Before and after for each show (from ${refShort()})`, 'own past']],
+      tri: [['leanpas', l => `${l.x}'s passages most like ${l.y1}, and most like ${l.y2}`, 'the other shows'],
+            ['contrast', l => `${l.a} vs ${l.b}: contrast passages`, 'the other show'],
+            ['contrast2', l => `${l.t2}: contrast passages`, 'the other show']],
+      ties: [['contrast', l => `First pair (${l.a} vs ${l.b}): contrast passages`, 'the other show'],
+             ['contrast2', l => `Second pair (${l.t2}): contrast passages`, 'the other show']],
+      gpair: [['gcontrast', () => 'Contrast passages: what sets each group apart', 'the other group']]
+    }
+  };
+  const intervalNote = ' Distances are noise-corrected (zero means "not distinguishable from noise", not "identical"). Bars are 90% bootstrap intervals; hollow points have intervals that reach zero. When distances are small next to the noise the intervals are on the cautious side. Click a point to jump to that period.';
+  const PAS_NOTE = ' Passages are the lemmatized words around each mention (mostly nouns, proper nouns and adjectives), not sentences. One passage per episode; the token position points to the place in the transcript.';
+  const help = v => {
+    const l = L();
+    const H = {
+      loo: 'Distance between this show\'s average use of the term and the equal-weight average of the other shows on the map, per period.' + intervalNote,
+      drift: (state.ref === '' ? 'How far the show\'s average use of the term moved since the previous period (only when it is placed in both).'
+        : `How far the show's average use of the term is from where it was in ${refLabel()}, for every period it is placed. You chose the reference period, so a large value is a lead to read, not a finding.`) + intervalNote,
+      pair: 'Distance between the two shows\' average use of the term, per period.' + intervalNote,
+      loo2: 'Each show\'s distance from the equal-weight average of the other shows on the map.' + intervalNote,
+      loo3: 'Each selected show\'s distance from the equal-weight average of the other shows on the map.' + intervalNote,
+      ties: 'Both distances on one time axis. Overlapping bars do not tell you which is closer; for that, use the "closer to" view when the pairs share a show.' + intervalNote,
+      lean: `Distance from ${l.x} to ${l.y1} minus distance from ${l.x} to ${l.y2}, per period. Both distances are noise-corrected and come from the same bootstrap draws, so the bar is the 90% interval for the difference itself. Above zero: ${l.x} is closer to ${l.y2}. Below zero: closer to ${l.y1}. Hollow points: the interval includes zero, so no clear lean that period. Click a point to jump to that period.`,
+      gpair: 'Distance between the two groups\' averages. Each group is the equal-weight average of its shows placed in that period, so the members can change between periods (see "Shows placed in each group").' + intervalNote,
+      gcomp: 'How many of each group\'s shows had enough episodes to be placed in each period. A group average built from fewer shows is less representative.',
+      gcomp1: 'How many of the group\'s shows had enough episodes to be placed in each period.',
+      top: 'Corpus words closest to this show\'s average use of the term in the period shown.',
+      trend: 'Corpus words closest to this show\'s average use of the term, for every period it is placed.',
+      pull: `Words from the corpus vocabulary (at least ${M.settings.vocab_min_count} uses) ranked by how much closer they sit to one side's average use of '${TERM}' than to the other's (ratio of cosine similarities, as in Cell 16). These are leads to read, not findings.`,
+      pullbc: `The word-pull between ${l.y1} and ${l.y2}: the vocabulary ${l.x} would be leaning toward if it moved to one or the other.`,
+      top2: 'Corpus words closest to each show\'s average use of the term in the period shown.',
+      gpull: `As for shows: words ranked by the ratio of their cosine similarity to each group's average use of '${TERM}'.`,
+      gtop: 'Corpus words closest to each group\'s average use of the term in the period shown.',
+      gtop1: 'Corpus words closest to the group\'s average use of the term in the period shown.',
+      typical: 'Mentions closest to the show\'s average in this period: what its usual use looks like.' + PAS_NOTE,
+      typical2: 'Mentions closest to each show\'s average in this period.' + PAS_NOTE,
+      drift: '',
+      pasdrift: `Before: typical mentions from ${refLabel()}. After: mentions in the period shown that sit furthest along the direction the show moved. Top of a ranking, so selective by construction.` + PAS_NOTE,
+      contrast: 'For each side, the mentions that sit furthest toward that side and away from the other. Top of a ranking, so selective by construction: look for themes that repeat across episodes.' + PAS_NOTE,
+      leanpas: `${l.x}'s mentions in this period, ranked along the line from ${l.y2} to ${l.y1}: the ones that sound most like each. Selective by construction.` + PAS_NOTE,
+      gcontrast: 'For each group, the mentions that sit furthest toward that group and away from the other. Selective by construction.' + PAS_NOTE
+    };
+    H.drift2 = H.drift; H.pull2 = H.pull; H.contrast2 = H.contrast;
+    return H[v] || '';
+  };
+
+  // A clicked word stays available while its period and both sides are still selected.
+  function wordValid() {
+    const w = state.word;
+    if (!w || w.p !== state.p) return false;
+    if (w.kind === 'g') return state.mode === 'groups' && [state.ga, state.gb].includes(w.a) && [state.ga, state.gb].includes(w.b);
+    const sel = selectedShows();
+    return state.mode === 'shows' && sel.includes(w.a) && sel.includes(w.b);
+  }
+  function setupPanel(panel) {
+    const k = kind();
+    let opts = VIEWS[panel][k] || [];
+    if (panel === 'pas' && wordValid()) {
+      const w = state.word;
+      opts = [['word', () => `How each side uses '${w.w}'`, w.kind === 'g' ? 'the other group' : 'the other show'], ...opts];
+    }
+    const titleEl = document.getElementById(panel + 'Title');
+    const chip = document.getElementById(panel + 'Chip');
+    if (!opts.length) { titleEl.innerHTML = '<h2>' + { ts: 'Over time', words: 'Words', pas: 'Passages' }[panel] + '</h2>';
+      chip.textContent = 'Compared with: —'; return null; }
+    let cur = state.view[panel][k];
+    if (!opts.some(o => o[0] === cur)) cur = state.view[panel][k] = opts[0][0];
+    const l = L();
+    if (opts.length === 1) titleEl.innerHTML = `<h2>${esc(opts[0][1](l))}</h2>`;
+    else {
+      titleEl.innerHTML = `<select class="view" aria-label="Choose a view">${opts.map(o =>
+        `<option value="${o[0]}"${o[0] === cur ? ' selected' : ''}>${esc(o[1](l))}</option>`).join('')}</select>`;
+      titleEl.firstChild.addEventListener('change', ev => { state.view[panel][k] = ev.target.value; render(); });
+    }
+    chip.textContent = 'Compared with: ' + opts.find(o => o[0] === cur)[2];
+    return cur;
+  }
+
+  // ── charts ────────────────────────────────────────────────────────────
+  const baseLayout = () => ({ paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'system-ui, sans-serif', size: 12, color: css('--text-2') },
+    margin: { l: 56, r: 16, t: 8, b: 44 }, showlegend: false, hoverlabel: { align: 'left' } });
+  const axis = extra => Object.assign({ gridcolor: css('--border'), zeroline: false,
+    linecolor: css('--border'), tickfont: { color: css('--text-2') } }, extra);
+  const cfg = { displayModeBar: false, responsive: true };
+  const clearMsg = el => [...el.children].forEach(c => { if (!c.classList.contains('plot-container')) c.remove(); });
+  function message(el, html) { Plotly.purge(el); el.innerHTML = `<div class="empty">${html}</div>`; }
+  const shade = () => ({ type: 'rect', xref: 'x', yref: 'paper', y0: 0, y1: 1, x0: periods[state.p].start,
+    x1: periods[state.p].end, fillcolor: css('--shade'), line: { width: 0 }, layer: 'below' });
+  const refLine = p => ({ type: 'line', xref: 'x', yref: 'paper', y0: 0, y1: 1, x0: midP(p), x1: midP(p),
+    line: { color: css('--text-2'), width: 1, dash: 'dot' } });
+
+  // series: [{name, color, dash, rows: [{p, d, lo, hi, extra}]}]
+  // opt: {ytitle, signed (no floor at zero; hollow = interval includes 0), shapes, annotations}
+  function seriesChart(el, series, opt) {
+    series = series.filter(s => s.rows.length);
+    if (!series.length) return message(el, opt.empty || 'No periods with enough episodes for this selection.');
+    clearMsg(el);
+    const traces = series.map((s, si) => {
+      const rows = [...s.rows].sort((a, b) => a.p - b.p);
+      const off = (si - (series.length - 1) / 2) * 3 * 864e5;      // nudge so bars don't overlap
+      const xv = rows.map(r => new Date(Date.parse(midP(r.p)) + off).toISOString().slice(0, 10));
+      const hollow = rows.map(r => opt.signed ? (r.lo <= 0 && r.hi >= 0) : r.lo <= 1e-9);
+      return { x: xv, y: rows.map(r => r.d), customdata: rows.map(r => r.p), mode: 'lines+markers', name: s.name,
+        line: { color: s.color, width: 2, dash: s.dash || 'solid' },
+        marker: { size: 9, color: hollow.map(h => h ? css('--surface') : s.color), line: { color: s.color, width: 2 } },
+        error_y: { type: 'data', symmetric: false, array: rows.map(r => r.hi - r.d), arrayminus: rows.map(r => r.d - r.lo),
+          color: s.color, thickness: 1.5, width: 0 },
+        hovertemplate: rows.map((r, i) => `<b>${esc(s.name)}</b><br>${fmtP(r.p)}<br>${opt.valueName || 'Distance'} ${r.d.toFixed(3)} ` +
+          `(90%: ${r.lo.toFixed(3)} to ${r.hi.toFixed(3)})${hollow[i] ? (opt.signed ? '<br>Interval includes zero' : '<br>Interval reaches zero') : ''}` +
+          `${r.extra ? '<br>' + r.extra : ''}<extra></extra>`) };
+    });
+    const layout = Object.assign(baseLayout(), { showlegend: series.length > 1,
+      legend: { orientation: 'h', y: 1.12, x: 0, font: { color: css('--text') } },
+      margin: { l: 56, r: 16, t: series.length > 1 ? 36 : 12, b: 44 },
+      xaxis: axis({ type: 'date' }), shapes: [shade(), ...(opt.shapes || [])], annotations: opt.annotations || [],
+      yaxis: axis(Object.assign({ title: { text: opt.ytitle, font: { size: 12 } } },
+        opt.signed ? { zeroline: true, zerolinecolor: css('--text-2'), zerolinewidth: 1.5 } : { rangemode: 'tozero' })) });
+    Plotly.react(el, traces, layout, cfg);
+    el.removeAllListeners && el.removeAllListeners('plotly_click');
+    el.on('plotly_click', d => { state.p = d.points[0].customdata; render(); });
+  }
+
+  const looRows = s => NODES.filter(n => n.show === s && n.dist !== null).map(n => ({ p: n.period, d: n.dist, lo: n.lo, hi: n.hi,
+    extra: `${n.n} episodes, ${n.k_others} other shows<br>Top words: ${n.top_words.slice(0, 6).join(', ')}` }));
+  function driftRows(s) {
+    if (state.ref === '') return NODES.filter(n => n.show === s && n.drift !== null).map(n => ({ p: n.period, d: n.drift,
+      lo: n.drift_lo, hi: n.drift_hi, extra: `${n.n} episodes now, ${nodeAt(s, n.period - 1)?.n} before` }));
+    const r0 = +state.ref;
+    return NODES.filter(n => n.show === s && n.period !== r0).map(n => {
+      const r = driftBetween(s, r0, n.period);
+      return r && { p: n.period, d: r[3], lo: r[4], hi: r[5], extra: `${n.n} episodes, ${nodeAt(s, r0)?.n} in the reference period` };
+    }).filter(Boolean);
+  }
+  const pairRows = (a, b) => EDGES.filter(e => (e.a === a && e.b === b) || (e.a === b && e.b === a)).map(e => ({ p: e.period,
+    d: e.dist, lo: e.lo, hi: e.hi, extra: `${nodeAt(a, e.period)?.n} and ${nodeAt(b, e.period)?.n} episodes` }));
+  const gpairRows = (a, b) => GEDGES.filter(e => (e.a === a && e.b === b) || (e.a === b && e.b === a)).map(e => ({ p: e.period,
+    d: e.dist, lo: e.lo, hi: e.hi, extra: `${gnodeAt(a, e.period)?.members.length} and ${gnodeAt(b, e.period)?.members.length} shows placed` }));
+  // d(anchor, o1) - d(anchor, o2); stored with the two others in host-index order.
+  function leanAt(anchor, o1, o2, p) {
+    const ai = HIDX[anchor], i1 = HIDX[o1], i2 = HIDX[o2];
+    const r = LEAN.get(`${p}|${ai}|${Math.min(i1, i2)}|${Math.max(i1, i2)}`);
+    if (!r) return null;
+    return i1 < i2 ? { d: r[4], lo: r[5], hi: r[6] } : { d: -r[4], lo: -r[6], hi: -r[5] };
+  }
+  const leanRows = t => placedPeriods.map(p => { const v = leanAt(t.anchor, t.o1, t.o2, p);
+    if (!v) return null;
+    const e1 = edgeFor(t.anchor, t.o1, p), e2 = edgeFor(t.anchor, t.o2, p);
+    return { p, d: v.d, lo: v.lo, hi: v.hi,
+      extra: `To ${esc(short(t.o1))}: ${e1.dist.toFixed(3)}, to ${esc(short(t.o2))}: ${e2.dist.toFixed(3)}` }; }).filter(Boolean);
+
+  function compChart(el, groups) {
+    clearMsg(el);
+    const cols = [css('--a'), css('--b')];
+    const traces = groups.map((g, i) => {
+      const rows = placedPeriods.map(p => ({ p, n: gnodeAt(g, p)?.members.length || 0, m: gnodeAt(g, p)?.members || [] }));
+      return { type: 'bar', name: g, x: rows.map(r => midP(r.p)), y: rows.map(r => r.n), customdata: rows.map(r => r.p),
+        marker: { color: cols[i] },
+        hovertemplate: rows.map(r => `<b>${esc(g)}</b><br>${fmtP(r.p)}<br>${r.n} of ${GROUPS[g].length} shows placed` +
+          (r.m.length ? '<br>' + r.m.map(s => esc(short(s))).join(', ') : '') + '<extra></extra>') };
+    });
+    const layout = Object.assign(baseLayout(), { barmode: 'group', bargap: 0.3, bargroupgap: 0.1, showlegend: groups.length > 1,
+      legend: { orientation: 'h', y: 1.12, x: 0, font: { color: css('--text') } }, margin: { l: 56, r: 16, t: groups.length > 1 ? 36 : 12, b: 44 },
+      xaxis: axis({ type: 'date' }), shapes: [shade()],
+      yaxis: axis({ rangemode: 'tozero', dtick: 1, title: { text: 'Shows placed', font: { size: 12 } } }) });
+    Plotly.react(el, traces, layout, cfg);
+    el.removeAllListeners && el.removeAllListeners('plotly_click');
+    el.on('plotly_click', d => { state.p = d.points[0].customdata; render(); });
+  }
+
+  function drawTs() {
+    const el = document.getElementById('ts'), v = setupPanel('ts');
+    const helpEl = document.getElementById('tsHelp');
+    if (!v) { helpEl.textContent = 'Select a show or a pair on the map, or two groups.';
+      return message(el, state.mode === 'groups' ? 'Pick two groups above the map.' : 'Select a show on the map to see how it moves over time, or two shows to see their distance.'); }
+    helpEl.textContent = help(v);
+    const t2 = tie2() || [], t = tri();
+    const S = s => ({ name: short(s), color: colorOf(s) });
+    const refShapes = state.ref === '' ? [] : [refLine(+state.ref)];
+    const refNote = state.ref === '' ? [] : [{ x: midP(+state.ref), y: 1, xref: 'x', yref: 'paper', yanchor: 'bottom',
+      showarrow: false, text: 'reference', font: { size: 11, color: css('--text-2') } }];
+    if (v === 'loo') return seriesChart(el, [Object.assign(S(state.a), { rows: looRows(state.a) })], { ytitle: 'Distance from the group' });
+    if (v === 'drift' || v === 'drift2') {
+      const who = v === 'drift' ? [state.a] : [state.a, state.b];
+      return seriesChart(el, who.map(s => Object.assign(S(s), { rows: driftRows(s) })), {
+        ytitle: state.ref === '' ? 'Change from previous period' : 'Distance from reference period',
+        shapes: refShapes, annotations: refNote,
+        empty: state.ref === '' ? 'No two consecutive periods with enough episodes.' : 'Not placed in the reference period, or in no other period.' });
+    }
+    if (v === 'pair') return seriesChart(el, [{ name: `${short(state.a)} vs ${short(state.b)}`, color: css('--text'), rows: pairRows(state.a, state.b) }], { ytitle: 'Noise-corrected distance' });
+    if (v === 'loo2') return seriesChart(el, [state.a, state.b].map(s => Object.assign(S(s), { rows: looRows(s) })), { ytitle: 'Distance from the group' });
+    if (v === 'loo3') return seriesChart(el, selectedShows().map(s => Object.assign(S(s), { rows: looRows(s) })), { ytitle: 'Distance from the group' });
+    if (v === 'ties') {
+      if (t) return seriesChart(el, [
+        { name: `${short(t.anchor)} to ${short(t.o1)}`, color: colorOf(t.o1), rows: pairRows(t.anchor, t.o1) },
+        { name: `${short(t.anchor)} to ${short(t.o2)}`, color: colorOf(t.o2), rows: pairRows(t.anchor, t.o2) }], { ytitle: 'Noise-corrected distance' });
+      return seriesChart(el, [{ name: `${short(state.a)} vs ${short(state.b)}`, color: css('--text'), rows: pairRows(state.a, state.b) },
+        { name: `${short(t2[0])} vs ${short(t2[1])}`, color: css('--text-2'), dash: 'dash', rows: pairRows(t2[0], t2[1]) }], { ytitle: 'Noise-corrected distance' });
+    }
+    if (v === 'lean') return seriesChart(el, [{ name: `${short(t.anchor)}: distance to ${short(t.o1)} minus distance to ${short(t.o2)}`,
+      color: colorOf(t.anchor), rows: leanRows(t) }], { ytitle: 'Difference in distance', signed: true, valueName: 'Difference',
+      empty: HOSTS.length > (M.settings.max_lean_hosts || Infinity)
+        ? `"Closer to" comparisons are not computed for maps with more than ${M.settings.max_lean_hosts} shows. Pick a smaller group under "Shows on the map", or use "${esc(short(t.anchor))}'s distance to each".`
+        : 'The three shows are never placed in the same period.',
+      annotations: [
+        { x: 0, xref: 'paper', y: 1, yref: 'paper', xanchor: 'left', yanchor: 'top', showarrow: false,
+          text: `↑ closer to ${esc(short(t.o2))}`, font: { size: 12, color: colorOf(t.o2) } },
+        { x: 0, xref: 'paper', y: 0, yref: 'paper', xanchor: 'left', yanchor: 'bottom', showarrow: false,
+          text: `↓ closer to ${esc(short(t.o1))}`, font: { size: 12, color: colorOf(t.o1) } }] });
+    const overlap = (M.group_overlaps_skipped || []).some(([x, y]) =>
+      (x === state.ga && y === state.gb) || (x === state.gb && y === state.ga));
+    if (v === 'gpair' && overlap) return message(el, `${esc(state.ga)} and ${esc(state.gb)} share a show, so they are not compared. Pick groups with no shows in common.`);
+    if (v === 'gpair') return seriesChart(el, [{ name: `${state.ga} vs ${state.gb}`, color: css('--text'), rows: gpairRows(state.ga, state.gb) }], { ytitle: 'Noise-corrected distance' });
+    if (v === 'gcomp') return compChart(el, [state.ga, state.gb]);
+    if (v === 'gcomp1') return compChart(el, [state.ga]);
+  }
+
+  // ── words ─────────────────────────────────────────────────────────────
+  function lollipop(el, pullA, pullB, flip, labA, labB, colA, colB, sides) {
+    // Ratios are cos_B / cos_A for the exported orientation; flip when the viewer's A is the export's B.
+    const seen = new Set(), rows = [];
+    for (const w of [...pullA, ...pullB]) {
+      if (seen.has(w.word)) continue; seen.add(w.word);
+      const r = flip ? 1 / w.ratio : w.ratio;
+      rows.push({ w: w.word, r, x: Math.log2(r) });
+    }
+    if (!rows.length) return message(el, 'No words lean clearly to either side.');
+    rows.sort((p, q) => p.x - q.x);
+    clearMsg(el);
+    const stems = { x: [], y: [], mode: 'lines', line: { color: css('--border'), width: 2 }, hoverinfo: 'skip' };
+    rows.forEach(r => { stems.x.push(0, r.x, null); stems.y.push(r.w, r.w, null); });
+    const dots = { x: rows.map(r => r.x), y: rows.map(r => r.w), mode: 'markers+text',
+      marker: { size: 9, color: rows.map(r => r.x < 0 ? colA : colB) },
+      text: rows.map(r => r.w), textposition: rows.map(r => r.x < 0 ? 'middle left' : 'middle right'),
+      textfont: { color: css('--text'), size: 11 },
+      hovertemplate: rows.map(r => `<b>${esc(r.w)}</b><br>${(r.x < 0 ? 1 / r.r : r.r).toFixed(3)}× closer to ${esc(r.x < 0 ? labA : labB)}` +
+        `<br><i>Click to see how each side uses it</i><extra></extra>`) };
+    const lim = Math.max(...rows.map(r => Math.abs(r.x))) * 1.7 || 1;
+    const layout = Object.assign(baseLayout(), { margin: { l: 12, r: 12, t: 24, b: 44 },
+      height: Math.max(340, rows.length * 16 + 90),
+      xaxis: axis({ range: [-lim, lim], zeroline: true, zerolinecolor: css('--text-2'),
+        title: { text: 'log2 of cosine ratio', font: { size: 12 } } }),
+      yaxis: axis({ visible: false, categoryorder: 'array', categoryarray: rows.map(r => r.w) }),
+      annotations: [
+        { x: -lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'left', showarrow: false, text: `← ${esc(labA)}`, font: { color: css('--text'), size: 12 } },
+        { x: lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'right', showarrow: false, text: `${esc(labB)} →`, font: { color: css('--text'), size: 12 } }] });
+    Plotly.react(el, [stems, dots], layout, cfg);
+    el.removeAllListeners && el.removeAllListeners('plotly_click');
+    if (sides) el.on('plotly_click', d => {
+      const pt = d.points.find(q => q.curveNumber === 1);
+      if (!pt) return;
+      state.word = Object.assign({ w: pt.y, p: state.p }, sides);
+      state.view.pas[kind()] = 'word';
+      render();
+      document.getElementById('pasPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+  function wordCols(el, cols) {
+    Plotly.purge(el);
+    el.innerHTML = '<div class="cols">' + cols.map(c => `<div><h3><span class="swatch" style="background:${c.color}"></span>${esc(c.name)}</h3>` +
+      `<p class="small">${esc(c.note)}</p>` + (c.words ? `<ol class="words">${c.words.map(w => `<li>${esc(w)}</li>`).join('')}</ol>` : '') +
+      '</div>').join('') + '</div>';
+  }
+  const showCol = s => { const n = nodeAt(s, state.p);
+    return { name: short(s), color: colorOf(s), words: n?.top_words, note: n ? `Based on ${n.n} episodes.` : 'Not placed in this period.' }; };
+  const groupCol = g => { const n = gnodeAt(g, state.p);
+    return { name: g, color: colorOf(g), words: n?.top_words, note: n ? `${n.members.length} shows, ${n.n} episodes.` : 'Not enough shows placed in this period.' }; };
+  function pullFor(el, a, b) {
+    const e = edgeFor(a, b, state.p);
+    if (!e) return message(el, `${esc(short(a))} and ${esc(short(b))} are not both placed in this period.`);
+    lollipop(el, e.pull_a, e.pull_b, e.a !== a, short(a), short(b), colorOf(a), colorOf(b), { kind: 'c', a, b });
+  }
+
+  function drawWords() {
+    const el = document.getElementById('words'), v = setupPanel('words');
+    const helpEl = document.getElementById('wordsHelp');
+    if (!v) { helpEl.textContent = 'Select one show for its top words, or two shows for the words that separate them.';
+      return message(el, state.mode === 'groups' ? 'Pick two groups above the map.' : 'Select a show on the map.'); }
+    helpEl.textContent = help(v);
+    if (v === 'top') return wordCols(el, [showCol(state.a)]);
+    if (v === 'top2') return wordCols(el, [showCol(state.a), showCol(state.b)]);
+    if (v === 'gtop') return wordCols(el, [groupCol(state.ga), groupCol(state.gb)]);
+    if (v === 'gtop1') return wordCols(el, [groupCol(state.ga)]);
+    if (v === 'trend') {
+      Plotly.purge(el);
+      const rows = NODES.filter(n => n.show === state.a).sort((a, b) => a.period - b.period);
+      el.innerHTML = '<table class="trend">' + rows.map(n => `<tr class="${n.period === state.p ? 'cur' : ''}"><td>${fmtP(n.period)}<br>n=${n.n}</td>` +
+        `<td>${n.top_words.map(esc).join(', ')}</td></tr>`).join('') + '</table>';
+      return;
+    }
+    if (v === 'pull') return pullFor(el, state.a, state.b);
+    if (v === 'pull2') { const [x, y] = tie2(); return pullFor(el, x, y); }
+    if (v === 'pullbc') { const t = tri(); return pullFor(el, t.o1, t.o2); }
+    if (v === 'gpull') {
+      const e = gedgeFor(state.ga, state.gb, state.p);
+      if (!e) return message(el, gnodeAt(state.ga, state.p) && gnodeAt(state.gb, state.p)
+        ? 'These groups share a show, so they are not compared.' : 'One of the groups has too few shows placed in this period.');
+      return lollipop(el, e.pull_a, e.pull_b, e.a !== state.ga, state.ga, state.gb, colorOf(state.ga), colorOf(state.gb),
+        { kind: 'g', a: state.ga, b: state.gb });
+    }
+  }
+
+  // ── passages ──────────────────────────────────────────────────────────
+  function pasList(refs) {
+    if (!refs || !refs.length) return '<p class="small">None for this period.</p>';
+    return '<ul class="pas">' + refs.map(i => {
+      const [show, ep, date, posn, ctx] = PAS.texts[i];
+      const html = esc(ctx).replace(new RegExp('\\[' + TERM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\]', 'g'),
+        `<mark>${esc(TERM)}</mark>`);
+      return `<li><div class="meta">${date} · ${esc(short(show))} · ${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)} · token ${posn}</div>` +
+        `<div class="ctx">${html}</div></li>`;
+    }).join('') + '</ul>';
+  }
+  const col = (title, color, inner, hollow) => `<div><h3>${hollow ? `<span class="ring" style="border-color:${color}"></span>`
+    : `<span class="swatch" style="background:${color}"></span>`}${esc(title)}</h3>${inner}</div>`;
+  function pairPas(store, a, b, labA, labB) {
+    const k1 = `${state.p}|${a}|${b}`, k2 = `${state.p}|${b}|${a}`;
+    const rec = store[k1] || (store[k2] && { a: store[k2].b, b: store[k2].a });
+    if (!rec) return null;
+    return `<div class="cols">${col(`Most like ${labA}, least like ${labB}`, colorOf(a), pasList(rec.a))}` +
+      `${col(`Most like ${labB}, least like ${labA}`, colorOf(b), pasList(rec.b))}</div>`;
+  }
+  function drawPas() {
+    const el = document.getElementById('pas'), v = setupPanel('pas');
+    const helpEl = document.getElementById('pasHelp');
+    if (!v) { helpEl.textContent = 'Select a show, a pair, or two groups to read passages.';
+      el.innerHTML = `<div class="empty">${state.mode === 'groups' ? 'Pick two groups to read contrast passages.' : 'Select a show or a pair on the map to read passages.'}</div>`; return; }
+    if (v === 'word') return drawWordUse(el, helpEl);
+    helpEl.textContent = help(v === 'drift' || v === 'drift2' ? 'pasdrift' : v);
+    if (!PAS) { el.innerHTML = '<div class="empty">Loading passages…</div>'; loadPassages(); return; }
+    const cellRec = (s, p = state.p) => PAS.cell[`${s}|${p}`];
+    const notPlaced = s => `<p class="small">${esc(short(s))} is not placed in this period.</p>`;
+    let html = null;
+    if (v === 'typical') html = cellRec(state.a) ? pasList(cellRec(state.a).typical) : notPlaced(state.a);
+    if (v === 'typical2') html = `<div class="cols">${col(short(state.a), colorOf(state.a), cellRec(state.a) ? pasList(cellRec(state.a).typical) : notPlaced(state.a))}` +
+      `${col(short(state.b), colorOf(state.b), cellRec(state.b) ? pasList(cellRec(state.b).typical) : notPlaced(state.b))}</div>`;
+    if (v === 'drift' || v === 'drift2') {
+      const r0 = refFor();
+      const one = s => {
+        if (!cellRec(s)) return notPlaced(s);
+        if (r0 === state.p) return '<p class="small">The period shown is the reference period. Move the slider or pick another reference.</p>';
+        const before = r0 >= 0 && cellRec(s, r0), after = PAS.drift && PAS.drift[`${s}|${r0}|${state.p}`];
+        if (!before || !after) return `<p class="small">${esc(short(s))} is not placed in ${refShort()}, so there is no before and after.</p>`;
+        return `<div class="cols">${col(`Before (${fmtP(r0)})`, colorOf(s), pasList(before.typical), true)}` +
+          `${col(`After (${fmtP(state.p)})`, colorOf(s), pasList(after))}</div>`;
+      };
+      html = v === 'drift' ? one(state.a)
+        : `<h3 class="sub">${esc(short(state.a))}</h3>${one(state.a)}<h3 class="sub" style="margin-top:16px">${esc(short(state.b))}</h3>${one(state.b)}`;
+    }
+    if (v === 'contrast') html = pairPas(PAS.pair, state.a, state.b, short(state.a), short(state.b))
+      || `<p class="small">${esc(short(state.a))} and ${esc(short(state.b))} are not both placed in this period.</p>`;
+    if (v === 'contrast2') { const [x, y] = tie2();
+      html = pairPas(PAS.pair, x, y, short(x), short(y)) || `<p class="small">${esc(short(x))} and ${esc(short(y))} are not both placed in this period.</p>`; }
+    if (v === 'leanpas') {
+      const t = tri(), ai = HIDX[t.anchor], i1 = HIDX[t.o1], i2 = HIDX[t.o2];
+      const r = PAS.lean && PAS.lean[`${state.p}|${ai}|${Math.min(i1, i2)}|${Math.max(i1, i2)}`];
+      if (!r) html = HOSTS.length > (M.settings.max_lean_hosts || Infinity)
+        ? `<p class="small">"Closer to" passages are not computed for maps with more than ${M.settings.max_lean_hosts} shows. Pick a smaller group under "Shows on the map".</p>`
+        : '<p class="small">The three shows are not all placed in this period.</p>';
+      else {
+        const toO1 = i1 < i2 ? r.b : r.c, toO2 = i1 < i2 ? r.c : r.b;
+        const lv = leanAt(t.anchor, t.o1, t.o2, state.p);
+        const verdict = lv.lo <= 0 && lv.hi >= 0 ? 'no clear lean this period' :
+          `closer to ${short(lv.d > 0 ? t.o2 : t.o1)} this period`;
+        html = `<p class="small">${esc(short(t.anchor))}: ${esc(verdict)} (difference ${lv.d.toFixed(3)}, 90%: ${lv.lo.toFixed(3)} to ${lv.hi.toFixed(3)}).</p>` +
+          `<div class="cols">${col(`${short(t.anchor)}, most like ${short(t.o1)}`, colorOf(t.o1), pasList(toO1))}` +
+          `${col(`${short(t.anchor)}, most like ${short(t.o2)}`, colorOf(t.o2), pasList(toO2))}</div>`;
+      }
+    }
+    if (v === 'gcontrast') html = pairPas(PAS.gpair, state.ga, state.gb, state.ga, state.gb)
+      || '<p class="small">These groups are not compared in this period (too few shows placed, or they share a show).</p>';
+    el.innerHTML = html;
+  }
+
+  function wxList(refs, word) {
+    const tokRe = new RegExp('(^|\\s)(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?=\\s|$)', 'g');
+    const termRe = new RegExp('\\[' + TERM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\]', 'g');
+    return '<ul class="pas">' + refs.map(i => {
+      const [show, ep, date, posn, ctx] = WX.texts[i];
+      const html = esc(ctx).replace(tokRe, '$1<mark class="w">$2</mark>').replace(termRe, `<mark>${esc(TERM)}</mark>`);
+      return `<li><div class="meta">${date} · ${esc(short(show))} · ${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)} · token ${posn}</div>` +
+        `<div class="ctx">${html}</div></li>`;
+    }).join('') + '</ul>';
+  }
+  function drawWordUse(el, helpEl) {
+    const w = state.word;
+    helpEl.textContent = `Passages from the period shown in which '${w.w}' appears near '${TERM}' (underlined), up to ` +
+      `${M.settings.n_word_examples || 3} per side and one per episode, ranked by how close each passage sits to the word in meaning. ` +
+      `The count is episodes with at least one such passage. Word-pull words are chosen by meaning, so a side may never use the word itself; ` +
+      `then the passages closest to it in meaning are shown instead, labelled as such. A few examples are illustrations, not evidence of how common a use is.`;
+    if (!WX) { el.innerHTML = '<div class="empty">Loading examples…</div>'; loadWordex(); return; }
+    const lab = n => w.kind === 'g' ? n : short(n);
+    const rec = n => WX.ex[`${w.kind}|${n}|${w.p}|${w.w}`];
+    const ra = rec(w.a), rb = rec(w.b);
+    if (!ra || !rb) { el.innerHTML = '<div class="empty">No examples stored for this word and period.</div>'; return; }
+    const pct = r => r.n ? Math.round(100 * r.e / r.n) : 0;
+    const side = (n, r) => {
+      let inner = '';
+      if (r.l.length) inner += wxList(r.l, w.w);
+      if (r.m.length) inner += `<h4 class="sub">${r.l.length ? 'More passages closest in meaning (without the word)' : `Never uses '${esc(w.w)}' near '${esc(TERM)}' this period. Passages closest in meaning:`}</h4>` + wxList(r.m, w.w);
+      if (!inner) inner = '<p class="small">No passages.</p>';
+      return col(lab(n), colorOf(n), inner);
+    };
+    el.innerHTML = `<p class="wcount">'<b>${esc(w.w)}</b>' appears near '${esc(TERM)}' in ` +
+      `<b>${ra.e} of ${ra.n}</b> ${esc(lab(w.a))} episodes (${pct(ra)}%) and <b>${rb.e} of ${rb.n}</b> ${esc(lab(w.b))} episodes (${pct(rb)}%), ${fmtP(w.p)}.</p>` +
+      `<div class="cols">${side(w.a, ra)}${side(w.b, rb)}</div>`;
+  }
+
+  // ── render ────────────────────────────────────────────────────────────
+  function render() {
+    slider.value = state.p;
+    document.getElementById('pdates').textContent = fmtP(state.p);
+    for (const id of ['A', 'B', 'C', 'D']) document.getElementById('sel' + id).value = state[id.toLowerCase()];
+    document.getElementById('selGA').value = state.ga; document.getElementById('selGB').value = state.gb;
+    refSel.value = state.ref;
+    mapModeSel.value = state.mapMode; axXSel.value = state.axX; axYSel.value = state.axY;
+    document.getElementById('axPick').hidden = state.mapMode !== 'anchored';
+    const k = kind(), t2 = tie2(), t = tri();
+    const who = { none: 'all shows', gnone: 'groups', one: short(state.a), pair: `${short(state.a)} vs ${short(state.b)}`,
+      ties: t2 ? `${short(state.a)} vs ${short(state.b)}, and ${short(t2[0])} vs ${short(t2[1])}` : '',
+      tri: t ? `is ${short(t.anchor)} closer to ${short(t.o1)} or ${short(t.o2)}?` : '',
+      gone: state.ga, gpair: `${state.ga} vs ${state.gb}` }[k];
+    document.getElementById('status').textContent = `Showing: ${who}, ${fmtP(state.p)}, '${TERM}'`;
+    drawMap(); drawTs(); drawWords(); drawPas();
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+  // Theme button: Auto (follows the computer) -> Light -> Dark. Remembered in this browser if possible.
+  const themeBtn = document.getElementById('themeBtn');
+  const applyTheme = t => {
+    if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', t);
+    themeBtn.textContent = 'Theme: ' + { auto: 'Auto', light: 'Light', dark: 'Dark' }[t];
+    try { localStorage.setItem('dashTheme', t); } catch (e) {}
+  };
+  let theme = 'auto';
+  try { theme = localStorage.getItem('dashTheme') || 'auto'; } catch (e) {}
+  applyTheme(theme);
+  themeBtn.addEventListener('click', () => {
+    theme = { auto: 'light', light: 'dark', dark: 'auto' }[theme];
+    applyTheme(theme); render();
+  });
+  let rt = null;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { cy.resize(); fitted = false; render(); }, 150); });
+  render();
+})();
+</script>
+</body>
+</html>
