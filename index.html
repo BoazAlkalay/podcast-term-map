@@ -46,6 +46,23 @@ h1 { font-size: 18px; margin: 0 0 2px; }
 #status { color: var(--text-2); }
 #banner { display: none; margin: 8px 16px 0; padding: 8px 12px; border-radius: 6px;
   background: var(--warn-bg); color: var(--warn-text); font-weight: 600; }
+#inclBanner { margin: 8px 16px 0; padding: 8px 12px; border-radius: 6px; background: var(--warn-bg);
+  color: var(--warn-text); font-size: 13px; }
+#inclBanner b { font-weight: 700; }
+#inclBanner button { margin-left: 8px; }
+#thinList label { display: flex; align-items: baseline; gap: 6px; font-size: 13px; margin: 3px 0; cursor: pointer; }
+#thinList .n { color: var(--muted); font-size: 12px; white-space: nowrap; }
+#wordsPer { margin-left: auto; }
+#wordsPer button { line-height: 1.15; padding: 3px 10px; font-size: 12px; }
+#wordsPer button small { display: block; color: var(--muted); font-size: 11px; }
+#wordsPer button[aria-pressed="true"] small { color: inherit; opacity: 0.8; }
+#wordsPer button:disabled { opacity: 0.4; cursor: default; }
+#pop { position: fixed; z-index: 20; max-width: 340px; max-height: 60vh; overflow: auto; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+#pop h3 { font-size: 13px; margin: 0 0 4px; display: flex; gap: 8px; align-items: center; }
+#pop h3 button { margin-left: auto; padding: 0 6px; }
+#pop ul { margin: 2px 0 8px; padding-left: 18px; } #pop p { margin: 4px 0; }
 main { display: grid; gap: 12px; padding: 12px 16px 24px;
   grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas: "rail map map" "rail words ts" "rail pas pas"; }
@@ -128,6 +145,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
 </header>
 <div id="banner"></div>
+<div id="inclBanner" hidden></div>
 <main>
   <aside id="rail" class="panel" aria-label="Controls">
     <div><label class="f" for="snapSel">Data snapshot</label>
@@ -147,6 +165,21 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         <button id="play" type="button">▶ Play</button>
         <button id="next" type="button" aria-label="Next period">▶</button>
       </div>
+    </div>
+    <div id="thinBox">
+      <div class="ph" style="margin:0"><span class="f" style="margin:0">Shows with few episodes, this period</span></div>
+      <details class="help"><summary aria-label="About shows with few episodes">?</summary>
+        A show is placed normally with <span class="minEp">8</span>+ qualifying episodes (3+ mentions of the term) in the period.
+        With fewer, its average is rough: faded, hollow dots with "n=" are placed into the existing map without moving
+        anyone else, measured against the group with wider, approximate intervals, and left out of the group average
+        everyone else is compared with. Shows with only 1 or 2 episodes are listed but not placed.<br>
+        <b>Include:</b> tick a faded show to add it to the group average for everyone's "distance from the group".
+        This adds noise, not bias, so intervals widen. Intervals in the affected periods become approximate
+        (computed from the spread of episodes, not resampled). Map positions do not change.
+      </details>
+      <div id="thinList"></div>
+      <p class="small" id="fewList" style="margin:4px 0 0"></p>
+      <button type="button" id="inclReset" hidden>Reset to default</button>
     </div>
     <div>
       <label class="f" for="refSel">Change is measured from</label>
@@ -169,8 +202,15 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         <option value="anchored">Anchored axes (draft)</option>
       </select></label>
       <span id="axPick" hidden><label>X <select id="axX"></select></label> <label>Y <select id="axY"></select></label></span>
+      <label>Trail <select id="trailSel" title="How many earlier periods to draw for each selected show or group">
+        <option value="all">All periods</option><option value="4">Last 4</option><option value="2">Last 2</option>
+        <option value="1">Last 1</option><option value="0">None</option></select></label>
+      <label>Labels <select id="labelSel" title="When show names appear on the map">
+        <option value="hover">On hover</option><option value="all">All</option></select></label>
       <span class="chip" id="mapChip">Compared with: all placed shows</span>
-      <button type="button" id="zoomBtn" style="margin-left:auto">Show all periods</button></div>
+      <span style="margin-left:auto;display:inline-flex;gap:6px">
+        <button type="button" id="zoomSelBtn" title="Zoom to the selected shows and their trails">Zoom to selected</button>
+        <button type="button" id="zoomBtn">Show all periods</button></span></div>
     <details class="help"><summary aria-label="About the map">?</summary>
       Each dot is one show in the period shown: the average of its episodes' use of the term.<br>
       <b>Overall similarity:</b> closer dots use the term with more similar vocabulary. The axes are the directions
@@ -186,12 +226,19 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       closeness on these two dimensions. The current axes are drafts.<br>
       Selected shows get a faint trail through their own other periods; the hollow ring marks the period
       change is measured from. There are no lines between different shows: closeness is shown by position,
-      and the exact distances are in the charts below. Labels that would overlap are hidden; hover a dot to see its name.<br>
+      and the exact distances are in the charts below.<br>
+      <b>Labels:</b> "On hover" (default) shows a show's full name when you hover over it, for a few seconds after;
+      selected shows always keep theirs. Alt-click (Option-click on a Mac) a dot to pin its name, again to unpin.
+      "All" labels every dot, hiding names that would overlap.
+      "Zoom to selected" frames the selected shows and their trails. Scroll on the map to zoom; hold Ctrl while scrolling to scroll the page instead.<br>
       <b>Compare shows:</b> click a show for Show A, a second show for Show B, empty space to clear.
       Shift-click a show to set Show C (compared with Show A). For two unrelated pairs, use the
       "Second pair" menus. A second pair that shares a show with the first answers "is it closer to one or the other?".<br>
-      <b>Compare groups:</b> pick two groups. Their shows are ringed on the map. Each group is the
-      equal-weight average of its shows placed in that period.
+      <b>Compare groups:</b> pick two groups. Their shows are ringed on the map, and a diamond marks each group's
+      average (the equal-weight average of its shows placed in that period) with its own trail. The diamond sits at the
+      average position of those shows: exact on anchored axes, a close approximation on the other two maps. It is
+      drawn only when all of the group's placed shows are on this map.<br>
+      <b>Trail:</b> how many earlier periods to draw ("All periods" also shows later ones).
     </details>
     <div id="showSel">
       <div class="selrow">
@@ -224,7 +271,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   </section>
 
   <section id="wordsPanel" class="panel" aria-label="Words">
-    <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span></div>
+    <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span>
+      <span id="wordsPer" class="seg" role="group" aria-label="Period for this chart" hidden></span></div>
     <details class="help"><summary aria-label="About this view">?</summary><span id="wordsHelp"></span></details>
     <div id="words"></div>
   </section>
@@ -241,6 +289,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     <div id="pas"></div>
   </section>
 </main>
+<div id="pop" role="dialog" hidden></div>
 
 <script>
 (async function () {
@@ -315,6 +364,56 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   const driftBetween = (s, p0, p1) => { const i = HIDX[s];
     return DRIFT.get(`${i}|${Math.min(p0, p1)}|${Math.max(p0, p1)}`); };
   const LEAN = new Map(LEANS.map(r => [`${r[0]}|${r[1]}|${r[2]}|${r[3]}`, r]));
+  const MIN_EP = M.settings.min_episodes;
+  document.querySelectorAll('.minEp').forEach(e => { e.textContent = MIN_EP; });
+  const isThin = n => n && n.tier === 'thin';
+  const solidNodes = NODES.filter(n => !isThin(n));
+
+  // ── include toggle (spec §7): per-cell means, recomputed distance from the group ──
+  // B.cells rows: [host index, period, n, v, mu]. Only bundles exported with the thin tier have them.
+  const CELL = new Map(((B.cells && B.cells.rows) || []).map(r => [`${HOSTS[r[0]]}|${r[1]}`, { n: r[2], v: r[3], mu: r[4] }]));
+  const CAN_INCLUDE = CELL.size > 0 && NODES.some(isThin) && M.settings.d_eff > 0;
+  const Z90 = 1.6449;
+  // Approximate interval for a noise-corrected distance from T = |d|^2 - tau (same formula as the
+  // exporter's _approx_ci): every x >= 0 with |T - x| <= z sd(x), sd(x)^2 = 4 x tau r1 + 2 tau^2 / d_eff.
+  function approxCI(T, tau) {
+    const r1 = M.settings.r1, de = M.settings.d_eff;
+    const b = T + 2 * Z90 * Z90 * tau * r1, c = 2 * tau * tau / de;
+    const disc = Math.sqrt(Math.max(b * b - T * T + Z90 * Z90 * c, 0));
+    return [Math.sqrt(Math.max(b - disc, 0)), Math.sqrt(Math.max(b + disc, 0))];
+  }
+  const included = new Set();               // show names whose thin cells join the group average
+  const looCache = new Map();
+  // Distance from the group for every placed show in period p, with the included thin shows in the
+  // group. Returns null when nothing changes in p (no included show is thin there).
+  function looOverride(p) {
+    if (!included.size) return null;
+    const key = p + '|' + [...included].sort().join('|');
+    if (looCache.has(key)) return looCache.get(key);
+    const here = NODES.filter(n => n.period === p);
+    const addThin = here.filter(n => isThin(n) && included.has(n.show));
+    let out = null;
+    if (addThin.length) {
+      const group = here.filter(n => !isThin(n) || included.has(n.show)).map(n => ({ s: n.show, c: CELL.get(`${n.show}|${p}`) })).filter(g => g.c);
+      const dim = group.length ? group[0].c.mu.length : 0;
+      const sum = new Float64Array(dim); let vsum = 0;
+      for (const g of group) { g.c.mu.forEach((x, j) => { sum[j] += x; }); vsum += g.c.v; }
+      out = new Map();
+      for (const n of here) {
+        const c = CELL.get(`${n.show}|${p}`); if (!c) continue;
+        const inG = group.some(g => g.s === n.show);
+        const k = group.length - (inG ? 1 : 0);
+        if (k < 2) continue;
+        let sq = 0;
+        for (let j = 0; j < dim; j++) { const cen = (sum[j] - (inG ? c.mu[j] : 0)) / k; sq += (c.mu[j] - cen) ** 2; }
+        const tau = c.v + (vsum - (inG ? c.v : 0)) / (k * k);
+        const T = sq - tau, [lo, hi] = approxCI(T, tau);
+        out.set(n.show, { d: Math.sqrt(Math.max(T, 0)), lo, hi, k, dflt: n.dist });
+      }
+    }
+    looCache.set(key, out);
+    return out;
+  }
 
   // passages load on first use (script works from disk; fetch is the fallback)
   let PAS = null, pasLoading = null;
@@ -427,14 +526,14 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     }
   })();
 
-  const countIn = p => NODES.filter(n => n.period === p).length;
+  const countIn = p => solidNodes.filter(n => n.period === p).length;
   const fullish = placedPeriods.filter(p => countIn(p) >= 3);
   const state = { p: (fullish.length ? fullish : placedPeriods).slice(-1)[0], mode: 'shows', ref: '',
-    a: '', b: '', c: '', d: '', ga: '', gb: '', zoomAll: false, word: null, mapMode: 'overall', axX: 0, axY: 1, view: { ts: {}, words: {}, pas: {} } };
+    a: '', b: '', c: '', d: '', ga: '', gb: '', zoomAll: false, zoomSel: false, trail: 'all', labels: 'hover', wP: null, wPfor: null, word: null, mapMode: 'overall', axX: 0, axY: 1, view: { ts: {}, words: {}, pas: {} } };
   // Open with two shows selected (the two placed in the most periods), so every panel has content.
   const nPer = {};
-  NODES.forEach(n => { nPer[n.show] = (nPer[n.show] || 0) + 1; });
-  const inP = NODES.filter(n => n.period === state.p).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]);
+  solidNodes.forEach(n => { nPer[n.show] = (nPer[n.show] || 0) + 1; });
+  const inP = solidNodes.filter(n => n.period === state.p).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]);
   if (inP.length >= 2) { state.a = inP[0]; state.b = inP[1]; }
   const slider = document.getElementById('slider');
   slider.min = placedPeriods[0]; slider.max = placedPeriods[placedPeriods.length - 1];
@@ -554,28 +653,51 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   const SCALE = 600;
   const pos = n => { const f = getFrame(), c = coords(n);
     return { x: (c[0] - f.x0) / f.span * SCALE, y: -(c[1] - f.y0) / f.span * SCALE }; };
+  const posXY = c => { const f = getFrame(); return { x: (c[0] - f.x0) / f.span * SCALE, y: -(c[1] - f.y0) / f.span * SCALE }; };
+  // Earlier periods to draw for a selected show or group (state.trail: 'all' or a number).
+  const trailPts = pts => {
+    if (state.trail === 'all') return pts;
+    const n = +state.trail;
+    return [...(n ? pts.filter(q => q.period < state.p).slice(-n) : []), ...pts.filter(q => q.period === state.p)];
+  };
+  // Group average position: mean of its placed shows' positions, only if all of them are on this map.
+  function groupXY(g, p) {
+    const gn = gnodeAt(g, p); if (!gn) return null;
+    const cs = gn.members.map(s => nodeAt(s, p)).map(n => n && !isThin(n) && hasXY(n) ? coords(n) : null);
+    if (cs.some(c => !c)) return null;
+    return [cs.reduce((a, c) => a + c[0], 0) / cs.length, cs.reduce((a, c) => a + c[1], 0) / cs.length];
+  }
   const cy = cytoscape({ container: box, wheelSensitivity: 0.2, boxSelectionEnabled: false,
     autoungrabify: true, layout: { name: 'preset' }, style: [], elements: [] });
   // Sizes are divided by the zoom so dots, lines and labels keep the same size on screen.
   function cyStyle() {
     const f = 1 / cy.zoom(), z = v => v * f;
-    const big = { width: z(18), height: z(18), color: css('--text'), 'font-weight': 700 };
+    const big = { width: z(16), height: z(16), color: css('--text'), 'font-weight': 700 };
     const ring = c => Object.assign({ 'border-color': c, 'border-width': z(4) }, big);
     cy.style([
       { selector: 'node', style: { 'background-color': css('--node'), 'border-width': z(1),
-        'border-color': css('--node-edge'), width: z(14), height: z(14), label: 'data(label)',
+        'border-color': css('--node-edge'), width: z(12), height: z(12), label: 'data(label)',
         'font-size': z(11), color: css('--text-2'), 'text-valign': 'top', 'text-margin-y': z(-4),
         'text-background-color': css('--surface'), 'text-background-opacity': 0.7, 'text-background-padding': z(1) } },
       { selector: 'node.mid', style: { 'border-style': 'dashed' } },
+      { selector: 'node.thin', style: { 'background-opacity': 0.12, 'border-style': 'dashed', 'border-width': z(1.5),
+        width: z(10), height: z(10), color: css('--muted') } },
       { selector: 'node.A', style: Object.assign({ 'background-color': css('--a'), 'border-color': css('--surface'), 'border-width': z(2) }, big) },
       { selector: 'node.B', style: Object.assign({ 'background-color': css('--b'), 'border-color': css('--surface'), 'border-width': z(2) }, big) },
       { selector: 'node.C', style: ring(css('--c')) },
       { selector: 'node.D', style: ring(css('--d')) },
       { selector: 'node.gA', style: ring(css('--a')) },
       { selector: 'node.gB', style: ring(css('--b')) },
-      { selector: 'node.ghost', style: { width: z(7), height: z(7), 'background-color': 'data(color)', 'border-width': 0,
+      { selector: 'node.thin.A', style: { 'background-opacity': 0.3, 'border-color': css('--a'), 'border-width': z(3), 'border-style': 'dashed' } },
+      { selector: 'node.thin.B', style: { 'background-opacity': 0.3, 'border-color': css('--b'), 'border-width': z(3), 'border-style': 'dashed' } },
+      { selector: 'node.incl', style: { 'border-style': 'double', 'border-width': z(5), 'border-color': css('--text') } },
+      { selector: 'node.grp', style: { shape: 'diamond', width: z(20), height: z(20), 'background-color': 'data(color)',
+        'border-color': css('--surface'), 'border-width': z(2), color: css('--text'), 'font-weight': 700 } },
+      { selector: 'node.ghost.gtrail', style: { shape: 'diamond', width: z(8), height: z(8) } },
+      { selector: 'node.pinned', style: { color: css('--text'), 'font-weight': 600 } },
+      { selector: 'node.ghost', style: { width: z(6), height: z(6), 'background-color': 'data(color)', 'border-width': 0,
         opacity: 0.45, label: '', events: 'no' } },
-      { selector: 'node.ghost.ref', style: { width: z(13), height: z(13), 'background-opacity': 0, 'border-width': z(2),
+      { selector: 'node.ghost.ref', style: { width: z(11), height: z(11), 'background-opacity': 0, 'border-width': z(2),
         'border-color': 'data(color)', opacity: 0.9 } },
       { selector: 'edge', style: { width: z(2), 'line-color': css('--edge'), 'curve-style': 'straight' } },
       { selector: 'edge.trail', style: { width: z(2), 'line-color': 'data(color)', opacity: 0.5, events: 'no',
@@ -585,6 +707,12 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   }
   cyStyle();
   cy.on('tap', 'node', ev => {
+    if (ev.originalEvent && ev.originalEvent.altKey) {        // Alt-click: pin / unpin the name
+      const id = ev.target.id();
+      if (pinned.has(id)) pinned.delete(id); else pinned.add(id);
+      ev.target.toggleClass('pinned', pinned.has(id));
+      declutter(); return;
+    }
     if (state.mode !== 'shows') return;
     const s = ev.target.id();
     if (ev.originalEvent && ev.originalEvent.shiftKey && state.a && state.b) {
@@ -598,13 +726,31 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   });
   cy.on('tap', ev => { if (ev.target === cy && state.mode === 'shows') {
     state.a = state.b = state.c = state.d = ''; render(); } });
-  cy.on('mouseover', 'node', ev => ev.target.data('label', ev.target.data('full') || ''));
-  cy.on('mouseout', 'node', () => declutter());
+  // Hover shows the full name; it stays for a few seconds after the pointer leaves.
+  const pinned = new Set(), hoverKeep = new Map();      // node id -> timer
+  const LABEL_STAY_MS = 2500;
+  cy.on('mouseover', 'node', ev => {
+    const n = ev.target; if (n.hasClass('ghost')) return;
+    clearTimeout(hoverKeep.get(n.id())); hoverKeep.set(n.id(), null);
+    n.data('label', n.data('long') || n.data('full') || '');
+  });
+  const fadeLabel = id => { if (!hoverKeep.has(id) || hoverKeep.get(id)) return;
+    hoverKeep.set(id, setTimeout(() => { hoverKeep.delete(id); declutter(); }, LABEL_STAY_MS)); };
+  cy.on('mouseout', 'node', ev => fadeLabel(ev.target.id()));
+  // Leaving the map does not fire a node mouseout, so start the fade for anything still hovered.
+  box.addEventListener('mouseleave', () => [...hoverKeep.keys()].forEach(fadeLabel));
   let dz = null;
   cy.on('zoom', () => { clearTimeout(dz); dz = setTimeout(() => { cyStyle(); declutter(); }, 60); });
 
   // Hide labels that would overlap; selected shows always keep theirs.
   function declutter() {
+    if (state.labels === 'hover') {
+      cy.nodes().not('.ghost').forEach(n => {
+        const on = n.hasClass('sel') || pinned.has(n.id()) || hoverKeep.has(n.id());
+        n.data('label', on ? (n.data('long') || n.data('full') || '') : '');
+      });
+      return;
+    }
     const fs = 11, placed = [];
     const ns = cy.nodes().not('.ghost').toArray().sort((x, y) =>
       (y.hasClass('sel') - x.hasClass('sel')) || (y.data('n') - x.data('n')));
@@ -626,15 +772,35 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   else { state.axX = okAxes[0][1]; state.axY = okAxes[1][1]; }
   if (!MAP_AXES.centred) mapModeSel.querySelector('option[value="centred"]').disabled = true;
   mapModeSel.addEventListener('change', () => { state.mapMode = mapModeSel.value; fitted = false; render(); });
+  document.getElementById('trailSel').addEventListener('change', e => { state.trail = e.target.value; render(); });
+  const labelSel = document.getElementById('labelSel');
+  try { const v = localStorage.getItem('dashLabels'); if (v === 'all' || v === 'hover') state.labels = v; } catch (e) {}
+  labelSel.value = state.labels;
+  labelSel.addEventListener('change', () => { state.labels = labelSel.value;
+    try { localStorage.setItem('dashLabels', state.labels); } catch (e) {} declutter(); });
   axXSel.addEventListener('change', () => { state.axX = +axXSel.value;
     if (state.axX === state.axY) state.axY = okAxes.find(([, i]) => i !== state.axX)[1]; fitted = false; render(); });
   axYSel.addEventListener('change', () => { state.axY = +axYSel.value;
     if (state.axX === state.axY) state.axX = okAxes.find(([, i]) => i !== state.axY)[1]; fitted = false; render(); });
-  document.getElementById('zoomBtn').addEventListener('click', e => {
-    state.zoomAll = !state.zoomAll; fitted = false;
-    e.target.textContent = state.zoomAll ? 'Zoom to this period' : 'Show all periods';
-    render();
+  const zoomBtn = document.getElementById('zoomBtn'), zoomSelBtn = document.getElementById('zoomSelBtn');
+  const zoomLabels = () => {
+    zoomBtn.textContent = state.zoomAll ? 'Zoom to this period' : 'Show all periods';
+    zoomSelBtn.textContent = state.zoomSel ? 'Zoom out' : 'Zoom to selected';
+    zoomSelBtn.setAttribute('aria-pressed', state.zoomSel);
+  };
+  zoomBtn.addEventListener('click', () => {
+    state.zoomAll = !state.zoomAll; state.zoomSel = false; fitted = false; zoomLabels(); render();
   });
+  zoomSelBtn.addEventListener('click', () => {
+    state.zoomSel = !state.zoomSel; state.zoomAll = false; fitted = false; zoomLabels(); render();
+  });
+  // Ctrl + scroll over the map scrolls the page instead of zooming the map.
+  // Listen on window in the capture phase so this runs before Cytoscape's own wheel handler.
+  window.addEventListener('wheel', e => {
+    if (!e.ctrlKey || !box.contains(e.target)) return;
+    e.preventDefault(); e.stopPropagation();
+    window.scrollBy(0, e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1));
+  }, { capture: true, passive: false });
 
   // Axis-end labels, the shared-shift line and notes about the anchored axes.
   function drawMapExtras() {
@@ -682,22 +848,25 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     const memB = new Set(state.mode === 'groups' && state.gb ? GROUPS[state.gb] : []);
     const els = here.map(n => {
       const cls = [n.tier];
+      if (isThin(n) && included.has(n.show)) cls.push('incl');
+      if (pinned.has(n.show)) cls.push('pinned');
       if (state.mode === 'shows') {
         if (n.show === state.a) cls.push('A', 'sel');
         else if (n.show === state.b) cls.push('B', 'sel');
         else if (n.show === state.c && t2) cls.push('C', 'sel');
         else if (t2 && t2.includes(n.show)) cls.push('D', 'sel');
-      } else {
+      } else if (!isThin(n)) {              // thin shows are not part of group averages
         if (memA.has(n.show)) cls.push('gA', 'sel');
         if (memB.has(n.show)) cls.push('gB', 'sel');
       }
-      const full = short(n.show) + (n.tier === 'mid' ? ` (n=${n.n})` : '');
-      return { group: 'nodes', data: { id: n.show, label: full, full, n: n.n }, position: pos(n), classes: cls.join(' ') };
+      const full = short(n.show) + (n.tier === 'mid' ? ` (n=${n.n})` : isThin(n) ? ` (n=${n.n}, rough)` : '');
+      const long = n.show + (n.tier === 'mid' ? ` (n=${n.n})` : isThin(n) ? ` (n=${n.n}, rough)` : '');
+      return { group: 'nodes', data: { id: n.show, label: full, full, long, n: n.n }, position: pos(n), classes: cls.join(' ') };
     });
     // Trails: each selected show's positions in every period, in time order.
     const ref = refFor();
     for (const s of sel) {
-      const pts = NODES.filter(n => n.show === s && hasXY(n)).sort((a, b) => a.period - b.period);
+      const pts = trailPts(NODES.filter(n => n.show === s && hasXY(n)).sort((a, b) => a.period - b.period));
       const color = colorOf(s);
       pts.forEach((n, i) => {
         if (n.period !== state.p) els.push({ group: 'nodes', data: { id: `_g|${s}|${n.period}`, color, n: 0, full: '' },
@@ -710,6 +879,22 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         }
       });
     }
+    // Group averages (group mode): a diamond at the mean position of the group's placed shows, with a trail.
+    const noGroupMark = [];
+    if (state.mode === 'groups') for (const [g, cls] of [[state.ga, 'gA'], [state.gb, 'gB']]) {
+      if (!g) continue;
+      const color = colorOf(g);
+      const pts = trailPts(placedPeriods.map(p => ({ period: p, c: groupXY(g, p) })).filter(q => q.c));
+      if (!groupXY(g, state.p)) noGroupMark.push(g);
+      pts.forEach((q, i) => {
+        const id = q.period === state.p ? `_G|${g}` : `_Gg|${g}|${q.period}`;
+        els.push(q.period === state.p
+          ? { group: 'nodes', data: { id, label: `${g} (average)`, full: `${g} (average)`, n: 1e6, color }, position: posXY(q.c), classes: `grp sel ${cls}` }
+          : { group: 'nodes', data: { id, color, n: 0, full: '' }, position: posXY(q.c), classes: 'ghost gtrail' });
+        if (i > 0) { const prev = pts[i - 1].period === state.p ? `_G|${g}` : `_Gg|${g}|${pts[i - 1].period}`;
+          els.push({ group: 'edges', data: { id: `_Gt|${g}|${i}`, source: prev, target: id, color }, classes: 'trail' }); }
+      });
+    }
     // No lines between different shows: in a network picture a line reads as a relationship,
     // which these are not. Only each selected show's own trail through time is drawn.
     // Trails whose current-period end is missing would point at nothing: drop those edges.
@@ -719,9 +904,14 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     cyStyle();
     // Positions come from one fixed frame for all periods. By default the view zooms to the
     // period shown (plus selected trails); "Show all periods" shows the whole frame.
-    const fitKey = `${state.p}|${state.zoomAll}|${sel.join(',')}|${box.clientWidth}|${frameKey}`;
+    const selEls = cy.nodes('.sel').union(cy.nodes('.ghost')).union(cy.edges('.trail'));
+    zoomSelBtn.disabled = !cy.nodes('.sel').length && !state.zoomSel;
+    const fitKey = `${state.p}|${state.zoomAll}|${state.zoomSel}|${sel.join(',')}|${state.ga}|${state.gb}|${state.trail}|${box.clientWidth}|${frameKey}`;
     if (!fitted || fitKey !== lastFit) {
-      if (state.zoomAll) {
+      if (state.zoomSel && selEls.length) {
+        cy.fit(selEls, 60);
+        if (cy.zoom() > 4) { cy.zoom(4); cy.center(selEls); }
+      } else if (state.zoomAll) {
         const ghosts = cy.add(NODES.filter(hasXY).map((n, i) => ({ group: 'nodes', data: { id: '_f' + i, full: '', n: 0 }, position: pos(n) })));
         cy.fit(ghosts, 30); cy.remove(ghosts);
       } else if (cy.nodes().length) {
@@ -742,7 +932,9 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     document.getElementById('absent').textContent = missing.length
       ? `Not placed in this period (fewer than ${M.settings.min_episodes} qualifying episodes): ${missing.map(short).join(', ')}.`
       : state.mode === 'groups' && (state.ga || state.gb)
-        ? 'Ringed: the selected groups\' shows that are on this map. Groups can include shows that are not on the map.' : '';
+        ? 'Ringed: the selected groups\' shows that are on this map. Diamond: the group average.' +
+          (noGroupMark.length ? ` No diamond for ${noGroupMark.join(', ')} this period: too few of its shows are placed, or some are not on this map (try "All shows" under "Shows on the map").` : '')
+        : '';
   }
 
   // ── view menus: each panel offers the views that fit the selection ─────
@@ -814,10 +1006,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       gcomp1: 'How many of the group\'s shows had enough episodes to be placed in each period.',
       top: 'Corpus words closest to this show\'s average use of the term in the period shown.',
       trend: 'Corpus words closest to this show\'s average use of the term, for every period it is placed.',
-      pull: `Words from the corpus vocabulary (at least ${M.settings.vocab_min_count} uses) ranked by how much closer they sit to one side's average use of '${TERM}' than to the other's (ratio of cosine similarities, as in Cell 16). These are leads to read, not findings.`,
+      pull: `Words from the corpus vocabulary (at least ${M.settings.vocab_min_count} uses) ranked by how much closer they sit to one side's average use of '${TERM}' than to the other's (ratio of cosine similarities, as in Cell 16). These are leads to read, not findings. "Previous" and "Next" show the same comparison in the neighbouring periods with data (the rest of the page stays on the period shown). Click a side's name to see its shows or groups.`,
       pullbc: `The word-pull between ${l.y1} and ${l.y2}: the vocabulary ${l.x} would be leaning toward if it moved to one or the other.`,
       top2: 'Corpus words closest to each show\'s average use of the term in the period shown.',
-      gpull: `As for shows: words ranked by the ratio of their cosine similarity to each group's average use of '${TERM}'.`,
+      gpull: `As for shows: words ranked by the ratio of their cosine similarity to each group's average use of '${TERM}'. "Previous" and "Next" step to the neighbouring periods; click a group's name to see which shows it includes.`,
       gtop: 'Corpus words closest to each group\'s average use of the term in the period shown.',
       gtop1: 'Corpus words closest to the group\'s average use of the term in the period shown.',
       typical: 'Mentions closest to the show\'s average in this period: what its usual use looks like.' + PAS_NOTE,
@@ -835,7 +1027,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   // A clicked word stays available while its period and both sides are still selected.
   function wordValid() {
     const w = state.word;
-    if (!w || w.p !== state.p) return false;
+    if (!w || w.p !== wp()) return false;
     if (w.kind === 'g') return state.mode === 'groups' && [state.ga, state.gb].includes(w.a) && [state.ga, state.gb].includes(w.b);
     const sel = selectedShows();
     return state.mode === 'shows' && sel.includes(w.a) && sel.includes(w.b);
@@ -882,14 +1074,17 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   // opt: {ytitle, signed (no floor at zero; hollow = interval includes 0), shapes, annotations}
   function seriesChart(el, series, opt) {
     series = series.filter(s => s.rows.length);
+    const hasRough = series.some(s => s.rows.some(r => r.rough));
     if (!series.length) return message(el, opt.empty || 'No periods with enough episodes for this selection.');
     clearMsg(el);
+    const roughTraces = [];
     const traces = series.map((s, si) => {
-      const rows = [...s.rows].sort((a, b) => a.p - b.p);
+      const all = [...s.rows].sort((a, b) => a.p - b.p);
+      const rows = all.filter(r => !r.rough), rr = all.filter(r => r.rough);
       const off = (si - (series.length - 1) / 2) * 3 * 864e5;      // nudge so bars don't overlap
       const xv = rows.map(r => new Date(Date.parse(midP(r.p)) + off).toISOString().slice(0, 10));
       const hollow = rows.map(r => opt.signed ? (r.lo <= 0 && r.hi >= 0) : r.lo <= 1e-9);
-      return { x: xv, y: rows.map(r => r.d), customdata: rows.map(r => r.p), mode: 'lines+markers', name: s.name,
+      const tr = { x: xv, y: rows.map(r => r.d), customdata: rows.map(r => r.p), mode: 'lines+markers', name: s.name,
         line: { color: s.color, width: 2, dash: s.dash || 'solid' },
         marker: { size: 9, color: hollow.map(h => h ? css('--surface') : s.color), line: { color: s.color, width: 2 } },
         error_y: { type: 'data', symmetric: false, array: rows.map(r => r.hi - r.d), arrayminus: rows.map(r => r.d - r.lo),
@@ -897,11 +1092,25 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         hovertemplate: rows.map((r, i) => `<b>${esc(s.name)}</b><br>${fmtP(r.p)}<br>${opt.valueName || 'Distance'} ${r.d.toFixed(3)} ` +
           `(90%: ${r.lo.toFixed(3)} to ${r.hi.toFixed(3)})${hollow[i] ? (opt.signed ? '<br>Interval includes zero' : '<br>Interval reaches zero') : ''}` +
           `${r.extra ? '<br>' + r.extra : ''}<extra></extra>`) };
+      if (rr.length) {
+        const fade = s.color + '80';
+        const xr = rr.map(r => new Date(Date.parse(midP(r.p)) + off).toISOString().slice(0, 10));
+        roughTraces.push({ x: xr, y: rr.map(r => r.d), customdata: rr.map(r => r.p), mode: 'markers', showlegend: false,
+          marker: { size: 9, symbol: 'diamond-open', color: s.color, line: { color: s.color, width: 1.5 }, opacity: 0.8 },
+          error_y: { type: 'data', symmetric: false, array: rr.map(r => r.hi - r.d), arrayminus: rr.map(r => r.d - r.lo),
+            color: fade, thickness: 1, width: 5 },
+          hovertemplate: rr.map(r => `<b>${esc(s.name)}</b> (few episodes, rough)<br>${fmtP(r.p)}<br>${opt.valueName || 'Distance'} ${r.d.toFixed(3)} ` +
+            `(approx. 90%: ${r.lo.toFixed(3)} to ${r.hi.toFixed(3)})${r.extra ? '<br>' + r.extra : ''}<extra></extra>`) });
+      }
+      return tr;
     });
+    traces.push(...roughTraces);
     const layout = Object.assign(baseLayout(), { showlegend: series.length > 1,
       legend: { orientation: 'h', y: 1.12, x: 0, font: { color: css('--text') } },
       margin: { l: 56, r: 16, t: series.length > 1 ? 36 : 12, b: 44 },
-      xaxis: axis({ type: 'date' }), shapes: [shade(), ...(opt.shapes || [])], annotations: opt.annotations || [],
+      xaxis: axis({ type: 'date' }), shapes: [shade(), ...(opt.shapes || [])],
+      annotations: [...(opt.annotations || []), ...(hasRough ? [{ x: 1, xref: 'paper', y: 0, yref: 'paper', yshift: -40, xanchor: 'right',
+        yanchor: 'bottom', showarrow: false, text: `◇ fewer than ${MIN_EP} episodes: rough, approximate interval`, font: { size: 11, color: css('--muted') } }] : [])],
       yaxis: axis(Object.assign({ title: { text: opt.ytitle, font: { size: 12 } } },
         opt.signed ? { zeroline: true, zerolinecolor: css('--text-2'), zerolinewidth: 1.5 } : { rangemode: 'tozero' })) });
     Plotly.react(el, traces, layout, cfg);
@@ -909,8 +1118,13 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     el.on('plotly_click', d => { state.p = d.points[0].customdata; render(); });
   }
 
-  const looRows = s => NODES.filter(n => n.show === s && n.dist !== null).map(n => ({ p: n.period, d: n.dist, lo: n.lo, hi: n.hi,
-    extra: `${n.n} episodes, ${n.k_others} other shows<br>Top words: ${n.top_words.slice(0, 6).join(', ')}` }));
+  const looRows = s => NODES.filter(n => n.show === s && n.dist !== null).map(n => {
+    const o = looOverride(n.period)?.get(n.show), rough = isThin(n), approx = rough || !!o;
+    return { p: n.period, d: o ? o.d : n.dist, lo: o ? o.lo : n.lo, hi: o ? o.hi : n.hi, rough, approx,
+      extra: `${n.n} episodes${rough ? ' (rough)' : ''}, ${o ? o.k : n.k_others} other shows` +
+        (o ? `<br>Includes shows with few episodes; default ${n.dist.toFixed(3)}` : '') +
+        (approx ? '<br>Approximate interval' : '') + `<br>Top words: ${n.top_words.slice(0, 6).join(', ')}` };
+  });
   function driftRows(s) {
     if (state.ref === '') return NODES.filter(n => n.show === s && n.drift !== null).map(n => ({ p: n.period, d: n.drift,
       lo: n.drift_lo, hi: n.drift_hi, extra: `${n.n} episodes now, ${nodeAt(s, n.period - 1)?.n} before` }));
@@ -1030,14 +1244,21 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         title: { text: 'log2 of cosine ratio', font: { size: 12 } } }),
       yaxis: axis({ visible: false, categoryorder: 'array', categoryarray: rows.map(r => r.w) }),
       annotations: [
-        { x: -lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'left', showarrow: false, text: `← ${esc(labA)}`, font: { color: css('--text'), size: 12 } },
-        { x: lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'right', showarrow: false, text: `${esc(labB)} →`, font: { color: css('--text'), size: 12 } }] });
+        { x: -lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'left', showarrow: false, text: `← <u>${esc(labA)}</u> ▾`, font: { color: css('--text'), size: 12 },
+          captureevents: !!sides, hovertext: sides ? (sides.kind === 'g' ? 'Click: shows in this group' : 'Click: groups this show belongs to') : undefined },
+        { x: lim, y: 1.03, xref: 'x', yref: 'paper', xanchor: 'right', showarrow: false, text: `<u>${esc(labB)}</u> ▾ →`, font: { color: css('--text'), size: 12 },
+          captureevents: !!sides, hovertext: sides ? (sides.kind === 'g' ? 'Click: shows in this group' : 'Click: groups this show belongs to') : undefined }] });
     Plotly.react(el, [stems, dots], layout, cfg);
     el.removeAllListeners && el.removeAllListeners('plotly_click');
+    el.removeAllListeners && el.removeAllListeners('plotly_clickannotation');
+    if (sides) el.on('plotly_clickannotation', d => {
+      const who = d.index === 0 ? sides.a : sides.b;
+      showPop(d.event, sides.kind, who, wp());
+    });
     if (sides) el.on('plotly_click', d => {
       const pt = d.points.find(q => q.curveNumber === 1);
       if (!pt) return;
-      state.word = Object.assign({ w: pt.y, p: state.p }, sides);
+      state.word = Object.assign({ w: pt.y, p: wp() }, sides);
       state.view.pas[kind()] = 'word';
       render();
       document.getElementById('pasPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1050,17 +1271,49 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       '</div>').join('') + '</div>';
   }
   const showCol = s => { const n = nodeAt(s, state.p);
-    return { name: short(s), color: colorOf(s), words: n?.top_words, note: n ? `Based on ${n.n} episodes.` : 'Not placed in this period.' }; };
+    return { name: short(s), color: colorOf(s), words: n?.top_words,
+      note: !n ? 'Not placed in this period.' : isThin(n) ? `Based on only ${n.n} episodes: rough. Read the passages too.` : `Based on ${n.n} episodes.` }; };
   const groupCol = g => { const n = gnodeAt(g, state.p);
     return { name: g, color: colorOf(g), words: n?.top_words, note: n ? `${n.members.length} shows, ${n.n} episodes.` : 'Not enough shows placed in this period.' }; };
   function pullFor(el, a, b) {
-    const e = edgeFor(a, b, state.p);
-    if (!e) return message(el, `${esc(short(a))} and ${esc(short(b))} are not both placed in this period.`);
+    const e = edgeFor(a, b, wp());
+    const thinOne = [a, b].map(x => nodeAt(x, wp())).find(isThin);
+    if (!e && thinOne) return message(el, `Words that separate two shows need ${MIN_EP}+ episodes on both sides. ` +
+      `${esc(short(thinOne.show))} has only ${thinOne.n} this period. Its top words and typical passages are available when it is selected alone.`);
+    if (!e) return message(el, `${esc(short(a))} and ${esc(short(b))} are not both placed in ${wp() === state.p ? 'this period' : fmtP(wp())}.`);
     lollipop(el, e.pull_a, e.pull_b, e.a !== a, short(a), short(b), colorOf(a), colorOf(b), { kind: 'c', a, b });
+  }
+
+  // Word-pull charts can step to the neighbouring periods without moving the rest of the page.
+  const wp = () => state.wP === null ? state.p : state.wP;
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dShort = iso => `${MON[+iso.slice(5, 7) - 1]} ${+iso.slice(8, 10)}`;
+  const pShort = p => `${dShort(periods[p].start)} – ${dShort(periods[p].end)}`;
+  function pullPair(v) {
+    if (v === 'pull') return ['c', state.a, state.b];
+    if (v === 'pull2') { const t = tie2(); return t && ['c', t[0], t[1]]; }
+    if (v === 'pullbc') { const t = tri(); return t && ['c', t.o1, t.o2]; }
+    if (v === 'gpull') return ['g', state.ga, state.gb];
+    return null;
+  }
+  function drawWordsPer(v) {
+    const box = document.getElementById('wordsPer'), pp = pullPair(v);
+    if (!pp) { box.hidden = true; state.wP = null; return; }
+    const has = p => pp[0] === 'g' ? !!gedgeFor(pp[1], pp[2], p) : !!edgeFor(pp[1], pp[2], p);
+    const before = placedPeriods.filter(p => p < state.p && has(p)).slice(-1)[0];
+    const after = placedPeriods.filter(p => p > state.p && has(p))[0];
+    const btn = (p, name) => p === undefined
+      ? `<button type="button" disabled>${name}<small>none</small></button>`
+      : `<button type="button" data-p="${p}" aria-pressed="${wp() === p}" title="${fmtP(p)}">${name}<small>${pShort(p)}</small></button>`;
+    box.innerHTML = btn(before, 'Previous') + btn(state.p, 'This period') + btn(after, 'Next');
+    box.hidden = false;
+    box.querySelectorAll('button[data-p]').forEach(b => b.addEventListener('click', () => {
+      const p = +b.dataset.p; state.wP = p === state.p ? null : p; render(); }));
   }
 
   function drawWords() {
     const el = document.getElementById('words'), v = setupPanel('words');
+    drawWordsPer(v);
     const helpEl = document.getElementById('wordsHelp');
     if (!v) { helpEl.textContent = 'Select one show for its top words, or two shows for the words that separate them.';
       return message(el, state.mode === 'groups' ? 'Pick two groups above the map.' : 'Select a show on the map.'); }
@@ -1072,7 +1325,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     if (v === 'trend') {
       Plotly.purge(el);
       const rows = NODES.filter(n => n.show === state.a).sort((a, b) => a.period - b.period);
-      el.innerHTML = '<table class="trend">' + rows.map(n => `<tr class="${n.period === state.p ? 'cur' : ''}"><td>${fmtP(n.period)}<br>n=${n.n}</td>` +
+      el.innerHTML = '<table class="trend">' + rows.map(n => `<tr class="${n.period === state.p ? 'cur' : ''}"><td>${fmtP(n.period)}<br>n=${n.n}${isThin(n) ? ', rough' : ''}</td>` +
         `<td>${n.top_words.map(esc).join(', ')}</td></tr>`).join('') + '</table>';
       return;
     }
@@ -1080,8 +1333,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     if (v === 'pull2') { const [x, y] = tie2(); return pullFor(el, x, y); }
     if (v === 'pullbc') { const t = tri(); return pullFor(el, t.o1, t.o2); }
     if (v === 'gpull') {
-      const e = gedgeFor(state.ga, state.gb, state.p);
-      if (!e) return message(el, gnodeAt(state.ga, state.p) && gnodeAt(state.gb, state.p)
+      const e = gedgeFor(state.ga, state.gb, wp());
+      if (!e) return message(el, gnodeAt(state.ga, wp()) && gnodeAt(state.gb, wp())
         ? 'These groups share a show, so they are not compared.' : 'One of the groups has too few shows placed in this period.');
       return lollipop(el, e.pull_a, e.pull_b, e.a !== state.ga, state.ga, state.gb, colorOf(state.ga), colorOf(state.gb),
         { kind: 'g', a: state.ga, b: state.gb });
@@ -1119,9 +1372,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     const cellRec = (s, p = state.p) => PAS.cell[`${s}|${p}`];
     const notPlaced = s => `<p class="small">${esc(short(s))} is not placed in this period.</p>`;
     let html = null;
-    if (v === 'typical') html = cellRec(state.a) ? pasList(cellRec(state.a).typical) : notPlaced(state.a);
-    if (v === 'typical2') html = `<div class="cols">${col(short(state.a), colorOf(state.a), cellRec(state.a) ? pasList(cellRec(state.a).typical) : notPlaced(state.a))}` +
-      `${col(short(state.b), colorOf(state.b), cellRec(state.b) ? pasList(cellRec(state.b).typical) : notPlaced(state.b))}</div>`;
+    const roughNote = s => isThin(nodeAt(s, state.p)) ? `<p class="small">Only ${nodeAt(s, state.p).n} episodes this period, so these passages say more than the averages do.</p>` : '';
+    if (v === 'typical') html = cellRec(state.a) ? roughNote(state.a) + pasList(cellRec(state.a).typical) : notPlaced(state.a);
+    if (v === 'typical2') html = `<div class="cols">${col(short(state.a), colorOf(state.a), cellRec(state.a) ? roughNote(state.a) + pasList(cellRec(state.a).typical) : notPlaced(state.a))}` +
+      `${col(short(state.b), colorOf(state.b), cellRec(state.b) ? roughNote(state.b) + pasList(cellRec(state.b).typical) : notPlaced(state.b))}</div>`;
     if (v === 'drift' || v === 'drift2') {
       const r0 = refFor();
       const one = s => {
@@ -1135,7 +1389,9 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       html = v === 'drift' ? one(state.a)
         : `<h3 class="sub">${esc(short(state.a))}</h3>${one(state.a)}<h3 class="sub" style="margin-top:16px">${esc(short(state.b))}</h3>${one(state.b)}`;
     }
-    if (v === 'contrast') html = pairPas(PAS.pair, state.a, state.b, short(state.a), short(state.b))
+    const thinNote = (x, y) => { const t = [x, y].map(q => nodeAt(q, state.p)).find(isThin);
+      return t ? `<p class="small">Contrast passages need ${MIN_EP}+ episodes on both sides; ${esc(short(t.show))} has ${t.n} this period. Use "Typical passages for each show".</p>` : null; };
+    if (v === 'contrast') html = pairPas(PAS.pair, state.a, state.b, short(state.a), short(state.b)) || thinNote(state.a, state.b)
       || `<p class="small">${esc(short(state.a))} and ${esc(short(state.b))} are not both placed in this period.</p>`;
     if (v === 'contrast2') { const [x, y] = tie2();
       html = pairPas(PAS.pair, x, y, short(x), short(y)) || `<p class="small">${esc(short(x))} and ${esc(short(y))} are not both placed in this period.</p>`; }
@@ -1194,8 +1450,88 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       `<div class="cols">${side(w.a, ra)}${side(w.b, rb)}</div>`;
   }
 
+  // ── pop-out list for a side label of the word-pull chart ───────────────
+  const pop = document.getElementById('pop');
+  function showPop(ev, kind, who, p) {
+    const cov = M.coverage || {};
+    const nTxt = (s) => { const n = nodeAt(s, p); const c = (cov[s] || {})[p];
+      return n ? `n=${n.n}${isThin(n) ? ', rough' : ''}` : c ? `n=${c}, not placed` : 'no episodes'; };
+    let html;
+    if (kind === 'g') {
+      const mem = GROUPS[who] || [], gn = gnodeAt(who, p), inAvg = new Set(gn ? gn.members : []);
+      const onMap = mem.filter(s => HIDX[s] !== undefined), off = mem.filter(s => HIDX[s] === undefined);
+      const li = s => `<li>${esc(short(s))} <span class="small">(${HIDX[s] !== undefined ? nTxt(s) : inAvg.has(s) ? 'placed, not on this map' : 'not on this map'})</span></li>`;
+      html = `<h3>${esc(who)}<button type="button" aria-label="Close">×</button></h3>` +
+        `<p class="small">${fmtP(p)}. The group average uses the ${inAvg.size} show${inAvg.size === 1 ? '' : 's'} marked ✓, equally weighted.</p>` +
+        (onMap.length ? `<p><b>On this map</b></p><ul>${onMap.map(s => li(s).replace('<li>', `<li>${inAvg.has(s) ? '✓ ' : ''}`)).join('')}</ul>` : '') +
+        (off.length ? `<p><b>Not on this map</b></p><ul>${off.map(s => li(s).replace('<li>', `<li>${inAvg.has(s) ? '✓ ' : ''}`)).join('')}</ul>` : '');
+    } else {
+      const gs = Object.keys(GROUPS).filter(g => GROUPS[g].includes(who));
+      html = `<h3>${esc(short(who))}<button type="button" aria-label="Close">×</button></h3>` +
+        `<p class="small">${fmtP(p)}: ${nTxt(who)}.</p>` +
+        `<p><b>Belongs to</b></p>` + (gs.length ? `<ul>${gs.map(g => `<li>${esc(g)} <span class="small">(${GROUPS[g].length} shows${gnodeAt(g, p)?.members.includes(who) ? ', counted this period' : ''})</span></li>`).join('')}</ul>` : '<p class="small">No group.</p>');
+    }
+    pop.innerHTML = html; pop.hidden = false;
+    const x = Math.min(ev.clientX, window.innerWidth - pop.offsetWidth - 8), y = Math.min(ev.clientY + 12, window.innerHeight - pop.offsetHeight - 8);
+    pop.style.left = Math.max(8, x) + 'px'; pop.style.top = Math.max(8, y) + 'px';
+    pop.querySelector('button').addEventListener('click', () => { pop.hidden = true; });
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
+  document.addEventListener('mousedown', e => { if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.annotation')) pop.hidden = true; });
+  window.addEventListener('scroll', () => { pop.hidden = true; }, { passive: true });
+
+  // ── shows with few episodes (rail) and the include banner ─────────────
+  const shortN = (s, n) => `${esc(short(s))} (n=${n})`;
+  function drawThin() {
+    const p = state.p, cov = M.coverage || {};
+    const here = NODES.filter(n => n.period === p), placed = new Set(here.map(n => n.show));
+    const thinHere = here.filter(isThin).sort((a, b) => b.n - a.n || a.show.localeCompare(b.show));
+    const few = HOSTS.filter(s => !placed.has(s) && (cov[s] || {})[p] > 0).map(s => [s, cov[s][p]]).sort((a, b) => b[1] - a[1]);
+    const none = HOSTS.filter(s => !placed.has(s) && !((cov[s] || {})[p] > 0)).length;
+    const tierOn = !!M.settings.thin_min_episodes;
+    const list = document.getElementById('thinList');
+    list.innerHTML = thinHere.map(n => CAN_INCLUDE
+      ? `<label><input type="checkbox" data-s="${esc(n.show)}"${included.has(n.show) ? ' checked' : ''}>` +
+        `<span>Include ${esc(short(n.show))}</span><span class="n">n=${n.n}</span></label>`
+      : `<div class="small">${shortN(n.show, n.n)}: faded on the map</div>`).join('');
+    list.querySelectorAll('input').forEach(cb => cb.addEventListener('change', () => {
+      if (cb.checked) included.add(cb.dataset.s); else included.delete(cb.dataset.s);
+      render();
+    }));
+    const elsewhere = [...included].filter(s => !thinHere.some(n => n.show === s));
+    const parts = [];
+    if (elsewhere.length) parts.push(`Also included in other periods: ${elsewhere.map(s => esc(short(s))).join(', ')}.`);
+    if (few.length) parts.push((tierOn ? 'Too few to place (1 or 2 episodes): ' : `Not placed (fewer than ${MIN_EP} episodes): `) +
+      few.map(([s, n]) => shortN(s, n)).join(', ') + '.');
+    if (none) parts.push(`${none} other show${none === 1 ? '' : 's'} in this group had no episodes with 3+ mentions this period.`);
+    if (!thinHere.length && !few.length) parts.unshift('Every show in this group with qualifying episodes is placed.');
+    document.getElementById('fewList').innerHTML = parts.join(' ');
+    document.getElementById('inclReset').hidden = !included.size;
+    drawInclBanner();
+  }
+  function drawInclBanner() {
+    const el = document.getElementById('inclBanner');
+    if (!included.size) { el.hidden = true; return; }
+    const ov = looOverride(state.p);
+    let change = 'No included show is in this period\'s group, so nothing changes here.';
+    if (ov) {
+      const ch = [...ov].filter(([, r]) => r.dflt !== null && r.dflt !== undefined).map(([s, r]) => [s, r.d - r.dflt])
+        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
+      change = ch.length ? 'Largest changes in distance from the group, this period: ' +
+        ch.map(([s, d]) => `${esc(short(s))} ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(3)}`).join(', ') + '.' : '';
+    }
+    el.innerHTML = `<b>Group average now includes:</b> ${[...included].map(s => esc(short(s))).join(', ')} (few episodes). ` +
+      `"Distance from the group" differs from the default, and its intervals are approximate in the periods affected. ${change}` +
+      `<button type="button" id="inclReset2">Reset</button>`;
+    el.hidden = false;
+    document.getElementById('inclReset2').addEventListener('click', resetIncl);
+  }
+  function resetIncl() { included.clear(); render(); }
+  document.getElementById('inclReset').addEventListener('click', resetIncl);
+
   // ── render ────────────────────────────────────────────────────────────
   function render() {
+    if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
     slider.value = state.p;
     document.getElementById('pdates').textContent = fmtP(state.p);
     for (const id of ['A', 'B', 'C', 'D']) document.getElementById('sel' + id).value = state[id.toLowerCase()];
@@ -1208,8 +1544,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       ties: t2 ? `${short(state.a)} vs ${short(state.b)}, and ${short(t2[0])} vs ${short(t2[1])}` : '',
       tri: t ? `is ${short(t.anchor)} closer to ${short(t.o1)} or ${short(t.o2)}?` : '',
       gone: state.ga, gpair: `${state.ga} vs ${state.gb}` }[k];
-    document.getElementById('status').textContent = `Showing: ${who}, ${fmtP(state.p)}, '${TERM}'`;
-    drawMap(); drawTs(); drawWords(); drawPas();
+    const roughSel = selectedShows().map(x => nodeAt(x, state.p)).filter(isThin);
+    document.getElementById('status').textContent = `Showing: ${who}, ${fmtP(state.p)}, '${TERM}'` +
+      (roughSel.length ? ` (few episodes: ${roughSel.map(n => `${short(n.show)} n=${n.n}`).join(', ')})` : '');
+    drawThin(); drawMap(); drawTs(); drawWords(); drawPas();
   }
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   // Theme button: Auto (follows the computer) -> Light -> Dark. Remembered in this browser if possible.
