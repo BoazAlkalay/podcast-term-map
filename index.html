@@ -110,6 +110,9 @@ input[type=range] { width: 100%; }
   padding: 1px 6px; border-radius: 4px; max-width: 45%; white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; pointer-events: auto; z-index: 2; }
 .axl b { color: var(--text); font-weight: 600; }
+.axl { cursor: pointer; } .axl:hover { color: var(--text); text-decoration: underline dotted; }
+.aibadge { font-size: 10px; border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; margin: 0 3px; color: var(--muted); }
+#pop ol.ax { margin: 2px 0 8px; padding-left: 22px; } #pop ol.ax li { margin: 0; }
 #axL { left: 0; top: 50%; transform: translateY(-50%); }
 #axR { right: 0; top: 50%; transform: translateY(-50%); text-align: right; }
 #axT { top: 0; left: 50%; transform: translateX(-50%); }
@@ -151,6 +154,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   <div id="hdrCtl">
     <span class="small">Explanations</span>
     <span class="seg" role="group" aria-label="Explanation level">
+      <button type="button" id="explOff" aria-pressed="false">Hidden</button>
       <button type="button" id="explPlain" aria-pressed="true">Plain</button>
       <button type="button" id="explTech" aria-pressed="false">Technical</button></span>
     <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
@@ -173,6 +177,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       <input id="slider" type="range" min="0" max="0" step="1">
       <div class="val" id="pdates"></div>
       <div id="partial" hidden></div>
+      <div id="early" class="small" hidden></div>
       <div class="btnrow">
         <button id="prev" type="button" aria-label="Previous period">◀</button>
         <button id="play" type="button">▶ Play</button>
@@ -225,8 +230,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       </select></label>
       <span id="axPick" hidden><label>X <select id="axX"></select></label> <label>Y <select id="axY"></select></label></span>
       <label>Trail <select id="trailSel" title="How many earlier periods to draw for each selected show or group">
-        <option value="all">All periods</option><option value="4">Last 4</option><option value="2">Last 2</option>
+        <option value="all">All periods</option><option value="4" selected>Last 4</option><option value="2">Last 2</option>
         <option value="1">Last 1</option><option value="0">None</option></select></label>
+      <label id="axLabWrap" hidden>Axis labels <select id="axLabSel" title="Edge words, or an AI-written summary of them (click an axis label for details)">
+        <option value="ai">Interpreted (AI)</option><option value="words">Words</option></select></label>
       <label>Labels <select id="labelSel" title="When show names appear on the map">
         <option value="hover">On hover</option><option value="all">All</option></select></label>
       <span class="chip" id="mapChip">Compared with: all placed shows</span>
@@ -243,7 +250,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       <b>Relative to the pack:</b> first removes what every show did together that period (usually the news cycle), so trails show who moved compared with the others.<br>
       <b>Anchored axes:</b> the directions are fixed in advance by two lists of words (for example diplomacy words vs military words), so a position means the same thing in every period. These lists are drafts.<br>
       <b>Trails</b> show where a selected show was in earlier periods; the hollow ring marks the period change is measured from.
-      There are no lines between different shows, because a line would suggest a relationship such as guests or citations.<br>
+      There are no lines between different shows, because a line would suggest a relationship such as guests or citations.
+      The dashed lines cross at the average of all dots, so the edge words describe the two directions away from the middle.
+      Click an edge label to see all the words behind it. "Interpreted (AI)" labels are a model's short summary of those words, marked AI: a reading aid, not a finding.<br>
+      <b>Trail dots</b> are labelled t−1, t−2… (one period earlier, two periods earlier); hover one for its dates and words.<br>
       <b>Diamonds</b> (group mode) mark a group's average, drawn where its shows are on average.<br>
       Click a dot for Show A, another for Show B, empty space to clear; Shift-click for Show C.
       Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scroll to zoom; Ctrl + scroll scrolls the page.
@@ -254,7 +264,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       <b>Relative to the pack:</b> μ_i − m_p (m_p = equal-weight mean of the shows placed in period p, needs k ≥ 3), noise Var(μ_i − m_p) = v_i(1 − 2/k) + Σv/k²; within-period distances unchanged.<br>
       <b>Anchored axes:</b> SemAxis-style axis a = mean unit vector of the "pos" anchors − that of the "neg" anchors, normalised; score = μ·a (linear, unbiased), bootstrap intervals. Draft anchor lists.<br>
       Cells with 3-7 episodes (faded) are placed out of sample (Gower 1968) without refitting the frame. Group diamonds = mean of member coordinates (exact for anchored axes; for MDS, Gower placement of the group mean differs from it only through the v terms).<br>
-      No edges between shows by design (an edge would read as a relation). Interaction: click = A/B, Shift = C, Alt = pin label; Ctrl + wheel scrolls the page.
+      AI axis labels (label_axes.py, methods log M6): a Claude model labels each end from the up-to-25 word-pull words (cosine ratio vs the opposite end, regression direction ± 2 SD), prompt and model stored with the labels; click a label for the words, ratios and the model's justification.<br>
+      No edges between shows by design (an edge would read as a relation); trail edges are a show's own path, labelled t−k. Interaction: click = A/B, Shift = C, Alt = pin label; Ctrl + wheel scrolls the page.
       </span>
     </details>
     <div id="showSel">
@@ -360,6 +371,9 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       return;
     }
   }
+  // AI-interpreted axis labels (label_axes.py): optional file next to the bundle.
+  if (CHOSEN) await loadScript(BASE + 'axislabels.js');
+  const AX_AI = window.AXISLABELS && window.AXISLABELS.maps ? window.AXISLABELS : null;
   const PAS_SRC = CHOSEN ? BASE + 'passages.js' : 'data/passages_latest.js';
   const WX_SRC = CHOSEN ? BASE + 'wordex.js' : 'data/wordex_latest.js';
   const M = B.manifest, NODES = B.nodes, EDGES = B.edges;
@@ -547,7 +561,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   const countIn = p => solidNodes.filter(n => n.period === p).length;
   const fullish = placedPeriods.filter(p => countIn(p) >= 3);
   const state = { p: (fullish.length ? fullish : placedPeriods).slice(-1)[0], mode: 'shows', ref: '',
-    a: '', b: '', c: '', d: '', ga: '', gb: '', zoomAll: false, zoomSel: false, trail: 'all', labels: 'hover', wP: null, wPfor: null, word: null, mapMode: 'overall', axX: 0, axY: 1, view: { ts: {}, words: {}, pas: {} } };
+    a: '', b: '', c: '', d: '', ga: '', gb: '', zoomAll: false, zoomSel: false, trail: '4', labels: 'hover', axLab: 'ai', wP: null, wPfor: null, word: null, mapMode: 'overall', axX: 0, axY: 1, view: { ts: {}, words: {}, pas: {} } };
   // Open with two shows selected (the two placed in the most periods), so every panel has content.
   const nPer = {};
   solidNodes.forEach(n => { nPer[n.show] = (nPer[n.show] || 0) + 1; });
@@ -673,6 +687,9 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     return { x: (c[0] - f.x0) / f.span * SCALE, y: -(c[1] - f.y0) / f.span * SCALE }; };
   const posXY = c => { const f = getFrame(); return { x: (c[0] - f.x0) / f.span * SCALE, y: -(c[1] - f.y0) / f.span * SCALE }; };
   // Earlier periods to draw for a selected show or group (state.trail: 'all' or a number).
+  // Short label on trail dots ("t−1") when the trail is limited; "All periods" would be too crowded.
+  const tLabel = p => state.trail === 'all' ? '' : (p < state.p ? `t−${state.p - p}` : `t+${p - state.p}`);
+  const weeksApart = p => Math.round(Math.abs(Date.parse(midP(state.p)) - Date.parse(midP(p))) / (7 * 864e5));
   const trailPts = pts => {
     if (state.trail === 'all') return pts;
     const n = +state.trail;
@@ -713,11 +730,18 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         'border-color': css('--surface'), 'border-width': z(2), color: css('--text'), 'font-weight': 700 } },
       { selector: 'node.ghost.gtrail', style: { shape: 'diamond', width: z(8), height: z(8) } },
       { selector: 'node.pinned', style: { color: css('--text'), 'font-weight': 600 } },
-      { selector: 'node.ghost', style: { width: z(6), height: z(6), 'background-color': 'data(color)', 'border-width': 0,
-        opacity: 0.45, label: '', events: 'no' } },
+      { selector: 'node.A', style: { color: css('--a') } }, { selector: 'node.B', style: { color: css('--b') } },
+      { selector: 'node.C', style: { color: css('--c') } }, { selector: 'node.D', style: { color: css('--d') } },
+      { selector: 'node.grp', style: { color: 'data(color)' } },
+      { selector: 'node.ghost', style: { width: z(7), height: z(7), 'background-color': 'data(color)', 'border-width': 0,
+        opacity: 0.55, label: 'data(tl)', 'font-size': z(9), color: 'data(color)', 'text-valign': 'bottom', 'text-margin-y': z(2),
+        'text-background-opacity': 0 } },
       { selector: 'node.ghost.ref', style: { width: z(11), height: z(11), 'background-opacity': 0, 'border-width': z(2),
         'border-color': 'data(color)', opacity: 0.9 } },
       { selector: 'edge', style: { width: z(2), 'line-color': css('--edge'), 'curve-style': 'straight' } },
+      { selector: 'node.axnode', style: { width: 1, height: 1, opacity: 0, label: '', events: 'no' } },
+      { selector: 'edge.axis', style: { width: z(1), 'line-color': css('--muted'), 'line-style': 'dashed',
+        'line-dash-pattern': [z(4), z(4)], opacity: 0.55, events: 'no', 'z-index': 0 } },
       { selector: 'edge.trail', style: { width: z(2), 'line-color': 'data(color)', opacity: 0.5, events: 'no',
         'curve-style': 'straight', 'target-arrow-shape': 'triangle', 'target-arrow-color': 'data(color)',
         'arrow-scale': 0.8 } }
@@ -731,7 +755,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       ev.target.toggleClass('pinned', pinned.has(id));
       declutter(); return;
     }
-    if (state.mode !== 'shows') return;
+    if (state.mode !== 'shows' || ev.target.id().startsWith('_')) return;
     const s = ev.target.id();
     if (ev.originalEvent && ev.originalEvent.shiftKey && state.a && state.b) {
       state.c = s === state.c ? '' : s; state.d = ''; render(); return;
@@ -759,18 +783,27 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   box.addEventListener('mouseleave', () => [...hoverKeep.keys()].forEach(fadeLabel));
   let dz = null;
   cy.on('zoom', () => { clearTimeout(dz); dz = setTimeout(() => { cyStyle(); declutter(); }, 60); });
+  // Edge labels follow the axis lines: left/right labels at the height of the x-axis, top/bottom at the y-axis.
+  function placeAxisLabels() {
+    const o = cy.getElementById('_ax|o'); if (!o.length) return;
+    const r = o.renderedPosition(), w = box.clientWidth, h = box.clientHeight;
+    const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    for (const id of ['axL', 'axR']) document.getElementById(id).style.top = cl(r.y, 14, h - 14) + 'px';
+    for (const id of ['axT', 'axB']) document.getElementById(id).style.left = cl(r.x, 60, w - 60) + 'px';
+  }
+  cy.on('pan zoom', placeAxisLabels);
 
   // Hide labels that would overlap; selected shows always keep theirs.
   function declutter() {
     if (state.labels === 'hover') {
-      cy.nodes().not('.ghost').forEach(n => {
+      cy.nodes().not('.ghost, .axnode').forEach(n => {
         const on = n.hasClass('sel') || pinned.has(n.id()) || hoverKeep.has(n.id());
         n.data('label', on ? (n.data('long') || n.data('full') || '') : '');
       });
       return;
     }
     const fs = 11, placed = [];
-    const ns = cy.nodes().not('.ghost').toArray().sort((x, y) =>
+    const ns = cy.nodes().not('.ghost, .axnode').toArray().sort((x, y) =>
       (y.hasClass('sel') - x.hasClass('sel')) || (y.data('n') - x.data('n')));
     for (const n of ns) {
       const full = n.data('full'), p = n.renderedPosition();
@@ -791,6 +824,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   if (!MAP_AXES.centred) mapModeSel.querySelector('option[value="centred"]').disabled = true;
   mapModeSel.addEventListener('change', () => { state.mapMode = mapModeSel.value; fitted = false; render(); });
   document.getElementById('trailSel').addEventListener('change', e => { state.trail = e.target.value; render(); });
+  document.getElementById('trailSel').value = state.trail;
   const labelSel = document.getElementById('labelSel');
   try { const v = localStorage.getItem('dashLabels'); if (v === 'all' || v === 'hover') state.labels = v; } catch (e) {}
   labelSel.value = state.labels;
@@ -838,11 +872,15 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       note.innerHTML = `Draft axes, not yet validated. X ${desc(ax)}. Y ${desc(ay)}.`;
     } else {
       const lab = MAP_AXES[state.mapMode === 'centred' ? 'centred' : 'overall'];
+      const ai = state.axLab === 'ai' && AX_AI && AX_AI.maps[state.mapMode === 'centred' ? 'centred' : 'overall'];
+      const end = (k, side) => ai && ai[k] && ai[k][side] && ai[k][side].label
+        ? `<b>${esc(ai[k][side].label)}</b><span class="aibadge">AI</span>` : words(lab[k][side]);
+      const tt = 'Click for the words behind this label';
       if (lab) {
-        set('axL', `← ${words(lab[0].neg)}`, (lab[0].neg || []).join(', '));
-        set('axR', `${words(lab[0].pos)} →`, (lab[0].pos || []).join(', '));
-        set('axT', `↑ ${words(lab[1].pos)}`, (lab[1].pos || []).join(', '));
-        set('axB', `↓ ${words(lab[1].neg)}`, (lab[1].neg || []).join(', '));
+        set('axL', `← ${end(0, 'neg')}`, tt);
+        set('axR', `${end(0, 'pos')} →`, tt);
+        set('axT', `↑ ${end(1, 'pos')}`, tt);
+        set('axB', `↓ ${end(1, 'neg')}`, tt);
       } else ['axL', 'axR', 'axT', 'axB'].forEach(id => set(id, ''));
       const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
       note.textContent = `Edge words describe what each end of an axis leans toward. This picture keeps ` +
@@ -887,7 +925,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       const pts = trailPts(NODES.filter(n => n.show === s && hasXY(n)).sort((a, b) => a.period - b.period));
       const color = colorOf(s);
       pts.forEach((n, i) => {
-        if (n.period !== state.p) els.push({ group: 'nodes', data: { id: `_g|${s}|${n.period}`, color, n: 0, full: '' },
+        if (n.period !== state.p) els.push({ group: 'nodes', data: { id: `_g|${s}|${n.period}`, color, n: 0, full: '', tl: tLabel(n.period) },
           position: pos(n), classes: 'ghost' + (n.period === ref ? ' ref' : '') });
         if (i > 0) {
           const a = pts[i - 1].period === state.p ? s : `_g|${s}|${pts[i - 1].period}`;
@@ -908,7 +946,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         const id = q.period === state.p ? `_G|${g}` : `_Gg|${g}|${q.period}`;
         els.push(q.period === state.p
           ? { group: 'nodes', data: { id, label: `${g} (average)`, full: `${g} (average)`, n: 1e6, color }, position: posXY(q.c), classes: `grp sel ${cls}` }
-          : { group: 'nodes', data: { id, color, n: 0, full: '' }, position: posXY(q.c), classes: 'ghost gtrail' });
+          : { group: 'nodes', data: { id, color, n: 0, full: '', tl: tLabel(q.period) }, position: posXY(q.c), classes: 'ghost gtrail' });
         if (i > 0) { const prev = pts[i - 1].period === state.p ? `_G|${g}` : `_Gg|${g}|${pts[i - 1].period}`;
           els.push({ group: 'edges', data: { id: `_Gt|${g}|${i}`, source: prev, target: id, color }, classes: 'trail' }); }
       });
@@ -916,6 +954,19 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     // No lines between different shows: in a network picture a line reads as a relationship,
     // which these are not. Only each selected show's own trail through time is drawn.
     // Trails whose current-period end is missing would point at nothing: drop those edges.
+    // Axis lines crossing at the average of all dots (all periods; the MDS origin for the similarity maps),
+    // spanning every period's dots plus a margin.
+    const allXY = NODES.filter(n => !isThin(n)).map(coords).filter(Boolean);
+    if (allXY.length) {
+      const xs = allXY.map(c => c[0]), ys = allXY.map(c => c[1]);
+      const mx = xs.reduce((a, v) => a + v, 0) / xs.length, my = ys.reduce((a, v) => a + v, 0) / ys.length;
+      const pad = 0.08 * Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+      const x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+      [['_ax|o', mx, my], ['_ax|xl', x0, my], ['_ax|xr', x1, my], ['_ax|yb', mx, y0], ['_ax|yt', mx, y1]].forEach(([id, x, y]) =>
+        els.push({ group: 'nodes', data: { id, n: 0, full: '' }, position: posXY([x, y]), classes: 'axnode' }));
+      els.push({ group: 'edges', data: { id: '_axe|x', source: '_ax|xl', target: '_ax|xr' }, classes: 'axis' },
+               { group: 'edges', data: { id: '_axe|y', source: '_ax|yb', target: '_ax|yt' }, classes: 'axis' });
+    }
     const ids = new Set(els.filter(e => e.group === 'nodes').map(e => e.data.id));
     cy.elements().remove();
     cy.add(els.filter(e => e.group === 'nodes' || (ids.has(e.data.source) && ids.has(e.data.target))));
@@ -933,7 +984,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         const ghosts = cy.add(NODES.filter(hasXY).map((n, i) => ({ group: 'nodes', data: { id: '_f' + i, full: '', n: 0 }, position: pos(n) })));
         cy.fit(ghosts, 30); cy.remove(ghosts);
       } else if (cy.nodes().length) {
-        cy.fit(cy.elements(), 50);
+        cy.fit(cy.elements().not('.axnode, .axis'), 50);
         if (cy.zoom() > 2.5) { cy.zoom(2.5); cy.center(cy.nodes()); }
       }
       fitted = true; lastFit = fitKey;
@@ -941,6 +992,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     cyStyle();
     declutter();
     drawMapExtras(here.length);
+    placeAxisLabels();
     const want = state.mode === 'shows' ? sel : [];
     const missing = want.filter(s => !present.has(s));
     if (!here.length && state.mapMode === 'centred') {
@@ -1512,13 +1564,47 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         `<p class="small">${fmtP(p)}: ${nTxt(who)}.</p>` +
         `<p><b>Belongs to</b></p>` + (gs.length ? `<ul>${gs.map(g => `<li>${esc(g)} <span class="small">(${GROUPS[g].length} shows${gnodeAt(g, p)?.members.includes(who) ? ', counted this period' : ''})</span></li>`).join('')}</ul>` : '<p class="small">No group.</p>');
     }
+    openPop(ev, html);
+  }
+  function openPop(ev, html) {
     pop.innerHTML = html; pop.hidden = false;
     const x = Math.min(ev.clientX, window.innerWidth - pop.offsetWidth - 8), y = Math.min(ev.clientY + 12, window.innerHeight - pop.offsetHeight - 8);
     pop.style.left = Math.max(8, x) + 'px'; pop.style.top = Math.max(8, y) + 'px';
     pop.querySelector('button').addEventListener('click', () => { pop.hidden = true; });
   }
+  // Click an axis label: the words behind it, with how strongly each leans to this end, and the AI reading.
+  const AX_SIDE = { axL: [0, 'neg', 'pos'], axR: [0, 'pos', 'neg'], axT: [1, 'pos', 'neg'], axB: [1, 'neg', 'pos'] };
+  function axisPop(ev, id) {
+    const [k, side, other] = AX_SIDE[id];
+    if (state.mapMode === 'anchored') {
+      const a = AXES[k === 0 ? state.axX : state.axY];
+      const lab = side === 'neg' ? a.neg_label : a.pos_label;
+      return openPop(ev, `<h3>${esc(lab)}<button type="button" aria-label="Close">×</button></h3>` +
+        `<p class="small">Anchored axis "${esc(a.name)}" (draft). Defined in advance by these anchor words:</p><p>${a[side].map(esc).join(', ')}</p>` +
+        ((side === 'neg' ? a.ends_neg : a.ends_pos) ? `<p class="small">Corpus words that sit furthest toward this end: ${(side === 'neg' ? a.ends_neg : a.ends_pos).map(esc).join(', ')}</p>` : ''));
+    }
+    const mk = state.mapMode === 'centred' ? 'centred' : 'overall', lab = MAP_AXES[mk] && MAP_AXES[mk][k]; if (!lab) return;
+    const ai = AX_AI && AX_AI.maps[mk] && AX_AI.maps[mk][k];
+    const lean = (sd, i) => { const r = lab[sd + '_r'] && lab[sd + '_r'][i]; return r ? ` <span class="small">${(r < 1 ? 1 / r : r).toFixed(2)}×</span>` : ''; };
+    const list = sd => `<ol class="ax">${(lab[sd] || []).map((w, i) => `<li>${esc(w)}${lean(sd, i)}</li>`).join('')}</ol>`;
+    const dirName = { neg: k === 0 ? 'left' : 'bottom', pos: k === 0 ? 'right' : 'top' };
+    let html = `<h3>${ai && ai[side] ? esc(ai[side].label) + '<span class="aibadge">AI</span>' : `Axis ${k + 1}, ${dirName[side]} end`}<button type="button" aria-label="Close">×</button></h3>`;
+    if (ai) html += `<p class="small">AI interpretation of the words below, not a finding. Opposite end: <b>${esc(ai[other] ? ai[other].label : '?')}</b>.</p>` +
+      (ai.why ? `<p><b>Why:</b> ${esc(ai.why)}</p>` : '') +
+      `<p class="small">${esc(AX_AI.model || '')}${AX_AI.created ? ', ' + esc(AX_AI.created.slice(0, 10)) : ''}${AX_AI.prompt_version ? ', prompt ' + esc(AX_AI.prompt_version) : ''}.</p>`;
+    html += `<p><b>Words at this end</b> <span class="small">(closest first${lab[side + '_r'] ? '; × = how much closer to this end than the other' : ''})</span></p>${list(side)}` +
+      `<p><b>Opposite end</b></p>${list(other)}` +
+      `<p class="small">These words describe where the axis points in the space of how shows use '${esc(TERM)}'; the map keeps only part of the variation.</p>`;
+    openPop(ev, html);
+  }
+  for (const id of Object.keys(AX_SIDE)) document.getElementById(id).addEventListener('click', ev => axisPop(ev, id));
+  if (AX_AI) {
+    document.getElementById('axLabWrap').hidden = false;
+    const sel = document.getElementById('axLabSel');
+    sel.addEventListener('change', () => { state.axLab = sel.value; drawMapExtras(); });
+  } else state.axLab = 'words';
   document.addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
-  document.addEventListener('mousedown', e => { if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.annotation')) pop.hidden = true; });
+  document.addEventListener('mousedown', e => { if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.annotation') && !e.target.closest('.axl')) pop.hidden = true; });
   window.addEventListener('scroll', () => { pop.hidden = true; }, { passive: true });
 
   // ── shows with few episodes (rail) and the include banner ─────────────
@@ -1571,21 +1657,38 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   document.getElementById('inclReset').addEventListener('click', resetIncl);
 
   // ── explanation level (Plain / Technical), remembered in this browser ─────
+  // Explanations are open by default (Plain); "Hidden" collapses them (each "?" still opens its own).
   const setExpl = lvl => {
+    document.querySelectorAll('details.help').forEach(d => { d.open = lvl !== 'off'; });
+    if (lvl === 'off') { document.getElementById('explOff').setAttribute('aria-pressed', true);
+      ['explPlain', 'explTech'].forEach(id => document.getElementById(id).setAttribute('aria-pressed', false));
+      try { localStorage.setItem('dashExplOpen', 'no'); } catch (e) {} return; }
+    try { localStorage.setItem('dashExplOpen', 'yes'); } catch (e) {}
+    document.getElementById('explOff').setAttribute('aria-pressed', false);
     document.documentElement.setAttribute('data-expl', lvl);
     document.getElementById('explPlain').setAttribute('aria-pressed', lvl === 'plain');
     document.getElementById('explTech').setAttribute('aria-pressed', lvl === 'tech');
     try { localStorage.setItem('dashExpl', lvl); } catch (e) {}
   };
   let expl = 'plain';
-  try { expl = localStorage.getItem('dashExpl') === 'tech' ? 'tech' : 'plain'; } catch (e) {}
+  try { expl = localStorage.getItem('dashExpl') === 'tech' ? 'tech' : 'plain';
+    if (localStorage.getItem('dashExplOpen') === 'no') { document.documentElement.setAttribute('data-expl', expl); expl = 'off'; } } catch (e) {}
   setExpl(expl);
+  document.getElementById('explOff').addEventListener('click', () => setExpl('off'));
   document.getElementById('explPlain').addEventListener('click', () => setExpl('plain'));
   document.getElementById('explTech').addEventListener('click', () => setExpl('tech'));
 
   // ── hover words: a small card next to the pointer on the map ──────────
   const tip = document.getElementById('tip');
   function tipHtml(id) {
+    if (id.startsWith('_g|') || id.startsWith('_Gg|')) {           // a trail dot: an earlier (or later) period
+      const parts = id.split('|'), who = parts[1], p = +parts[2], grp = id.startsWith('_Gg|');
+      const rel = p < state.p ? `t−${state.p - p} · ${weeksApart(p)} weeks earlier` : `t+${p - state.p} · ${weeksApart(p)} weeks later`;
+      const n = grp ? gnodeAt(who, p) : nodeAt(who, p);
+      return `<b>${esc(grp ? who + ' (average)' : who)}</b><span class="small">${rel} (${fmtP(p)})</span>` +
+        (n ? `<span class="small">${grp ? n.members.length + ' shows, ' : ''}${n.n} episodes · top words: ${n.top_words.slice(0, 5).map(esc).join(', ')}</span>` : '') +
+        `<span class="small">The arrow shows this show's own path through time, not a link to another show.</span>`;
+    }
     if (id.startsWith('_G|')) {
       const g = id.slice(3), gn = gnodeAt(g, state.p); if (!gn) return '';
       return `<b>${esc(g)}</b> (group average)<span class="small">${gn.members.length} shows, ${gn.n} episodes</span>` +
@@ -1600,7 +1703,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   }
   const moveTip = e => { const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
     const y = Math.min(e.clientY + 14, window.innerHeight - tip.offsetHeight - 8); tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
-  cy.on('mouseover', 'node', ev => { const n = ev.target; if (n.hasClass('ghost')) return;
+  cy.on('mouseover', 'node', ev => { const n = ev.target; if (n.hasClass('axnode')) return;
     const h = tipHtml(n.id()); if (!h) return; tip.innerHTML = h; tip.hidden = false; if (ev.originalEvent) moveTip(ev.originalEvent); });
   cy.on('mousemove', 'node', ev => { if (!tip.hidden && ev.originalEvent) moveTip(ev.originalEvent); });
   cy.on('mouseout', 'node', () => { tip.hidden = true; });
@@ -1611,6 +1714,11 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
     slider.value = state.p;
     document.getElementById('pdates').textContent = fmtP(state.p);
+    // Before the original corpus start only the backfilled shows have episodes (methods log M5).
+    const CORPUS_START = '2022-07-12', earlyEl = document.getElementById('early');
+    earlyEl.hidden = periods[state.p].start >= CORPUS_START;
+    if (!earlyEl.hidden) earlyEl.innerHTML = lv([`Before July 2022 only the shows added in the back-catalogue download have episodes: the Daily Wire shows, Candace Owens (Daily Wire era), Bongino, Levin, Rubin and Crowder. "The group" in these years means those shows only.`,
+      `Pre-${CORPUS_START} periods contain only the backfill (DW history from Mar 2021, Candace Owens (DW), Bongino, Levin, Rubin, Crowder, Klavan). Group means m₋ᵢ and the pack are computed over that subset, so levels are not comparable with later periods' compositions.`]);
     const partialEl = document.getElementById('partial');
     const isPartial = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[state.p].end > M.snapshot;
     partialEl.hidden = !isPartial;
