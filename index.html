@@ -4,55 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Podcast Term Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
 <style>
 :root {
   color-scheme: light;
-  --bg: #f4f3ef; --surface: #fcfcfb; --border: #dcdad3;
-  --text: #0b0b0b; --text-2: #52514e; --muted: #85837c;
-  --node: #b9b7af; --node-edge: #6e6c66; --edge: #c9c7bf;
+  --bg: #f4f5f2; --surface: #fbfbf9; --border: #d6d9d2;
+  --text: #1b2230; --text-2: #4a5262; --muted: #7d8494;
+  --node: #b7bcb8; --node-edge: #687080; --edge: #c8ccc6;
   --a: #2a78d6; --b: #eb6834; --c: #6250d6; --d: #1baf7a;
-  --shade: rgba(42,120,214,0.10); --mark: #fde9a8;
-  --warn-bg: #fff1d6; --warn-text: #6b4a00;
+  --shade: rgba(42,120,214,0.10); --mark: #fde9a8; --onair: #c8102e;
+  --warn-bg: #fdf0d8; --warn-text: #6b4a00;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #121211; --surface: #1a1a19; --border: #33322f;
-    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8d85;
-    --node: #5b5a55; --node-edge: #a9a79f; --edge: #3d3c38;
+    --bg: #13171e; --surface: #1a1f28; --border: #303744;
+    --text: #e8ebf0; --text-2: #b6bdc9; --muted: #8890a0;
+    --node: #59606d; --node-edge: #a3aab6; --edge: #39404c;
     --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
-    --shade: rgba(57,135,229,0.16); --mark: #5a4a12;
+    --shade: rgba(57,135,229,0.16); --mark: #5a4a12; --onair: #e5484d;
     --warn-bg: #3a2c0a; --warn-text: #f3d48a;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #121211; --surface: #1a1a19; --border: #33322f;
-  --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8d85;
-  --node: #5b5a55; --node-edge: #a9a79f; --edge: #3d3c38;
+  --bg: #13171e; --surface: #1a1f28; --border: #303744;
+  --text: #e8ebf0; --text-2: #b6bdc9; --muted: #8890a0;
+  --node: #59606d; --node-edge: #a3aab6; --edge: #39404c;
   --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
-  --shade: rgba(57,135,229,0.16); --mark: #5a4a12;
+  --shade: rgba(57,135,229,0.16); --mark: #5a4a12; --onair: #e5484d;
   --warn-bg: #3a2c0a; --warn-text: #f3d48a;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text);
-  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  font: 15px/1.5 "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums; }
 header { padding: 14px 16px 4px; position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 #hdrCtl { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 :root[data-expl="plain"] .lv-tech, :root:not([data-expl]) .lv-tech, :root[data-expl="tech"] .lv-plain { display: none; }
 #partial { font-size: 12px; color: var(--warn-text); background: var(--warn-bg); border-radius: 4px; padding: 3px 6px; margin-top: 4px; }
 #tip { position: fixed; z-index: 15; pointer-events: none; max-width: 300px; background: var(--surface); color: var(--text);
-  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  border: 1px solid var(--border); border-radius: 3px; padding: 6px 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
 #tip b { font-weight: 700; } #tip .small { display: block; margin-top: 2px; }
 @media (max-width: 700px) { #hdrCtl { margin-left: 0; flex-wrap: wrap; } }
-h1 { font-size: 18px; margin: 0 0 2px; }
+h1 { font-size: 24px; line-height: 1.2; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 #status { color: var(--text-2); }
-#banner { display: none; margin: 8px 16px 0; padding: 8px 12px; border-radius: 6px;
+#banner { display: none; margin: 8px 16px 0; padding: 8px 12px; border-radius: 2px;
   background: var(--warn-bg); color: var(--warn-text); font-weight: 600; }
-#inclBanner { margin: 8px 16px 0; padding: 8px 12px; border-radius: 6px; background: var(--warn-bg);
+#inclBanner { margin: 8px 16px 0; padding: 8px 12px; border-radius: 2px; background: var(--warn-bg);
   color: var(--warn-text); font-size: 13px; }
 #inclBanner b { font-weight: 700; }
 #inclBanner button { margin-left: 8px; }
@@ -64,8 +67,8 @@ h1 { font-size: 18px; margin: 0 0 2px; }
 #wordsPer button[aria-pressed="true"] small { color: inherit; opacity: 0.8; }
 #wordsPer button:disabled { opacity: 0.4; cursor: default; }
 #pop { position: fixed; z-index: 20; max-width: 340px; max-height: 60vh; overflow: auto; background: var(--surface);
-  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+  border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; font-size: 13px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
 #pop h3 { font-size: 13px; margin: 0 0 4px; display: flex; gap: 8px; align-items: center; }
 #pop h3 button { margin-left: auto; padding: 0 6px; }
 #pop ul { margin: 2px 0 8px; padding-left: 18px; } #pop p { margin: 4px 0; }
@@ -77,7 +80,9 @@ button.primary { background: var(--text); color: var(--surface); border-color: v
 #introShow { align-self: flex-start; font-size: 12px; }
 #controls { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: flex-start; }
 #controls .ctl { min-width: 150px; }
-#controls .ctl-period { flex: 1 1 320px; max-width: 520px; }
+#controls .ctl-period { order: 9; flex: 1 1 100%; max-width: none; border-top: 1px solid var(--border); padding-top: 12px; }
+#controls .ctl-period .val { display: inline; margin-left: 10px; }
+#controls .ctl-period label.f { display: inline; }
 #controls select.rsel, #refSel { min-width: 150px; font-weight: 600; }
 .periodrow { display: flex; gap: 6px; align-items: center; }
 .periodrow input[type=range] { flex: 1; }
@@ -100,35 +105,59 @@ details.pair2[open] { display: block; flex-basis: 100%; }
 #tabs { position: sticky; top: 0; z-index: 10; display: flex; gap: 4px; align-items: flex-end; flex-wrap: wrap;
   background: var(--bg); padding: 8px 0 0; border-bottom: 1px solid var(--border); }
 #tabs button[role=tab] { border-radius: 6px 6px 0 0; border-bottom: 0; padding: 6px 14px; background: transparent; color: var(--text-2); }
-#tabs button[role=tab][aria-selected=true] { background: var(--surface); color: var(--text); font-weight: 700;
-  box-shadow: inset 0 3px 0 var(--a); }
+#tabs button[role=tab][aria-selected=true] { color: var(--text); font-weight: 700; }
 #status { margin-left: auto; font-size: 12px; color: var(--text-2); padding: 0 4px 6px; max-width: 55%; text-align: right; }
-.tabpanel { border-top-left-radius: 0; min-height: 300px; }
+.tabpanel { border-top: 0; min-height: 300px; padding-top: 16px; }
+#mapPanel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; }
+#intro { border-top: 0; padding: 6px 0 4px; }
+#intro h2 { display: none; }
+#intro p:first-of-type { font-size: 17px; line-height: 1.5; }
+#controls { padding: 12px 0; }
+#tabs { padding-top: 6px; }
+#tabs button[role=tab] { border: 0; border-radius: 0; background: transparent; padding: 8px 14px 9px; font-size: 15px; }
+#tabs button[role=tab][aria-selected=true] { background: transparent; box-shadow: inset 0 -3px 0 var(--text); }
+#tabs button[role=tab]:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+/* episode strip under the period slider: one bar per period, height = qualifying episodes */
+.periodcol { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#epStrip { display: block; width: 100%; height: 30px; cursor: pointer; overflow: visible; }
+#epStrip rect { fill: var(--node); }
+#epStrip rect.cur { fill: var(--onair); }
+#epStrip rect.part { opacity: .5; }
+#slider { -webkit-appearance: none; appearance: none; background: transparent; height: 22px; margin: 8px 0 2px; }
+#slider::-webkit-slider-runnable-track { height: 2px; background: var(--border); }
+#slider::-moz-range-track { height: 2px; background: var(--border); }
+#slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -7px; border-radius: 50%; background: var(--onair); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--onair); }
+#slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--onair); border: 2px solid var(--surface); }
+#controls .ctl:not(.ctl-period) > span:not(.seg) { display: block; margin-top: 3px; }
+#pdates { font-size: 16px; }
+.stripnote { font-size: 12px; color: var(--muted); }
 #methodsPanel h3 { font-size: 14px; margin: 16px 0 4px; }
 #methodsPanel p { max-width: 80ch; margin: 0; }
 .ptag { font-size: 11px; border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; margin-right: 6px; color: var(--text-2); }
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  padding: 12px; min-width: 0; }
+.panel { background: transparent; border: 0; border-top: 1px solid var(--border); border-radius: 0;
+  padding: 14px 0; min-width: 0; }
 
 .ph { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .ph h2 { font-size: 14px; margin: 0; }
 .ph select.view { font-weight: 700; max-width: 100%; }
-.chip { font-size: 12px; color: var(--text-2); border: 1px solid var(--border);
-  border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.chip { font-size: 12px; color: var(--muted); border: 0;
+  padding: 0; white-space: nowrap; }
 details.help { margin: 0 0 8px; color: var(--text-2); font-size: 13px; }
+#mapHelp > summary { width: auto; border: 0; padding: 0; font-weight: 700; color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; display: inline-block; text-align: left; height: auto; line-height: 1.4; }
 details.help summary { cursor: pointer; list-style: none; border: 1px solid var(--border);
-  border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 18px; font-weight: 700; }
+  border-radius: 3px; width: 20px; height: 20px; text-align: center; line-height: 18px; font-weight: 700; }
 details.help summary::-webkit-details-marker { display: none; }
 details.help[open] summary { margin-bottom: 4px; }
-label.f { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 2px; }
+label.f { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .val { font-weight: 600; }
-select, button { font: inherit; color: var(--text); background: var(--bg);
-  border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; }
+select, button { font: inherit; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 3px; padding: 4px 6px; }
 button { cursor: pointer; }
+button:hover:not(:disabled), select:hover { border-color: var(--text-2); }
 input[type=range] { width: 100%; }
 .btnrow { display: flex; gap: 6px; margin-top: 6px; }
 #refSel { width: 100%; }
-.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 .seg button { border: 0; border-radius: 0; background: transparent; padding: 3px 10px; }
 .seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
 .selrow { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
@@ -164,7 +193,8 @@ table.trend tr.cur td { background: var(--shade); }
 table.trend td:first-child { white-space: nowrap; color: var(--text-2); }
 ul.pas { list-style: none; margin: 0; padding: 0; }
 ul.pas li { padding: 8px 0; border-bottom: 1px solid var(--border); }
-.meta { font-size: 12px; color: var(--text-2); }
+.meta { font-size: 12px; color: var(--text-2); display: flex; gap: 4px 14px; flex-wrap: wrap; align-items: baseline; }
+.meta b { color: var(--text); }
 .ctx { margin-top: 2px; }
 .ctx mark { background: var(--mark); color: inherit; padding: 0 2px; border-radius: 3px; font-weight: 700; }
 .ctx mark.w { background: transparent; text-decoration: underline 2px; text-underline-offset: 3px; }
@@ -212,14 +242,17 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     <div class="ctl"><label class="f" for="daysSel">Time window</label>
       <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span></div>
     <div class="ctl ctl-period">
-      <label class="f" for="slider">Current period</label>
+      <label class="f" for="slider">Current period</label><span class="val" id="pdates"></span>
       <div class="periodrow">
         <button id="prev" type="button" aria-label="Previous period">◀</button>
-        <input id="slider" type="range" min="0" max="0" step="1">
+        <div class="periodcol">
+          <input id="slider" type="range" min="0" max="0" step="1">
+          <svg id="epStrip" role="img" aria-label="Qualifying episodes per period"></svg>
+        </div>
         <button id="next" type="button" aria-label="Next period">▶</button>
         <button id="play" type="button">▶ Play</button>
       </div>
-      <div class="val" id="pdates"></div>
+      <div class="stripnote">Bars: episodes with 3+ mentions of the term, per period. Click a bar to jump to it.</div>
       <div id="partial" hidden></div>
       <div id="early" class="small" hidden></div>
     </div>
@@ -256,7 +289,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         <option value="ai">AI interpretation of directions</option><option value="words">Words</option></select></label>
       <span class="chip" id="mapChip">Compared with: all placed shows</span>
     </div>
-    <details class="help"><summary aria-label="About the map">?</summary>
+    <details class="help" id="mapHelp"><summary aria-label="About the map">? About the map</summary>
       <span class="lv-plain">
       Each dot is one show in the period shown: a summary of the words its episodes use around the term.
       Dots that are close talk about the term in similar ways; far apart means different vocabulary and topics,
@@ -560,7 +593,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   document.getElementById('snap').textContent = M.snapshot;
   document.getElementById('term').textContent = `'${TERM}'`;
   document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
-  document.getElementById('plen').textContent = `${M.period_days} days · ${M.settings.min_episodes} episodes`;
+  document.getElementById('plen').textContent = `${M.period_days} days, ${M.settings.min_episodes}+ episodes`;
   document.getElementById('mapshare').textContent =
     `The 2-D map keeps ${Math.round(M.map_share * 100)}% of the variation; trust the distances over the picture.`;
 
@@ -716,6 +749,40 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   document.getElementById('modeGroups').addEventListener('click', () => setMode('groups'));
   if (!groupNames.length) document.getElementById('modeGroups').disabled = true;
   slider.addEventListener('input', () => { state.p = +slider.value; render(); });
+
+  // ── episode strip: one bar per period under the slider ────────────────
+  // Height = qualifying episodes summed over this map's shows; the current period is red.
+  const strip = document.getElementById('epStrip');
+  const P0 = +slider.min, P1 = +slider.max;
+  const epTot = {}, placedN = {};
+  for (let p = P0; p <= P1; p++) {
+    epTot[p] = HOSTS.reduce((t, h) => t + (((M.coverage || {})[h] || {})[p] || 0), 0);
+    placedN[p] = NODES.filter(n => n.period === p).length;
+  }
+  const epMax = Math.max(1, ...Object.values(epTot));
+  document.querySelector('.stripnote').textContent =
+    `Bars: episodes with ${M.settings.min_mentions}+ mentions of '${TERM}' per period, all shows on the map. Click a bar to jump to it.`;
+  function drawStrip() {
+    // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
+    const W = strip.clientWidth || 600, H = 30, TH = 8, n = Math.max(1, P1 - P0);
+    const slot = (W - 2 * TH) / n;
+    let out = '';
+    for (let p = P0; p <= P1; p++) {
+      const h = epTot[p] ? Math.max(2, Math.round((H - 2) * epTot[p] / epMax)) : 0;
+      const w = Math.max(1, Math.min(slot - 2, 40)), x = TH + (p - P0) * slot - w / 2;
+      const part = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[p].end > M.snapshot;
+      out += `<rect data-p="${p}" x="${x.toFixed(1)}" y="${H - h}" width="${w.toFixed(1)}" height="${h}"` +
+        ` class="${p === state.p ? 'cur' : ''}${part ? ' part' : ''}"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed${part ? ' (period still in progress)' : ''}</title></rect>`;
+      out += `<rect data-p="${p}" x="${(TH + (p - P0 - 0.5) * slot).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" fill="transparent" style="fill:transparent"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed</title></rect>`;
+    }
+    strip.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    strip.innerHTML = out;
+  }
+  window.addEventListener('resize', () => drawStrip());
+  strip.addEventListener('click', ev => {
+    const p = ev.target.closest('rect')?.dataset.p;
+    if (p !== undefined) { state.p = +p; render(); }
+  });
   const step = d => { const i = placedPeriods.indexOf(state.p) + d;
     if (i >= 0 && i < placedPeriods.length) { state.p = placedPeriods[i]; render(); } };
   document.getElementById('prev').addEventListener('click', () => step(-1));
@@ -1509,7 +1576,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       const [show, ep, date, posn, ctx] = PAS.texts[i];
       const html = esc(ctx).replace(new RegExp('\\[' + TERM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\]', 'g'),
         `<mark>${esc(TERM)}</mark>`);
-      return `<li><div class="meta">${tag ? `<span class="ptag">${esc(tag)}</span>` : ''}${date} · ${esc(short(show))} · ${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)} · token ${posn}</div>` +
+      return `<li><div class="meta">${tag ? `<span class="ptag">${esc(tag)}</span>` : ''}<b>${esc(short(show))}</b><span>${date}</span><span>${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)}</span></div>` +
         `<div class="ctx">${html}</div></li>`;
     }).join('') + '</ul>';
   }
@@ -1583,7 +1650,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     return '<ul class="pas">' + refs.map(i => {
       const [show, ep, date, posn, ctx] = WX.texts[i];
       const html = esc(ctx).replace(tokRe, '$1<mark class="w">$2</mark>').replace(termRe, `<mark>${esc(TERM)}</mark>`);
-      return `<li><div class="meta">${date} · ${esc(short(show))} · ${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)} · token ${posn}</div>` +
+      return `<li><div class="meta"><b>${esc(short(show))}</b><span>${date}</span><span>${esc(ep.length > 80 ? ep.slice(0, 80) + '…' : ep)}</span></div>` +
         `<div class="ctx">${html}</div></li>`;
     }).join('') + '</ul>';
   }
@@ -1728,7 +1795,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   // ── explanation level (Plain / Technical), remembered in this browser ─────
   // Explanations are open by default (Plain); "Hidden" collapses them (each "?" still opens its own).
   const setExpl = lvl => {
-    document.querySelectorAll('details.help').forEach(d => { d.open = lvl !== 'off'; });
+    // The map's long explanation stays folded (the legend covers the basics); the rest open with the switch.
+    document.querySelectorAll('details.help:not(#mapHelp)').forEach(d => { d.open = lvl !== 'off'; });
     if (lvl === 'off') { document.getElementById('explOff').setAttribute('aria-pressed', true);
       ['explPlain', 'explTech'].forEach(id => document.getElementById(id).setAttribute('aria-pressed', false));
       try { localStorage.setItem('dashExplOpen', 'no'); } catch (e) {} return; }
@@ -1819,6 +1887,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
     slider.value = state.p;
     document.getElementById('pdates').textContent = fmtP(state.p);
+    drawStrip();
     // Before the original corpus start only the backfilled shows have episodes (methods log M5).
     const CORPUS_START = '2022-07-12', earlyEl = document.getElementById('early');
     earlyEl.hidden = periods[state.p].start >= CORPUS_START;
