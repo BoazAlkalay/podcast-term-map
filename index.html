@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Podcast Term Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
 <style>
@@ -41,7 +41,7 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.5 "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-variant-numeric: tabular-nums; }
 header { padding: 14px 16px 4px; position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 #hdrCtl { margin-left: auto; display: flex; gap: 8px; align-items: center; }
@@ -181,7 +181,8 @@ input[type=range] { width: 100%; }
 #shiftLine { font-size: 13px; color: var(--text-2); margin-top: 6px; }
 #shiftLine b { color: var(--text); }
 #axisNote { font-size: 12px; color: var(--muted); margin-top: 4px; }
-#words, #ts { height: 420px; width: 100%; overflow: auto; }
+#ts { height: 420px; width: 100%; overflow: auto; }
+#words { width: 100%; overflow: visible; }   /* the word chart sets its own height; no inner scrollbar */
 .empty { color: var(--muted); padding: 24px 4px; }
 .small { font-size: 12px; color: var(--muted); }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
@@ -1343,7 +1344,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 
   // ── charts ────────────────────────────────────────────────────────────
   const baseLayout = () => ({ paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { family: 'system-ui, sans-serif', size: 12, color: css('--text-2') },
+    font: { family: 'Inter, system-ui, sans-serif', size: 12, color: css('--text-2') },
     margin: { l: 56, r: 16, t: 8, b: 44 }, showlegend: false, hoverlabel: { align: 'left' } });
   const axis = extra => Object.assign({ gridcolor: css('--border'), zeroline: false,
     linecolor: css('--border'), tickfont: { color: css('--text-2') } }, extra);
