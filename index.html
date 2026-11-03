@@ -172,7 +172,8 @@ input[type=range] { width: 100%; }
 .axl b { color: var(--text); font-weight: 600; }
 .axl { cursor: pointer; } .axl:hover { color: var(--text); text-decoration: underline dotted; }
 .aibadge { font-size: 10px; border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; margin: 0 3px; color: var(--muted); }
-#pop ol.ax { margin: 2px 0 8px; padding-left: 22px; } #pop ol.ax li { margin: 0; }
+#pop ol.ax { margin: 2px 0 8px; padding-left: 26px; columns: 2; column-gap: 24px; } #pop ol.ax li { margin: 0; break-inside: avoid; }
+#pop:has(ol.ax) { max-width: 420px; }
 #axL { left: 0; top: 50%; transform: translateY(-50%); }
 #axR { right: 0; top: 50%; transform: translateY(-50%); text-align: right; }
 #axT { top: 0; left: 50%; transform: translateX(-50%); }
@@ -201,6 +202,50 @@ ul.pas li { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .wcount { font-size: 13px; color: var(--text-2); margin: 0 0 10px; }
 .wcount b { color: var(--text); }
 h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0 2px; }
+/* review 2 (2026-11-03): steps, settings hierarchy, selection prompt, pair summary */
+#intro p:first-of-type { font-size: 16px; }
+p.steps { max-width: none !important; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 14px; color: var(--text-2); margin: 0 0 8px; }
+p.steps b { display: inline-block; width: 20px; height: 20px; line-height: 18px; text-align: center; border: 1px solid var(--text-2);
+  border-radius: 50%; font-size: 12px; margin-right: 6px; color: var(--text); }
+#controls { align-items: flex-start; }
+details.ctl-more { align-self: center; }
+details.ctl-more { margin-left: auto; font-size: 13px; }
+details.ctl-more > summary { cursor: pointer; color: var(--text-2); padding: 5px 0; }
+details.ctl-more[open] { flex-basis: 100%; order: 8; margin-left: 0; }
+.moregrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 28px; margin-top: 6px; max-width: 760px; }
+.moregrid p { margin: 3px 0 0; }
+.stripnote b { color: var(--text-2); }
+.stripnote .lgnd { white-space: nowrap; margin-left: 4px; }
+.stripnote .sw { display: inline-block; width: 8px; height: 10px; vertical-align: -1px; margin-right: 4px; background: var(--node); }
+.stripnote .sw.cur { background: var(--onair); }
+.maphead { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; margin-bottom: 8px; }
+.maphead h2 { font-size: 15px; margin: 0; }
+#ctxLine { margin: 0; font-size: 13px; color: var(--text-2); }
+#ctxLine b { color: var(--text); font-weight: 600; }
+.moderow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; margin: 0 0 8px; }
+.moderow #mapHelp { margin: 0; }
+.moderow #mapHelp[open] { flex-basis: 100%; }
+#modeDesc { margin: 0; font-size: 13px; color: var(--text-2); }
+#modeDesc b { color: var(--text); }
+#dispSet { font-size: 13px; position: relative; }
+#dispSet > summary { cursor: pointer; color: var(--text-2); padding: 4px 0; }
+#dispSet[open] { flex-basis: 100%; }
+.dispbox { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 6px 0 2px; }
+#showSel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-bottom: 6px; }
+#showSel .selrow { margin: 0; }
+#selHint { margin: 0; padding: 5px 10px; border-left: 3px solid var(--text); background: var(--bg); font-size: 14px; }
+#selHint.next { border-left-color: var(--b); }
+#selHint .k { font-size: 12px; color: var(--text-2); margin-left: 6px; }
+#pairSum { border-left: 3px solid var(--text); padding: 4px 0 4px 14px; margin-top: 2px; }
+#pairSum:empty { display: none; }
+#pairSum .who { font-size: 13px; color: var(--text-2); margin: 0 0 2px; }
+#pairSum .find { font-size: 17px; line-height: 1.45; margin: 0; max-width: 90ch; }
+#pairSum .find .wa { color: var(--a); font-weight: 700; } #pairSum .find .wb { color: var(--b); font-weight: 700; }
+#pairSum .note { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+#pairSum .ex { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-2); margin-right: 8px; }
+ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
+#pop .airead { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 6px; color: var(--text-2); }
+#cy { height: clamp(360px, calc(100vh - 380px), 460px); }
 @media (max-width: 900px) {
   #status { max-width: 100%; flex-basis: 100%; text-align: left; }
   #cy { height: 380px; }
@@ -216,6 +261,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       <button type="button" id="explOff" aria-pressed="false">Hidden</button>
       <button type="button" id="explPlain" aria-pressed="true">Plain</button>
       <button type="button" id="explTech" aria-pressed="false">Technical</button></span>
+    <button type="button" id="introShow" hidden>Show the introduction</button>
     <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
   </div>
 </header>
@@ -224,15 +270,14 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
 <main>
   <section id="intro" class="panel" aria-label="Start here">
     <h2>Start here</h2>
-    <p>This map follows about 50 political podcasts and the words they use around one term, such as <i>iran</i>,
-      from 2021 to now. <b>Each dot is one show in one period</b> (three or six months). Dots that sit close together
-      use similar words and topics around the term. That says nothing about whether the shows agree.</p>
-    <p>Pick a term and two shows, then read the tabs under the map in order: which words set the shows apart,
-      how that changed over time, and the passages behind it.</p>
+    <p>This tool follows about 50 political podcasts and the words they use around one term, such as <i>iran</i>,
+      from 2021 to now. <b>Each dot is one show in one period.</b> Dots close together use similar words around the term;
+      that says nothing about whether the shows agree.</p>
+    <p class="steps"><span><b>1</b> Find two shows on the map</span><span><b>2</b> Compare the words that set them apart</span>
+      <span><b>3</b> Follow the difference over time</span><span><b>4</b> Read the passages behind it</span></p>
     <div class="btnrow"><button type="button" id="exampleBtn" class="primary">Show me an example</button>
       <button type="button" id="introHide">Hide this introduction</button></div>
   </section>
-  <button type="button" id="introShow" hidden>Show the introduction</button>
 
   <section id="controls" class="panel" aria-label="What to show">
     <div class="ctl"><label class="f" for="termSel">Term</label>
@@ -252,43 +297,57 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         <button id="next" type="button" aria-label="Next period">▶</button>
         <button id="play" type="button">▶ Play</button>
       </div>
-      <div class="stripnote">Bars: episodes with 3+ mentions of the term, per period. Click a bar to jump to it.</div>
+      <div class="stripnote"><b>Qualifying episodes per period.</b> <span id="stripText">Bar height is the number of episodes that mention the term 3+ times, not the number of mentions.</span>
+        <span class="lgnd"><i class="sw cur"></i>on the map now.</span> Click a bar to jump.</div>
       <div id="partial" hidden></div>
       <div id="early" class="small" hidden></div>
     </div>
-    <div class="ctl"><label class="f" for="refSel">Measure change since</label>
-      <select id="refSel"><option value="">The previous period</option></select></div>
-    <div class="ctl"><label class="f" for="snapSel">Data version (date)</label>
-      <select id="snapSel" class="rsel" hidden></select><span class="val" id="snap"></span></div>
+    <details class="ctl ctl-more" id="moreSet">
+      <summary>Advanced settings</summary>
+      <div class="moregrid">
+        <div><label class="f" for="refSel">Measure change since</label>
+          <select id="refSel"><option value="">The previous period</option></select>
+          <p class="small">The hollow ring on the map and the "shift" line under it measure change from this period.</p></div>
+        <div><label class="f" for="snapSel">Data version</label>
+          <select id="snapSel" class="rsel" hidden></select><span class="val" id="snap"></span>
+          <p class="small">The date the data were exported. Earlier versions stay available for comparison; use the newest unless you are checking a past result.</p></div>
+      </div>
+    </details>
   </section>
 
   <section id="mapPanel" class="panel" aria-label="Map">
-    <div class="ph maptools">
+    <div class="maphead">
       <h2>Map</h2>
+      <p id="ctxLine"></p>
+    </div>
+    <div class="ph maptools">
       <div class="seg" role="group" aria-label="Compare">
         <button type="button" id="modeShows" aria-pressed="true">Compare shows</button>
         <button type="button" id="modeGroups" aria-pressed="false">Compare podcast groups</button>
       </div>
-      <label>Map <select id="mapMode">
+      <label>Map type <select id="mapMode">
         <option value="overall">Similarity map</option>
         <option value="centred">Without the shared news cycle</option>
         <option value="anchored">Fixed word directions (draft)</option>
       </select></label>
       <span id="axPick" hidden><label>X <select id="axX"></select></label> <label>Y <select id="axY"></select></label></span>
-      <label>Zoom <select id="zoomSel">
-        <option value="period">This period</option><option value="all">All periods</option><option value="sel">Selected shows</option>
-      </select></label>
+      <details id="dispSet"><summary>Display settings</summary>
+        <div class="dispbox">
+          <label>Zoom <select id="zoomSel">
+            <option value="period">This period</option><option value="all">All periods</option><option value="sel">Selected shows</option>
+          </select></label>
+          <label>Trail <select id="trailSel" title="How many earlier periods to draw for each selected show or group">
+            <option value="all">All periods</option><option value="4" selected>Last 4</option><option value="2">Last 2</option>
+            <option value="1">Last 1</option><option value="0">None</option></select></label>
+          <label>Names <select id="labelSel" title="When show names appear on the map">
+            <option value="hover">On hover</option><option value="all">All</option></select></label>
+          <label id="axLabWrap" hidden>Edge labels <select id="axLabSel" title="The words at each edge, or an AI reading of those words (click an edge label for details)">
+            <option value="ai">AI reading of the edge words</option><option value="words">Words</option></select></label>
+          <span class="chip" id="mapChip">Compared with: all placed shows</span>
+        </div>
+      </details>
     </div>
-    <div class="ph maptools2">
-      <label>Trail <select id="trailSel" title="How many earlier periods to draw for each selected show or group">
-        <option value="all">All periods</option><option value="4" selected>Last 4</option><option value="2">Last 2</option>
-        <option value="1">Last 1</option><option value="0">None</option></select></label>
-      <label>Names <select id="labelSel" title="When show names appear on the map">
-        <option value="hover">On hover</option><option value="all">All</option></select></label>
-      <label id="axLabWrap" hidden>Axis labels <select id="axLabSel" title="Edge words, or an AI-written interpretation of the directions (click an axis label for details)">
-        <option value="ai">AI interpretation of directions</option><option value="words">Words</option></select></label>
-      <span class="chip" id="mapChip">Compared with: all placed shows</span>
-    </div>
+    <div class="moderow"><p id="modeDesc"></p>
     <details class="help" id="mapHelp"><summary aria-label="About the map">? About the map</summary>
       <span class="lv-plain">
       Each dot is one show in the period shown: a summary of the words its episodes use around the term.
@@ -298,8 +357,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       edge hint at what that direction leans toward. The picture keeps only part of the detail, so trust the numbers in the tabs below over distances on the picture.<br>
       <b>Without the shared news cycle:</b> first removes what every show did together that period, so trails show who moved compared with the others.<br>
       <b>Fixed word directions:</b> the directions are set in advance by two lists of words (for example diplomacy words vs military words), so a position means the same thing in every period. These lists are drafts.<br>
-      The dashed lines cross at the average of all dots. Click an edge label to see all the words behind it. "AI interpretation of directions" labels are a model's short reading of those words, marked AI: a reading aid, not a finding.<br>
-      Click a dot for Show A, another for Show B, empty space to clear; Shift-click for Show C.
+      The dashed lines cross at the average of all dots. Click an edge label to see all the words behind it. Labels marked AI are a model's short reading of those words: a reading aid, not a finding about the shows.<br>
       Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scroll to zoom; Ctrl + scroll scrolls the page.
       <b>Zoom:</b> "This period" fits the dots shown; "All periods" keeps one fixed frame, so movement when you play through periods is real movement; "Selected shows" frames the selection and its trails.
       </span><span class="lv-tech">
@@ -312,9 +370,10 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       AI direction interpretations (label_axes.py, methods log M6): a Claude model labels each end from the up-to-25 word-pull words; prompt and model stored with the labels; they interpret directions in the vocabulary space, not the podcasts.<br>
       No edges between shows by design (an edge would read as a relation); trail edges are a show's own path, labelled t−k.
       </span>
-    </details>
+    </details></div>
     <div id="showSel">
-      <div class="selrow">
+      <p id="selHint" aria-live="polite"></p>
+      <div class="selrow"><span class="small">or by name:</span>
         <label><span class="swatch" style="background:var(--a)"></span>Show A
           <select id="selA"><option value="">(none)</option></select></label>
         <label><span class="swatch" style="background:var(--b)"></span>Show B
@@ -352,13 +411,13 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       <summary>Shows with few episodes this period <span id="thinCount" class="small"></span></summary>
       <details class="help"><summary aria-label="About shows with few episodes">?</summary>
         <span class="lv-plain">
-        A show needs <span class="minEp">8</span>+ episodes that mention the term at least 3 times to be measured normally in a period.
-        With 3 to 7 it's shown faded with "n=" and a "rough" label: it's placed on the map without moving anyone else,
-        its error bars are wider and worked out by formula, and it's left out of the average everyone else is compared with.
-        Shows with 1 or 2 are listed but not placed.<br>
-        <b>Include</b> adds a faded show to that average. This changes everyone's vocabulary difference from the group (a little noisier, not biased)
-        and switches those periods to formula-based error bars, which are slightly less cautious than the default ones, so a show can look
-        "different" partly because of the method. Map positions don't change. Reset puts everything back.
+        Episodes count if they mention the term 3+ times. In each period a show is:
+        <ul class="tiers">
+          <li><b>Normal</b> with <span class="minEp">8</span>+ episodes.</li>
+          <li><b>Limited evidence</b> with 3 to 7: faded and marked rough. It is placed without moving the other shows and left out of the group average.</li>
+          <li><b>Too few</b> with 1 or 2: listed here, not placed.</li>
+        </ul>
+        Ticking <b>Include</b> adds a faded show to the group average. A note at the top of the page then explains what changes.
         </span><span class="lv-tech">
         Tiers by qualifying episodes n (3+ mentions): n ≥ <span class="minEp">8</span> placed (bootstrap intervals); 3 ≤ n ≤ 7 "thin": v from the show's pooled per-episode
         spread (its 8+ cells in this bundle, else corpus-wide) / n, Gower out-of-sample placement, distance from the solid-show group with an analytic score-type interval
@@ -375,6 +434,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     <div id="shiftLine"></div>
     <div id="axisNote"></div>
   </section>
+
+  <section id="pairSum" aria-live="polite"></section>
 
   <nav id="tabs" role="tablist" aria-label="Analysis">
     <button type="button" role="tab" data-tab="words" id="tab-words">Compare words</button>
@@ -625,8 +686,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       hostsSel.value = cur.hosts;
       hostsSel.hidden = false;
       const g = document.getElementById('group');
-      g.textContent = `${HOSTS.length} shows in this group`;
-      g.className = 'small';
+      g.hidden = true;
       hostsSel.addEventListener('change', () => go(Object.assign({}, cur, { hosts: hostsSel.value })));
     }
     const sameHosts = inSnapAll.filter(e => e.hosts === cur.hosts).concat(
@@ -650,8 +710,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     }
     if (days.length > 1 || !days.includes(cur.days)) {
       fill(daysSel, days, cur.days, d => `${d} days`);
-      document.getElementById('plen').textContent = `Minimum ${M.settings.min_episodes} episodes per show and period`;
-      document.getElementById('plen').className = 'small';
+      document.getElementById('plen').hidden = true;
       daysSel.addEventListener('change', () => go(Object.assign({}, cur, { days: +daysSel.value })));
     }
     if (snaps.length > 1) {
@@ -760,8 +819,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     placedN[p] = NODES.filter(n => n.period === p).length;
   }
   const epMax = Math.max(1, ...Object.values(epTot));
-  document.querySelector('.stripnote').textContent =
-    `Bars: episodes with ${M.settings.min_mentions}+ mentions of '${TERM}' per period, all shows on the map. Click a bar to jump to it.`;
+  document.getElementById('stripText').textContent =
+    `Bar height: episodes that mention '${TERM}' ${M.settings.min_mentions}+ times across the ${HOSTS.length} shows (not the number of mentions).`;
   function drawStrip() {
     // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
     const W = strip.clientWidth || 600, H = 30, TH = 8, n = Math.max(1, P1 - P0);
@@ -1401,7 +1460,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     const el = document.getElementById('ts'), v = setupPanel('ts');
     const helpEl = document.getElementById('tsHelp');
     if (!v) { helpEl.textContent = 'Select a show or a pair on the map, or two groups.';
-      return message(el, state.mode === 'groups' ? 'Pick two groups above the map.' : 'Select a show on the map to see how it moves over time, or two shows to see their distance.'); }
+      return message(el, state.mode === 'groups' ? 'No groups chosen yet. Pick Group A and Group B above the map.'
+        : 'No show selected yet. Click a dot on the map to see how that show moves over time, or two dots to see how far apart they are.'); }
     setHelp(helpEl, help(v));
     const t2 = tie2() || [], t = tri();
     const S = s => ({ name: short(s), color: colorOf(s) });
@@ -1543,7 +1603,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     drawWordsPer(v);
     const helpEl = document.getElementById('wordsHelp');
     if (!v) { helpEl.textContent = 'Select one show for its top words, or two shows for the words that separate them.';
-      return message(el, state.mode === 'groups' ? 'Pick two groups above the map.' : 'Select a show on the map.'); }
+      return message(el, state.mode === 'groups' ? 'No groups chosen yet. Pick Group A and Group B above the map.'
+        : 'No show selected yet. Click a dot on the map for one show\'s closest words, or two dots for the words that separate them.'); }
     setHelp(helpEl, help(v));
     if (v === 'top') return wordCols(el, [showCol(state.a)]);
     if (v === 'top2') return wordCols(el, [showCol(state.a), showCol(state.b)]);
@@ -1593,7 +1654,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     const el = document.getElementById('pas'), v = setupPanel('pas');
     const helpEl = document.getElementById('pasHelp');
     if (!v) { helpEl.textContent = 'Select a show, a pair, or two groups to read passages.';
-      el.innerHTML = `<div class="empty">${state.mode === 'groups' ? 'Pick two groups to read contrast passages.' : 'Select a show or a pair on the map to read passages.'}</div>`; return; }
+      el.innerHTML = `<div class="empty">${state.mode === 'groups' ? 'No groups chosen yet. Pick two groups above the map to read contrasting passages.' : 'No show selected yet. Click one or two dots on the map to read passages.'}</div>`; return; }
     if (v === 'word') return drawWordUse(el, helpEl);
     setHelp(helpEl, help(v === 'drift' || v === 'drift2' ? 'pasdrift' : v));
     if (!PAS) { el.innerHTML = '<div class="empty">Loading passages…</div>'; loadPassages(); return; }
@@ -1723,12 +1784,15 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
     const lean = (sd, i) => { const r = lab[sd + '_r'] && lab[sd + '_r'][i]; return r ? ` <span class="small">${(r < 1 ? 1 / r : r).toFixed(2)}×</span>` : ''; };
     const list = sd => `<ol class="ax">${(lab[sd] || []).map((w, i) => `<li>${esc(w)}${lean(sd, i)}</li>`).join('')}</ol>`;
     const dirName = { neg: k === 0 ? 'left' : 'bottom', pos: k === 0 ? 'right' : 'top' };
-    let html = `<h3>${ai && ai[side] ? esc(ai[side].label) + '<span class="aibadge">AI</span>' : `Axis ${k + 1}, ${dirName[side]} end`}<button type="button" aria-label="Close">×</button></h3>`;
-    if (ai) html += `<p class="small">AI-generated direction interpretation: a model's reading of the words below, describing a direction on the map, not the podcasts. Not a finding. Opposite end: <b>${esc(ai[other] ? ai[other].label : '?')}</b>.</p>` +
-      (ai.why ? `<p><b>Why:</b> ${esc(ai.why)}</p>` : '') +
-      `<p class="small">${esc(AX_AI.model || '')}${AX_AI.created ? ', ' + esc(AX_AI.created.slice(0, 10)) : ''}${AX_AI.prompt_version ? ', prompt ' + esc(AX_AI.prompt_version) : ''}.</p>`;
-    html += `<p><b>Words at this end</b> <span class="small">(closest first${lab[side + '_r'] ? '; × = how much closer to this end than the other' : ''})</span></p>${list(side)}` +
-      `<p><b>Opposite end</b></p>${list(other)}` +
+    // The words are the evidence, so they come first; the AI reading is a second layer under them.
+    let html = `<h3>Words at the ${dirName[side]} edge<button type="button" aria-label="Close">×</button></h3>` +
+      `<p class="small">Closest first${lab[side + '_r'] ? '; × = how much closer to this end than to the other' : ''}.</p>${list(side)}`;
+    if (ai && ai[side]) html += `<div class="airead"><p><b>AI reading of these word cues:</b> ${esc(ai[side].label)}<span class="aibadge">AI</span>` +
+      ` <span class="small">(opposite end: ${esc(ai[other] ? ai[other].label : '?')})</span></p>` +
+      `<p class="small">A model-generated interpretation of the words above. It is a reading aid, not a finding about the shows.</p>` +
+      (ai.why ? `<p class="small"><b>Model's reason:</b> ${esc(ai.why)}</p>` : '') +
+      `<p class="small">${esc(AX_AI.model || '')}${AX_AI.created ? ', ' + esc(AX_AI.created.slice(0, 10)) : ''}${AX_AI.prompt_version ? ', prompt ' + esc(AX_AI.prompt_version) : ''}; details in Methods.</p></div>`;
+    html += `<p><b>Words at the opposite edge</b></p>${list(other)}` +
       `<p class="small">These words describe where the axis points in the space of how shows use '${esc(TERM)}'; the map keeps only part of the variation.</p>`;
     openPop(ev, html);
   }
@@ -1784,7 +1848,8 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
         ch.map(([s, d]) => `${esc(short(s))} ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(3)}`).join(', ') + '.' : '';
     }
     el.innerHTML = `<b>Group average now includes:</b> ${[...included].map(s => esc(short(s))).join(', ')} (few episodes). ` +
-      `Each show's vocabulary difference from the group differs from the default, and its ranges are approximate in the periods affected. ${change}` +
+      `In the periods affected, every show's vocabulary difference from the group is recomputed (a little noisier, not biased), and its 90% ranges switch to a formula ` +
+      `that is slightly less cautious than the default, so a show can look "different" partly because of the method. Map positions do not change. ${change}` +
       `<button type="button" id="inclReset2">Reset</button>`;
     el.hidden = false;
     document.getElementById('inclReset2').addEventListener('click', resetIncl);
@@ -1871,16 +1936,104 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
   try { if (localStorage.getItem('dashIntro') === 'no') setIntro(false); } catch (e) {}
   document.getElementById('introHide').addEventListener('click', () => setIntro(false));
   introShow.addEventListener('click', () => setIntro(true));
+  // The worked example: among the 8 shows placed in the most periods, the pair whose vocabulary difference
+  // in the opening period is most clearly above zero (largest lower bound), so the first chart has a story.
+  // EXAMPLES: optional hand-picked pair per term, e.g. { iran: ['Mark Levin Podcast', 'The Tucker Carlson Show'] }.
+  const EXAMPLES = {};
+  function examplePair() {
+    const pick = EXAMPLES[TERM];
+    if (pick && pick.every(s => solidNodes.some(n => n.show === s && n.period === startP))) return pick;
+    const here = solidNodes.filter(n => n.period === startP).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]).slice(0, 8);
+    let best = null;
+    for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) {
+      const e = edgeFor(here[i], here[j], startP);
+      if (e && (!best || e.lo > best.lo)) best = { a: here[i], b: here[j], lo: e.lo };
+    }
+    return best ? [best.a, best.b] : here.slice(0, 2);
+  }
   document.getElementById('exampleBtn').addEventListener('click', () => {
-    // The two shows placed in the most periods, compared in the latest period with 3+ shows.
     if (state.mode !== 'shows') setMode('shows');
-    state.p = startP;
-    const here = solidNodes.filter(n => n.period === state.p).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]);
-    state.a = here[0] || ''; state.b = here[1] || ''; state.c = state.d = '';
-    state.tab = 'words'; fitted = false;
+    state.p = startP; state.mapMode = 'overall'; state.ref = ''; state.wP = null;
+    [state.a, state.b] = examplePair(); state.c = state.d = '';
+    state.example = `${state.a}|${state.b}|${state.p}`;
+    state.tab = 'words'; state.view.words.pair = 'pull'; fitted = false;
     render();
-    document.getElementById('mapPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('pairSum').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
+
+  // ── reading aids: context line, map-type question, selection prompt, pair summary ──
+  const yr = p => periods[p].end.slice(0, 4);
+  const nm = s => state.mode === 'groups' ? s : short(s);          // groups keep their full names
+  const dot = (s, c) => `<b style="color:${c}">${esc(nm(s))}</b>`;
+  const MODE_Q = {
+    overall: ['Which shows use similar vocabulary?', 'Closer dots use more similar words around the term. Position is not agreement.'],
+    centred: ['Which shows moved differently from the rest?', 'Removes the change every show shared this period (the news cycle), so trails show each show\'s own movement.'],
+    anchored: ['Where do shows fall between two predefined word lists?', 'Each axis runs between two draft word lists, so a position means the same thing in every period.']
+  };
+  function drawContext() {
+    const p = state.p, here = NODES.filter(n => n.period === p);
+    const solid = here.filter(n => !isThin(n)).length, thin = here.length - solid;
+    const grp = M.host_group === 'All shows' ? 'all groups' : M.host_group;
+    document.getElementById('ctxLine').innerHTML = `Showing <b>${solid}</b> of ${HOSTS.length} shows from <b>${esc(grp)}</b>` +
+      `${thin ? ` (plus ${thin} faded: few episodes)` : ''}, for <b>'${esc(TERM)}'</b> in the ${M.period_days}-day period <b>${pShort(p)}, ${yr(p)}</b>.`;
+    const q = MODE_Q[state.mapMode] || MODE_Q.overall;
+    document.getElementById('modeDesc').innerHTML = `<b>${q[0]}</b> ${q[1]}`;
+    const h = document.getElementById('selHint'), k = kind();
+    h.className = k === 'one' ? 'next' : '';
+    const A = state.a && dot(state.a, colorOf(state.a)), Bn = state.b && dot(state.b, colorOf(state.b));
+    h.innerHTML = {
+      none: `<b>Click a dot</b> to choose Show A, then a second dot for Show B.`,
+      one: `<b>Now click a second dot</b> to compare it with ${A}.`,
+      pair: `Comparing ${A} and ${Bn}.<span class="k">Another dot replaces ${esc(short(state.b))}; Shift-click adds a third; empty space clears.</span>`,
+    }[k] || `Comparing ${A} and ${Bn}, plus ${state.c ? dot(state.c, colorOf(state.c)) : 'a second pair'}.<span class="k">Shift-click the third show again to remove it.</span>`;
+  }
+  const ord = n => { if (n === 1) return ''; const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]) + ' '; };
+  const lean3 = (e, side) => (e.a === side ? e.pull_a : e.pull_b).slice(0, 3).map(w => esc(w.word)).join(', ');
+  // One or two sentences saying what the current selection shows, from the same numbers as the charts.
+  function drawPairSum() {
+    const el = document.getElementById('pairSum'), p = state.p, k = kind();
+    const when = `${pShort(p)}, ${yr(p)}`;
+    let who = '', find = '', note = '';
+    const pairText = (a, b, e, list, unit) => {
+      const clear = e.lo > 1e-9, rank = 1 + list.filter(x => x.period === p && x.dist > e.dist).length;
+      const total = list.filter(x => x.period === p).length;
+      const prev = placedPeriods.filter(q => q < p).slice(-1)[0], ep = prev !== undefined && findEdge(list, a, b, prev);
+      find = (clear ? `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} talk about '${esc(TERM)}' with clearly different words. `
+        : `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} cannot be told apart from chance in how they talk about '${esc(TERM)}'; treat the words below as weak leads. `) +
+        `${esc(nm(a))} leans toward <span class="wa">${lean3(e, a)}</span>; ${esc(nm(b))} toward <span class="wb">${lean3(e, b)}</span>.`;
+      note = `Vocabulary difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)} to ${e.hi.toFixed(2)}), the ${ord(rank)}largest of ${total} ${unit} pairs this period` +
+        `${ep ? `; ${ep.dist.toFixed(2)} in the previous period` : ''}. This describes words used, not opinions.`;
+    };
+    if (k === 'pair' || k === 'tri' || k === 'ties') {
+      who = `${esc(short(state.a))} vs ${esc(short(state.b))}, ${when}`;
+      const e = edgeFor(state.a, state.b, p);
+      if (e) pairText(state.a, state.b, e, EDGES, 'show');
+      else {
+        const thinOne = [state.a, state.b].map(x => nodeAt(x, p)).find(isThin);
+        find = thinOne ? `${esc(short(thinOne.show))} has only ${thinOne.n} episodes this period, too few for a pair comparison. Its own top words are in the tabs.`
+          : `These two shows are not both placed in this period. Pick another period on the strip above, or other shows.`;
+      }
+    } else if (k === 'one') {
+      const n = nodeAt(state.a, p);
+      who = `${esc(short(state.a))}, ${when}`;
+      if (!n) find = `${dot(state.a, colorOf(state.a))} is not placed in this period.`;
+      else {
+        const o = looOverride(p)?.get(state.a), d = o ? o.d : n.dist, lo = o ? o.lo : n.lo, hi = o ? o.hi : n.hi;
+        find = `${dot(state.a, colorOf(state.a))}'s mentions of '${esc(TERM)}' sit closest to <span class="wa">${n.top_words.slice(0, 4).map(esc).join(', ')}</span>.`;
+        note = `${n.n} episodes${isThin(n) ? ' (few: rough)' : ''}` + (d !== null && d !== undefined
+          ? `; vocabulary difference from the rest of the group ${d.toFixed(2)} (90% range ${lo.toFixed(2)} to ${hi.toFixed(2)})` : '') + '. Select a second show to compare.';
+      }
+    } else if (k === 'gpair') {
+      who = `${esc(state.ga)} vs ${esc(state.gb)}, ${when}`;
+      const e = gedgeFor(state.ga, state.gb, p);
+      if (e) pairText(state.ga, state.gb, e, GEDGES, 'group');
+      else find = 'These groups are not compared in this period (too few shows placed, or they share a show).';
+    } else { el.innerHTML = ''; return; }
+    const isEx = state.example === `${state.a}|${state.b}|${p}` && state.mode === 'shows' && k === 'pair';
+    if (isEx) note += ' Example: of the long-running shows, this pair differs most clearly this period. Click a word in the chart below to read passages that use it.';
+    el.innerHTML = `<p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}`;
+  }
 
   // ── render ────────────────────────────────────────────────────────────
   function render() {
@@ -1916,7 +2069,7 @@ h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0
       document.getElementById('tab-' + t).setAttribute('aria-selected', t === state.tab);
       document.getElementById('tab-' + t).tabIndex = t === state.tab ? 0 : -1;
     }
-    drawThin(); drawMap();
+    drawThin(); drawMap(); drawContext(); drawPairSum();
     // Only the visible tab is drawn (charts in hidden panels would get zero width).
     if (state.tab === 'ts') drawTs();
     if (state.tab === 'words') drawWords();
