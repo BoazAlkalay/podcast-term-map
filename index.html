@@ -169,7 +169,8 @@ input[type=range] { width: 100%; }
 .axl { position: absolute; font-size: 14px; line-height: 1.25; color: var(--text); background: var(--surface);
   border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; max-width: 30%; white-space: normal;
   pointer-events: auto; z-index: 2; }
-#axT, #axB { max-width: 46%; text-align: center; }
+#axT, #axB { width: max-content; max-width: 46%; text-align: center; }
+#axL, #axR { width: max-content; }
 .axl b { color: var(--text); font-weight: 700; }
 .axl { cursor: pointer; } .axl:hover { color: var(--text); text-decoration: underline dotted; }
 .aibadge { font-size: 10px; border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; margin: 0 3px; color: var(--muted); }
@@ -384,7 +385,7 @@ details.mth > p { padding: 0 0 10px; }
             <option value="all">All periods</option><option value="4" selected>Last 4</option><option value="2">Last 2</option>
             <option value="1">Last 1</option><option value="0">None</option></select></label>
           <label>Names <select id="labelSel" title="When show names appear on the map">
-            <option value="hover">On hover</option><option value="all">All</option></select></label>
+            <option value="hover">On hover (all when zoomed in)</option><option value="all">All</option></select></label>
           <label id="axLabWrap" hidden>Edge labels <select id="axLabSel" title="The words at each edge, or an AI reading of those words (click an edge label for details)">
             <option value="ai">AI reading of the edge words</option><option value="words">Words</option></select></label>
           <span class="chip" id="mapChip">Compared with: all placed shows</span>
@@ -966,12 +967,14 @@ details.mth > p { padding: 0 0 10px; }
   function cyStyle() {
     const zz = cy.zoom(), sc = baseZoom ? Math.min(2.5, Math.max(0.6, Math.pow(zz / baseZoom, 0.6))) : 1;
     const f = sc / zz, z = v => v * f;
+    // Cytoscape floors an arrowhead at a fixed size in map units, so it would grow with zoom; scale it to follow the same curve as the dots.
+    const arrowScale = baseZoom ? 0.8 * baseZoom * sc / zz : 0.8;
     const big = { width: z(16), height: z(16), color: css('--text'), 'font-weight': 700 };
     const ring = c => Object.assign({ 'border-color': c, 'border-width': z(4) }, big);
     cy.style([
       { selector: 'node', style: { 'background-color': css('--node'), 'border-width': z(1),
         'border-color': css('--node-edge'), width: z(12), height: z(12), label: 'data(label)',
-        'font-size': z(11), color: css('--text-2'), 'text-valign': 'top', 'text-margin-y': z(-4),
+        'font-size': z(11) * Math.min(1, 1.5 / sc), color: css('--text-2'), 'text-valign': 'top', 'text-margin-y': z(-4),
         'text-background-color': css('--surface'), 'text-background-opacity': 0.7, 'text-background-padding': z(1) } },
       { selector: 'node.mid', style: { 'border-style': 'dashed' } },
       { selector: 'node.thin', style: { 'background-opacity': 0.12, 'border-style': 'dashed', 'border-width': z(1.5),
@@ -1003,7 +1006,7 @@ details.mth > p { padding: 0 0 10px; }
         'line-dash-pattern': [z(4), z(4)], opacity: 0.55, events: 'no', 'z-index': 0 } },
       { selector: 'edge.trail', style: { width: z(2), 'line-color': 'data(color)', opacity: 0.5, events: 'no',
         'curve-style': 'straight', 'target-arrow-shape': 'triangle', 'target-arrow-color': 'data(color)',
-        'arrow-scale': 0.8 } }
+        'arrow-scale': arrowScale } }
     ]);
   }
   cyStyle();
@@ -1048,20 +1051,24 @@ details.mth > p { padding: 0 0 10px; }
     const r = o.renderedPosition(), w = box.clientWidth, h = box.clientHeight;
     const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     for (const id of ['axL', 'axR']) document.getElementById(id).style.top = cl(r.y, 14, h - 14) + 'px';
-    for (const id of ['axT', 'axB']) document.getElementById(id).style.left = cl(r.x, 60, w - 60) + 'px';
+    for (const id of ['axT', 'axB']) { const el = document.getElementById(id), half = (el.offsetWidth || 120) / 2 + 4;
+      el.style.left = cl(r.x, half, Math.max(half, w - half)) + 'px'; }
   }
   cy.on('pan zoom', placeAxisLabels);
 
   // Hide labels that would overlap; selected shows always keep theirs.
   function declutter() {
-    if (state.labels === 'hover') {
+    // Names on every dot once zoomed in past 2x the fitted view (collision-avoiding, same as Names: All); otherwise on hover.
+    const zoomedIn = !!baseZoom && cy.zoom() / baseZoom >= 2;
+    if (state.labels === 'hover' && !zoomedIn) {
       cy.nodes().not('.ghost, .axnode').forEach(n => {
         const on = n.hasClass('sel') || pinned.has(n.id()) || hoverKeep.has(n.id());
         n.data('label', on ? (n.data('long') || n.data('full') || '') : '');
       });
       return;
     }
-    const fs = 11, placed = [];
+    const sc = baseZoom ? Math.min(2.5, Math.max(0.6, Math.pow(cy.zoom() / baseZoom, 0.6))) : 1;
+    const fs = 11 * Math.min(sc, 1.5), placed = [];
     const ns = cy.nodes().not('.ghost, .axnode').toArray().sort((x, y) =>
       (y.hasClass('sel') - x.hasClass('sel')) || (y.data('n') - x.data('n')));
     for (const n of ns) {
