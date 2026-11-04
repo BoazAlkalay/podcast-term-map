@@ -270,6 +270,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 .kpi[data-tip]::after, .pairkpi[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 14px; width: 300px; z-index: 6; padding: 8px 10px;
   background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 3px; box-shadow: 0 2px 10px rgba(0,0,0,.14);
   font-size: 12px; line-height: 1.45; font-weight: 400; opacity: 0; visibility: hidden; transition: opacity .15s; pointer-events: none; }
+.pairkpi[data-tip]::after { top: 0; left: calc(100% + 12px); width: 340px; }
 .kpi[data-tip]:hover::after, .kpi[data-tip]:focus::after, .pairkpi[data-tip]:hover::after, .pairkpi[data-tip]:focus::after { opacity: 1; visibility: visible; }
 /* review 4 (2026-11-03): map title, bigger axis labels, scroll no longer zooms */
 .maphead h2 { font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
