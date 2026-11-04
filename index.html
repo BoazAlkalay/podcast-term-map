@@ -173,6 +173,7 @@ input[type=range] { width: 100%; }
 #axT, #axB { width: max-content; max-width: 46%; text-align: center; }
 #axL, #axR { width: max-content; }
 .axl b { color: var(--text); font-weight: 700; }
+.axw { display: block; font-size: 12px; font-weight: 400; color: var(--muted); text-align: center; }
 .axl { cursor: pointer; } .axl:hover { color: var(--text); text-decoration: underline dotted; }
 .aibadge { font-size: 10px; border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; margin: 0 3px; color: var(--muted); }
 #pop ol.ax { margin: 2px 0 8px; padding-left: 26px; columns: 2; column-gap: 24px; } #pop ol.ax li { margin: 0; break-inside: avoid; }
@@ -522,7 +523,7 @@ details.mth > p { padding: 0 0 10px; }
     <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time, which words political podcasts use around it, and how similar or different those word choices are between shows and over time. It describes vocabulary and topics, not opinions, stance or ideology.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
     <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes were transcribed automatically from public RSS feeds. Around every mention of the term, the nearby nouns, names and adjectives are turned into numbers that capture meaning; each episode with 3+ mentions is averaged, and each show-period averages its episodes. Counting episodes, not mentions, keeps very frequent shows from dominating. A show needs 8 such episodes in a period to be shown normally.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
     <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
-    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%).</span></p></details>
+    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range. Each pair is checked on its own: with hundreds of pairs on a map, roughly 1 in 20 can look clearly different by chance alone, so one clear result is a lead, not a finding. The example pair is chosen because it is the strongest of up to 28 pairs, so its number is probably an overestimate.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction); the example pair is selected as the maximum lower bound over up to 28 pairs, so its estimate is subject to winner's-curse inflation.</span></p></details>
     <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are clues about what to read, not proof. Passages are the words around real mentions, picked by ranking, so they show the clearest cases. AI labels on the map's edges are a model's reading of the edge words; they interpret directions on the map, not the podcasts.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
     <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
   </section>
@@ -1141,14 +1142,14 @@ details.mth > p { padding: 0 0 10px; }
     } else {
       const lab = MAP_AXES[state.mapMode === 'centred' ? 'centred' : 'overall'];
       const ai = state.axLab === 'ai' && AX_AI && AX_AI.maps[state.mapMode === 'centred' ? 'centred' : 'overall'];
-      const end = (k, side) => ai && ai[k] && ai[k][side] && ai[k][side].label
-        ? `<b>${esc(ai[k][side].label)}</b><span class="aibadge">AI</span>` : words(lab[k][side]);
+      const end = (k, side, pre = '', post = '') => ai && ai[k] && ai[k][side] && ai[k][side].label
+        ? `${pre}<b>${esc(ai[k][side].label)}</b><span class="aibadge">AI</span>${post}<span class="axw">${(lab[k][side] || []).slice(0, 3).map(esc).join(', ')}</span>` : pre + words(lab[k][side]) + post;
       const tt = 'Click for the words behind this label';
       if (lab) {
-        set('axL', `← ${end(0, 'neg')}`, tt);
-        set('axR', `${end(0, 'pos')} →`, tt);
-        set('axT', `↑ ${end(1, 'pos')}`, tt);
-        set('axB', `↓ ${end(1, 'neg')}`, tt);
+        set('axL', end(0, 'neg', '← '), tt);
+        set('axR', end(0, 'pos', '', ' →'), tt);
+        set('axT', end(1, 'pos', '↑ '), tt);
+        set('axB', end(1, 'neg', '↓ '), tt);
       } else ['axL', 'axR', 'axT', 'axB'].forEach(id => set(id, ''));
       const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
       note.textContent = 'Edge words describe what each end of an axis leans toward.';
@@ -2059,7 +2060,7 @@ details.mth > p { padding: 0 0 10px; }
       tile(epTot[p] || 0, 'episodes counted', `mention '${esc(TERM)}' ${M.settings.min_mentions}+ times`) +
       (state.mapMode !== 'anchored' && share !== null && share !== undefined ? tile(Math.round(share * 100) + '%', 'of the variation shown', 'a rough guide: hover for why',
         `The map squeezes many dimensions into two, so it keeps only about ${Math.round(share * 100)}% of the differences between shows. Treat it as a broad-strokes guide for spotting interesting placement and movement relative to other shows. The numbers in the tabs below use the full detail.`) : '') +
-      `<p class="kpinote">Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
+      `<p class="kpinote">${/^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? `Data through ${M.snapshot}. ` : ''}Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
     document.getElementById('mapTitle').textContent = q[0];
     document.getElementById('modeDesc').innerHTML = `<b>How to read it:</b> ${q[1]}`;
@@ -2085,10 +2086,10 @@ details.mth > p { padding: 0 0 10px; }
       const rank = 1 + list.filter(x => x.period === p && x.dist > e.dist).length;
       const total = list.filter(x => x.period === p).length;
       const prev = placedPeriods.filter(q => q < p).slice(-1)[0], ep = prev !== undefined && findEdge(list, a, b, prev);
-      find = (clear ? `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} talk about '${esc(TERM)}' with clearly different words. `
+      find = (clear ? `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} use measurably different words around '${esc(TERM)}'. `
         : `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} show no clear difference in how they talk about '${esc(TERM)}' (inconclusive: the data cannot resolve a difference, which does not mean their wording is the same); treat the words below as weak leads. `) +
-        `${esc(nm(a))} leans toward <span class="wa">${lean3(e, a)}</span>; ${esc(nm(b))} toward <span class="wb">${lean3(e, b)}</span>.`;
-      note = `Vocabulary difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)} to ${e.hi.toFixed(2)}: values the data are consistent with), the ${ord(rank)}largest of ${total} ${unit} pairs this period` +
+        `${esc(nm(a))}'s wording sits closer to <span class="wa">${lean3(e, a)}</span>; ${esc(nm(b))}'s to <span class="wb">${lean3(e, b)}</span>.`;
+      note = `Vocabulary difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)} to ${e.hi.toFixed(2)}: values the data are consistent with), ${rank <= 5 || total < 20 ? `the ${ord(rank)}largest of the ${total} ${unit} pairs this period` : `larger than about ${Math.floor(100 * (total - rank) / (total - 1))}% of the ${total} ${unit} pairs this period`}` +
         `${ep ? `; ${ep.dist.toFixed(2)} in the previous period` : ''}. This describes words used, not opinions.`;
     };
     if (k === 'pair' || k === 'tri' || k === 'ties') {
@@ -2119,7 +2120,7 @@ details.mth > p { padding: 0 0 10px; }
     } else { el.innerHTML = ''; return; }
     const isEx = state.example === `${state.a}|${state.b}|${p}` && state.mode === 'shows' && k === 'pair';
     if (isEx) note += ' Example: the strongest contrast this period among the long-running shows, chosen to demonstrate the tool. It is not a typical comparison. Click a word in the chart below to read passages that use it.';
-    el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi" data-tip="How far apart the two shows' wording is, after subtracting the difference you would expect from chance alone. 0 means no resolvable difference. The 90% range is the span of values the data are consistent with; if it includes 0, the result is inconclusive." tabindex="0"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
+    el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi" data-tip="How far apart the two shows' wording is, after subtracting the difference you would expect from chance alone. 0 means no resolvable difference. The 90% range is the span of values the data are consistent with; if it includes 0, the result is inconclusive. With many pairs on a map, about 1 in 20 can look clear by chance alone, so treat a single clear result as a lead." tabindex="0"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
       `<div class="pairtext"><p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
   }
 
