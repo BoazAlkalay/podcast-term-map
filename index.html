@@ -166,10 +166,11 @@ input[type=range] { width: 100%; }
 .ring { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 3px solid; margin-right: 4px; flex: none; }
 .mapwrap { position: relative; }
 #cy { height: 460px; width: 100%; }
-.axl { position: absolute; font-size: 12px; color: var(--text-2); background: var(--surface);
-  padding: 1px 6px; border-radius: 4px; max-width: 45%; white-space: nowrap; overflow: hidden;
-  text-overflow: ellipsis; pointer-events: auto; z-index: 2; }
-.axl b { color: var(--text); font-weight: 600; }
+.axl { position: absolute; font-size: 14px; line-height: 1.25; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; max-width: 30%; white-space: normal;
+  pointer-events: auto; z-index: 2; }
+#axT, #axB { max-width: 46%; text-align: center; }
+.axl b { color: var(--text); font-weight: 700; }
 .axl { cursor: pointer; } .axl:hover { color: var(--text); text-decoration: underline dotted; }
 .aibadge { font-size: 10px; border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; margin: 0 3px; color: var(--muted); }
 #pop ol.ax { margin: 2px 0 8px; padding-left: 26px; columns: 2; column-gap: 24px; } #pop ol.ax li { margin: 0; break-inside: avoid; }
@@ -247,6 +248,29 @@ details.ctl-more[open] { flex-basis: 100%; order: 8; margin-left: 0; }
 ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #pop .airead { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 6px; color: var(--text-2); }
 #cy { height: clamp(360px, calc(100vh - 380px), 460px); }
+/* review 4 (2026-11-03): map title, bigger axis labels, scroll no longer zooms */
+.maphead h2 { font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
+#zoomBtns { position: absolute; right: 6px; bottom: 6px; z-index: 3; display: flex; gap: 4px; }
+#zoomBtns button { padding: 2px 10px; font-size: 14px; }
+#zoomHint { margin: 4px 0 0; }
+/* review 3 (2026-11-03): tabs that look and move like tabs; less text at once */
+#tabs { gap: 3px; padding: 8px 0 0; border-bottom: 1px solid var(--border); }
+#tabs button[role=tab] { border: 1px solid var(--border); border-bottom: 0; border-radius: 8px 8px 0 0; padding: 8px 18px 9px;
+  background: color-mix(in srgb, var(--border) 45%, var(--bg)); color: var(--text-2); box-shadow: none; position: relative;
+  transition: background .15s, color .15s, transform .15s, box-shadow .15s; }
+#tabs button[role=tab]:hover { background: var(--surface); color: var(--text); transform: translateY(-2px); }
+#tabs button[role=tab][aria-selected=true] { background: var(--surface); color: var(--text); font-weight: 700; margin-bottom: -1px;
+  padding-bottom: 10px; box-shadow: inset 0 3px 0 var(--text); transform: none; }
+.tabpanel { background: var(--surface); border: 1px solid var(--border); border-top: 0; border-radius: 0 0 4px 4px; padding: 16px;
+  animation: tabin .22s ease-out; }
+@keyframes tabin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tabpanel { animation: none; } #tabs button[role=tab] { transition: none; } }
+details.help summary { width: auto; height: auto; line-height: 1.4; padding: 3px 10px; text-align: left; font-weight: 600; color: var(--text-2); }
+details.help summary::before { content: "\25B8  "; } details.help[open] summary::before { content: "\25BE  "; }
+details.mth { border-top: 1px solid var(--border); padding: 2px 0; }
+details.mth > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 8px 0; }
+details.mth > p { padding: 0 0 10px; }
+
 @media (max-width: 900px) {
   #status { max-width: 100%; flex-basis: 100%; text-align: left; }
   #cy { height: 380px; }
@@ -318,7 +342,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 
   <section id="mapPanel" class="panel" aria-label="Map">
     <div class="maphead">
-      <h2>Map</h2>
+      <h2 id="mapTitle">Which shows use similar vocabulary?</h2>
       <p id="ctxLine"></p>
     </div>
     <div class="ph maptools">
@@ -359,7 +383,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
       <b>Without the shared news cycle:</b> first removes what every show did together that period, so trails show who moved compared with the others.<br>
       <b>Fixed word directions:</b> the directions are set in advance by two lists of words (for example diplomacy words vs military words), so a position means the same thing in every period. These lists are drafts.<br>
       The dashed lines cross at the average of all dots. Click an edge label to see all the words behind it. Labels marked AI are a model's short reading of those words: a reading aid, not a finding about the shows.<br>
-      Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scroll to zoom; Ctrl + scroll scrolls the page.
+      Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scrolling moves the page; hold Ctrl (⌘ on Mac) and scroll, or use + / −, to zoom the map.
       <b>Zoom:</b> "This period" fits the dots shown; "All periods" keeps one fixed frame, so movement when you play through periods is real movement; "Selected shows" frames the selection and its trails.
       </span><span class="lv-tech">
       Each dot is a cell (show × period): μ = mean over qualifying episodes (3+ mentions) of the episode-mean ALC embedding of the term (±5-token windows, word2vec 100-d × learned transform A).<br>
@@ -398,19 +422,23 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
       <div id="cy" role="img" aria-label="Map of shows for the period shown"></div>
       <div class="axl" id="axL"></div><div class="axl" id="axR"></div>
       <div class="axl" id="axT"></div><div class="axl" id="axB"></div>
+      <div id="zoomBtns" role="group" aria-label="Zoom the map">
+        <button type="button" id="zIn" aria-label="Zoom in">+</button><button type="button" id="zOut" aria-label="Zoom out">−</button>
+        <button type="button" id="zFit">Reset view</button></div>
     </div>
+    <p class="small" id="zoomHint">Scrolling moves the page. To zoom the map, hold Ctrl (⌘ on Mac) and scroll, or use the buttons.</p>
     <div id="legend" aria-label="How to read the map">
       <span><i class="lg lg-dot"></i>One show in one period</span>
       <span><i class="lg lg-trail"></i>That show's own earlier positions (t−1, t−2…)</span>
       <span><i class="lg lg-ring"></i>Period change is measured from</span>
       <span><i class="lg lg-thin"></i>Few episodes: rough estimate</span>
       <span><i class="lg lg-dia"></i>Group average</span>
-      <p>Nearby dots use similar words around the term; that does not mean they agree. Trails connect a show to its own past, never to another show.<span id="mapshare" hidden></span></p>
+      <p>Trails connect a show to its own past, never to another show.<span id="mapshare" hidden></span></p>
     </div>
     <div class="small" id="absent"></div>
     <details id="thinBox">
       <summary>Shows with few episodes this period <span id="thinCount" class="small"></span></summary>
-      <details class="help"><summary aria-label="About shows with few episodes">?</summary>
+      <details class="help"><summary>What the tiers mean</summary>
         <span class="lv-plain">
         Episodes count if they mention the term 3+ times. In each period a show is:
         <ul class="tiers">
@@ -449,37 +477,31 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
   <section id="wordsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-words">
     <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span>
       <span id="wordsPer" class="seg" role="group" aria-label="Period for this chart" hidden></span></div>
-    <details class="help"><summary aria-label="About this view">?</summary><span id="wordsHelp"></span></details>
+    <details class="help"><summary>How to read this</summary><span id="wordsHelp"></span></details>
     <div id="words"></div>
   </section>
 
   <section id="tsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-ts" hidden>
     <div class="ph"><span id="tsTitle"></span><span class="chip" id="tsChip"></span></div>
-    <details class="help"><summary aria-label="About this view">?</summary><span id="tsHelp"></span></details>
+    <details class="help"><summary>How to read this</summary><span id="tsHelp"></span></details>
     <div id="ts"></div>
   </section>
 
   <section id="pasPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-pas" hidden>
     <div class="ph"><span id="pasTitle"></span><span class="chip" id="pasChip"></span></div>
-    <details class="help"><summary aria-label="About passages">?</summary><span id="pasHelp"></span></details>
+    <details class="help"><summary>How to read this</summary><span id="pasHelp"></span></details>
     <div id="pas"></div>
   </section>
 
   <section id="methodsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-methods" hidden>
     <h2>Methods</h2>
     <p class="small">Switch "Explanations" at the top between Plain and Technical for the level of detail.</p>
-    <h3>What it measures</h3>
-    <p><span class="lv-plain">For one term at a time, which words political podcasts use around it, and how similar or different those word choices are between shows and over time. It describes vocabulary and topics, not opinions, stance or ideology.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p>
-    <h3>From episodes to a dot</h3>
-    <p><span class="lv-plain">Episodes were transcribed automatically from public RSS feeds. Around every mention of the term, the nearby nouns, names and adjectives are turned into numbers that capture meaning; each episode with 3+ mentions is averaged, and each show-period averages its episodes. Counting episodes, not mentions, keeps very frequent shows from dominating. A show needs 8 such episodes in a period to be shown normally.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p>
-    <h3>The map</h3>
-    <p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean; anchored variant projects μ on SemAxis directions. Share of variation kept is shown under the map.</span></p>
-    <h3>Measuring differences, and uncertainty</h3>
-    <p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%).</span></p>
-    <h3>Words, passages and AI labels</h3>
-    <p><span class="lv-plain">The words that pull toward each side are clues about what to read, not proof. Passages are the words around real mentions, picked by ranking, so they show the clearest cases. AI labels on the map's edges are a model's reading of the edge words; they interpret directions on the map, not the podcasts.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p>
-    <h3>Limits</h3>
-    <p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; anchored axes and AI labels unvalidated; map share of variation typically ~50%.</span></p>
+    <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time, which words political podcasts use around it, and how similar or different those word choices are between shows and over time. It describes vocabulary and topics, not opinions, stance or ideology.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
+    <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes were transcribed automatically from public RSS feeds. Around every mention of the term, the nearby nouns, names and adjectives are turned into numbers that capture meaning; each episode with 3+ mentions is averaged, and each show-period averages its episodes. Counting episodes, not mentions, keeps very frequent shows from dominating. A show needs 8 such episodes in a period to be shown normally.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
+    <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean; anchored variant projects μ on SemAxis directions. Share of variation kept is shown under the map.</span></p></details>
+    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%).</span></p></details>
+    <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are clues about what to read, not proof. Passages are the words around real mentions, picked by ranking, so they show the clearest cases. AI labels on the map's edges are a model's reading of the edge words; they interpret directions on the map, not the podcasts.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
+    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; anchored axes and AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
   </section>
 </main>
 <div id="pop" role="dialog" hidden></div>
@@ -1039,13 +1061,17 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
   zoomSel.addEventListener('change', () => {
     state.zoomAll = zoomSel.value === 'all'; state.zoomSel = zoomSel.value === 'sel'; fitted = false; render(); });
 
-  // Ctrl + scroll over the map scrolls the page instead of zooming the map.
-  // Listen on window in the capture phase so this runs before Cytoscape's own wheel handler.
+  // Scrolling over the map scrolls the page. The map zooms only with Ctrl (or Cmd, or a trackpad pinch) + scroll,
+  // or with the + / - buttons. Runs in the capture phase on window so Cytoscape's own wheel handler never sees a plain scroll.
   window.addEventListener('wheel', e => {
-    if (!e.ctrlKey || !box.contains(e.target)) return;
-    e.preventDefault(); e.stopPropagation();
-    window.scrollBy(0, e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1));
-  }, { capture: true, passive: false });
+    if (!box.contains(e.target) || e.ctrlKey || e.metaKey) return;
+    e.stopPropagation();                                  // no preventDefault: the page scrolls natively
+  }, { capture: true, passive: true });
+  const zoomBy = f => { const w = box.clientWidth / 2, h = box.clientHeight / 2;
+    cy.zoom({ level: Math.max(cy.minZoom(), Math.min(cy.maxZoom(), cy.zoom() * f)), renderedPosition: { x: w, y: h } }); };
+  document.getElementById('zIn').addEventListener('click', () => zoomBy(1.4));
+  document.getElementById('zOut').addEventListener('click', () => zoomBy(1 / 1.4));
+  document.getElementById('zFit').addEventListener('click', () => { fitted = false; render(); });
 
   // Axis-end labels, the shared-shift line and notes about the anchored axes.
   function drawMapExtras() {
@@ -1081,11 +1107,11 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
     }
     const sh = SHIFTS.find(x => x.period === state.p);
     document.getElementById('shiftLine').innerHTML = sh
-      ? `<b>Shared shift</b> since the previous period (the ${sh.n_shows} shows on the map in both): ` +
-        `${sh.dist.toFixed(3)} (90%: ${sh.lo.toFixed(3)} to ${sh.hi.toFixed(3)})` +
+      ? `<b>What changed for everyone</b> (the shared shift) since the previous period: across the ${sh.n_shows} shows on the map in both, ` +
         (sh.lo <= 1e-9
-          ? `, not distinguishable from noise, so read these words as weak hints only. Leaned toward: ${words(sh.toward)}; away from: ${words(sh.away)}.`
-          : `. Moved toward: <b>${words(sh.toward)}</b>; away from: ${words(sh.away)}.`)
+          ? `the average wording around '${esc(TERM)}' changed by ${sh.dist.toFixed(2)}, which cannot be told apart from noise, so read these words as weak hints: it leaned toward ${words(sh.toward)}, away from ${words(sh.away)}.`
+          : `the average wording around '${esc(TERM)}' moved toward <b>${words(sh.toward)}</b> and away from ${words(sh.away)}.`) +
+        ` <span class="small">Size of the change ${sh.dist.toFixed(2)} (90% range ${sh.lo.toFixed(2)} to ${sh.hi.toFixed(2)}).</span>`
       : 'No shared-shift estimate for this period (needs 2+ shows placed in this and the previous period).';
   }
 
@@ -1860,9 +1886,9 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 
   // ── explanation level (Plain / Technical), remembered in this browser ─────
   // Explanations are open by default (Plain); "Hidden" collapses them (each "?" still opens its own).
-  const setExpl = lvl => {
+  const setExpl = (lvl, open = lvl !== 'off') => {
     // The map's long explanation stays folded (the legend covers the basics); the rest open with the switch.
-    document.querySelectorAll('details.help:not(#mapHelp)').forEach(d => { d.open = lvl !== 'off'; });
+    document.querySelectorAll('details.help:not(#mapHelp)').forEach(d => { d.open = open; });
     if (lvl === 'off') { document.getElementById('explOff').setAttribute('aria-pressed', true);
       ['explPlain', 'explTech'].forEach(id => document.getElementById(id).setAttribute('aria-pressed', false));
       try { localStorage.setItem('dashExplOpen', 'no'); } catch (e) {} return; }
@@ -1876,7 +1902,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
   let expl = 'plain';
   try { expl = localStorage.getItem('dashExpl') === 'tech' ? 'tech' : 'plain';
     if (localStorage.getItem('dashExplOpen') === 'no') { document.documentElement.setAttribute('data-expl', expl); expl = 'off'; } } catch (e) {}
-  setExpl(expl);
+  setExpl(expl, false);                       // help starts closed; Plain / Technical open it
   document.getElementById('explOff').addEventListener('click', () => setExpl('off'));
   document.getElementById('explPlain').addEventListener('click', () => setExpl('plain'));
   document.getElementById('explTech').addEventListener('click', () => setExpl('tech'));
@@ -1967,9 +1993,9 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
   const nm = s => state.mode === 'groups' ? s : short(s);          // groups keep their full names
   const dot = (s, c) => `<b style="color:${c}">${esc(nm(s))}</b>`;
   const MODE_Q = {
-    overall: ['Which shows use similar vocabulary?', 'Closer dots use more similar words around the term. Position is not agreement.'],
-    centred: ['Which shows moved differently from the rest?', 'Removes the change every show shared this period (the news cycle), so trails show each show\'s own movement.'],
-    anchored: ['Where do shows fall between two predefined word lists?', 'Each axis runs between two draft word lists, so a position means the same thing in every period.']
+    overall: ['Which shows use similar vocabulary?', `Each dot is one show. Dots that sit closer together use more similar words around '${TERM}'; position is not agreement. The labels on the four edges say what the words at each end are about.`],
+    centred: ['Which shows moved differently from the rest?', `Each dot is one show, after removing the change every show shared this period (the news cycle). Dots far from the centre moved differently from the pack. The edge labels say what the words at each end are about.`],
+    anchored: ['Where do shows fall between two predefined word lists?', `Each dot is one show. Each axis runs between two draft word lists; a show sits toward the list whose words it uses more, so a position means the same thing in every period.`]
   };
   function drawContext() {
     const p = state.p, here = NODES.filter(n => n.period === p);
@@ -1978,7 +2004,8 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
     document.getElementById('ctxLine').innerHTML = `Showing <b>${solid}</b> of ${HOSTS.length} shows from <b>${esc(grp)}</b>` +
       `${thin ? ` (plus ${thin} faded: few episodes)` : ''}, for <b>'${esc(TERM)}'</b> in the ${M.period_days}-day period <b>${pShort(p)}, ${yr(p)}</b>.`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
-    document.getElementById('modeDesc').innerHTML = `<b>${q[0]}</b> ${q[1]}`;
+    document.getElementById('mapTitle').textContent = q[0];
+    document.getElementById('modeDesc').innerHTML = `<b>How to read it:</b> ${q[1]}`;
     const h = document.getElementById('selHint'), k = kind();
     h.className = k === 'one' ? 'next' : '';
     const A = state.a && dot(state.a, colorOf(state.a)), Bn = state.b && dot(state.b, colorOf(state.b));
