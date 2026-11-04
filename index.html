@@ -1033,7 +1033,7 @@ details.mth > p { padding: 0 0 10px; }
     else state.b = s;
     render();
   });
-  cy.on('tap', ev => { if (ev.target === cy && state.mode === 'shows') {
+  cy.on('dbltap', ev => { if (ev.target === cy && state.mode === 'shows') {
     state.a = state.b = state.c = state.d = ''; render(); } });
   // Hover shows the full name; it stays for a few seconds after the pointer leaves.
   const pinned = new Set(), hoverKeep = new Map();      // node id -> timer
@@ -2069,7 +2069,7 @@ details.mth > p { padding: 0 0 10px; }
     h.innerHTML = {
       none: `<b>Click a dot</b> to choose Show A, then a second dot for Show B.`,
       one: `<b>Now click a second dot</b> to compare it with ${A}.`,
-      pair: `${(state.example && state.example.startsWith(`${state.a}|${state.b}|`)) || state.starter === `${state.a}|${state.b}` ? 'Starting comparison: ' : 'Comparing '}${A} and ${Bn}.<span class="k">Click another dot to change either show, or choose by name. Another dot replaces ${esc(short(state.b))}; Shift-click adds a third; empty space clears.</span>`,
+      pair: `${(state.example && state.example.startsWith(`${state.a}|${state.b}|`)) || state.starter === `${state.a}|${state.b}` ? 'Starting comparison: ' : 'Comparing '}${A} and ${Bn}.<span class="k">Click another dot to change either show, or choose by name. Another dot replaces ${esc(short(state.b))}; Shift-click adds a third; double-click empty space clears.</span>`,
     }[k] || `Comparing ${A} and ${Bn}, plus ${state.c ? dot(state.c, colorOf(state.c)) : 'a second pair'}.<span class="k">Shift-click the third show again to remove it.</span>`;
   }
   const ord = n => { if (n === 1) return ''; const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
