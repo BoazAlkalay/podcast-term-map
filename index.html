@@ -342,6 +342,7 @@ details.mth > p { padding: 0 0 10px; }
         <button id="play" type="button">▶ Play</button>
       </div>
       <div class="stripnote" id="stripNote"><b>Move through time:</b> drag the red dot, press ◀ ▶, or click a bar. <span class="lgnd"><i class="sw cur"></i>= period on the map.</span> <span id="stripText"></span></div>
+      <div class="stripnote" id="stripKey" hidden></div>
       <div id="partial" hidden></div>
       <div id="early" class="small" hidden></div>
     </div>
@@ -863,6 +864,9 @@ details.mth > p { padding: 0 0 10px; }
   function drawStrip() {
     // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
     const W = strip.clientWidth || 600, H = 30, TH = 8, n = Math.max(1, P1 - P0);
+    // One row of dots per selected show or group: filled = placed, dashed ring = rough (3-7 episodes), tiny = 1-2 episodes.
+    const sel = (state.mode === 'groups' ? [state.ga, state.gb] : selectedShows()).filter(Boolean);
+    const HT = H + (sel.length ? 6 + sel.length * 10 : 0);
     const slot = (W - 2 * TH) / n;
     let out = '';
     for (let p = P0; p <= P1; p++) {
@@ -871,10 +875,25 @@ details.mth > p { padding: 0 0 10px; }
       const part = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[p].end > M.snapshot;
       out += `<rect data-p="${p}" x="${x.toFixed(1)}" y="${H - h}" width="${w.toFixed(1)}" height="${h}"` +
         ` class="${p === state.p ? 'cur' : ''}${part ? ' part' : ''}"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed${part ? ' (period still in progress)' : ''}</title></rect>`;
-      out += `<rect data-p="${p}" x="${(TH + (p - P0 - 0.5) * slot).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" fill="transparent" style="fill:transparent"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed</title></rect>`;
+      out += `<rect data-p="${p}" x="${(TH + (p - P0 - 0.5) * slot).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${HT}" fill="transparent" style="fill:transparent"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed</title></rect>`;
     }
-    strip.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    sel.forEach((who, i) => {
+      const cy0 = H + 9 + i * 10, col = colorOf(who), grp = state.mode === 'groups';
+      for (let p = P0; p <= P1; p++) {
+        const x = (TH + (p - P0) * slot).toFixed(1), nd = grp ? gnodeAt(who, p) : nodeAt(who, p), cov = grp ? 0 : ((M.coverage || {})[who] || {})[p] || 0;
+        const nm = grp ? who : short(who);
+        if (nd && !isThin(nd)) out += `<circle data-p="${p}" cx="${x}" cy="${cy0}" r="3.5" fill="${col}"><title>${esc(nm)}: ${nd.n} episodes, placed (${fmtP(p)})</title></circle>`;
+        else if (nd) out += `<circle data-p="${p}" cx="${x}" cy="${cy0}" r="3.2" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="2 1.4"><title>${esc(nm)}: ${nd.n} episodes, rough (${fmtP(p)})</title></circle>`;
+        else if (cov > 0) out += `<circle data-p="${p}" cx="${x}" cy="${cy0}" r="1.6" fill="${col}" opacity=".5"><title>${esc(nm)}: ${cov} episode${cov === 1 ? '' : 's'}, too few to place (${fmtP(p)})</title></circle>`;
+      }
+    });
+    strip.style.height = HT + 'px';
+    strip.setAttribute('viewBox', `0 0 ${W} ${HT}`);
     strip.innerHTML = out;
+    const key = document.getElementById('stripKey');
+    key.hidden = !sel.length;
+    key.innerHTML = sel.length ? sel.map(w => `<span class="swatch" style="background:${colorOf(w)}"></span>${esc(state.mode === 'groups' ? w : short(w))}`).join(' &nbsp; ') +
+      ` <span class="lgnd"><i class="lg lg-dot"></i>placed</span> <span class="lgnd"><i class="lg lg-thin"></i>rough (3 to 7 episodes)</span> <span class="lgnd">· too few (1 to 2); blank = none</span>` : '';
   }
   window.addEventListener('resize', () => drawStrip());
   strip.addEventListener('click', ev => {
