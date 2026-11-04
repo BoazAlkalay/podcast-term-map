@@ -248,6 +248,25 @@ details.ctl-more[open] { flex-basis: 100%; order: 8; margin-left: 0; }
 ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #pop .airead { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 6px; color: var(--text-2); }
 #cy { height: clamp(360px, calc(100vh - 380px), 460px); }
+/* review 5 (2026-11-03): key numbers, plainer period row */
+#kpis { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 0; flex-basis: 100%; margin-top: 4px; }
+.kpi { display: flex; flex-direction: column; padding: 0 22px; border-left: 1px solid var(--border); }
+.kpi:first-child { padding-left: 0; border-left: 0; }
+.num { font-size: 26px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.kpi .lab, .pairkpi .lab { font-size: 13px; color: var(--text); }
+.kpi .sub, .pairkpi .sub { font-size: 12px; color: var(--muted); }
+.kpinote { flex-basis: 100%; margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.pairrow { display: flex; gap: 22px; align-items: flex-start; }
+.pairkpi { display: flex; flex-direction: column; min-width: 130px; padding-right: 20px; border-right: 1px solid var(--border); }
+.pairkpi .num { font-size: 34px; }
+.pairtext { min-width: 0; }
+#pdates { font-size: 18px; }
+.kpi[data-tip] { position: relative; cursor: help; }
+.kpi[data-tip] .sub { text-decoration: underline dotted; text-underline-offset: 3px; }
+.kpi[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 14px; width: 300px; z-index: 6; padding: 8px 10px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 3px; box-shadow: 0 2px 10px rgba(0,0,0,.14);
+  font-size: 12px; line-height: 1.45; font-weight: 400; opacity: 0; visibility: hidden; transition: opacity .15s; pointer-events: none; }
+.kpi[data-tip]:hover::after, .kpi[data-tip]:focus::after { opacity: 1; visibility: visible; }
 /* review 4 (2026-11-03): map title, bigger axis labels, scroll no longer zooms */
 .maphead h2 { font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
 #zoomBtns { position: absolute; right: 6px; bottom: 6px; z-index: 3; display: flex; gap: 4px; }
@@ -312,7 +331,7 @@ details.mth > p { padding: 0 0 10px; }
     <div class="ctl"><label class="f" for="daysSel">Time window</label>
       <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span></div>
     <div class="ctl ctl-period">
-      <label class="f" for="slider">Current period</label><span class="val" id="pdates"></span>
+      <label class="f" for="slider">Current period</label><span class="val" id="pdates"></span> <span class="small" id="pnum"></span>
       <div class="periodrow">
         <button id="prev" type="button" aria-label="Previous period">◀</button>
         <div class="periodcol">
@@ -322,8 +341,7 @@ details.mth > p { padding: 0 0 10px; }
         <button id="next" type="button" aria-label="Next period">▶</button>
         <button id="play" type="button">▶ Play</button>
       </div>
-      <div class="stripnote"><b>Qualifying episodes per period.</b> <span id="stripText">Bar height is the number of episodes that mention the term 3+ times, not the number of mentions.</span>
-        <span class="lgnd"><i class="sw cur"></i>on the map now.</span> Click a bar to jump.</div>
+      <div class="stripnote" id="stripNote"><b>Move through time:</b> drag the red dot, press ◀ ▶, or click a bar. <span class="lgnd"><i class="sw cur"></i>= period on the map.</span> <span id="stripText"></span></div>
       <div id="partial" hidden></div>
       <div id="early" class="small" hidden></div>
     </div>
@@ -343,7 +361,7 @@ details.mth > p { padding: 0 0 10px; }
   <section id="mapPanel" class="panel" aria-label="Map">
     <div class="maphead">
       <h2 id="mapTitle">Which shows use similar vocabulary?</h2>
-      <p id="ctxLine"></p>
+      <div id="kpis"></div>
     </div>
     <div class="ph maptools">
       <div class="seg" role="group" aria-label="Compare">
@@ -353,7 +371,7 @@ details.mth > p { padding: 0 0 10px; }
       <label>Map type <select id="mapMode">
         <option value="overall">Similarity map</option>
         <option value="centred">Without the shared news cycle</option>
-        <option value="anchored">Fixed word directions (draft)</option>
+        <option value="anchored" hidden disabled>Fixed word directions (draft)</option>  <!-- hidden until the anchor word lists are approved -->
       </select></label>
       <span id="axPick" hidden><label>X <select id="axX"></select></label> <label>Y <select id="axY"></select></label></span>
       <details id="dispSet"><summary>Display settings</summary>
@@ -381,7 +399,6 @@ details.mth > p { padding: 0 0 10px; }
       <b>Similarity map:</b> spreads the shows out as faithfully as two dimensions allow. The words at each
       edge hint at what that direction leans toward. The picture keeps only part of the detail, so trust the numbers in the tabs below over distances on the picture.<br>
       <b>Without the shared news cycle:</b> first removes what every show did together that period, so trails show who moved compared with the others.<br>
-      <b>Fixed word directions:</b> the directions are set in advance by two lists of words (for example diplomacy words vs military words), so a position means the same thing in every period. These lists are drafts.<br>
       The dashed lines cross at the average of all dots. Click an edge label to see all the words behind it. Labels marked AI are a model's short reading of those words: a reading aid, not a finding about the shows.<br>
       Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scrolling moves the page; hold Ctrl (⌘ on Mac) and scroll, or use + / −, to zoom the map.
       <b>Zoom:</b> "This period" fits the dots shown; "All periods" keeps one fixed frame, so movement when you play through periods is real movement; "Selected shows" frames the selection and its trails.
@@ -390,7 +407,6 @@ details.mth > p { padding: 0 0 10px; }
       <b>Similarity map:</b> joint classical MDS of all placed host cells (8+ episodes) on noise-corrected squared distances |μ_a − μ_b|² − v_a − v_b; one fixed frame for all periods.
       Axis labels: word-pull between the overall mean ± 2 SD along the regression direction of μ on each coordinate.<br>
       <b>Without the shared news cycle</b> (relative to the pack): μ_i − m_p (m_p = equal-weight mean of the shows placed in period p, needs k ≥ 3), noise Var(μ_i − m_p) = v_i(1 − 2/k) + Σv/k²; within-period distances unchanged.<br>
-      <b>Fixed word directions</b> (anchored axes): SemAxis-style axis a = mean unit vector of the "pos" anchors − that of the "neg" anchors, normalised; score = μ·a, bootstrap intervals. Draft anchor lists.<br>
       Cells with 3-7 episodes (faded) are placed out of sample (Gower 1968) without refitting the frame. Group diamonds = mean of member coordinates.<br>
       AI direction interpretations (label_axes.py, methods log M6): a Claude model labels each end from the up-to-25 word-pull words; prompt and model stored with the labels; they interpret directions in the vocabulary space, not the podcasts.<br>
       No edges between shows by design (an edge would read as a relation); trail edges are a show's own path, labelled t−k.
@@ -498,10 +514,10 @@ details.mth > p { padding: 0 0 10px; }
     <p class="small">Switch "Explanations" at the top between Plain and Technical for the level of detail.</p>
     <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time, which words political podcasts use around it, and how similar or different those word choices are between shows and over time. It describes vocabulary and topics, not opinions, stance or ideology.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
     <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes were transcribed automatically from public RSS feeds. Around every mention of the term, the nearby nouns, names and adjectives are turned into numbers that capture meaning; each episode with 3+ mentions is averaged, and each show-period averages its episodes. Counting episodes, not mentions, keeps very frequent shows from dominating. A show needs 8 such episodes in a period to be shown normally.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
-    <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean; anchored variant projects μ on SemAxis directions. Share of variation kept is shown under the map.</span></p></details>
+    <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
     <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%).</span></p></details>
     <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are clues about what to read, not proof. Passages are the words around real mentions, picked by ranking, so they show the clearest cases. AI labels on the map's edges are a model's reading of the edge words; they interpret directions on the map, not the podcasts.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
-    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; anchored axes and AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
+    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
   </section>
 </main>
 <div id="pop" role="dialog" hidden></div>
@@ -842,8 +858,8 @@ details.mth > p { padding: 0 0 10px; }
     placedN[p] = NODES.filter(n => n.period === p).length;
   }
   const epMax = Math.max(1, ...Object.values(epTot));
-  document.getElementById('stripText').textContent =
-    `Bar height: episodes that mention '${TERM}' ${M.settings.min_mentions}+ times across the ${HOSTS.length} shows (not the number of mentions).`;
+  document.getElementById('stripText').textContent = `Bars = episodes per period.`;
+  document.getElementById('stripNote').title = `Bar height is the number of episodes that mention '${TERM}' ${M.settings.min_mentions}+ times, summed over the ${HOSTS.length} shows in this group. It is not the number of mentions.`;
   function drawStrip() {
     // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
     const W = strip.clientWidth || 600, H = 30, TH = 8, n = Math.max(1, P1 - P0);
@@ -927,8 +943,10 @@ details.mth > p { padding: 0 0 10px; }
   const cy = cytoscape({ container: box, wheelSensitivity: 0.2, boxSelectionEnabled: false,
     autoungrabify: true, layout: { name: 'preset' }, style: [], elements: [] });
   // Sizes are divided by the zoom so dots, lines and labels keep the same size on screen.
+  let baseZoom = null;     // zoom of the last fit; sizes grow with zoom^0.6 relative to it (1 = unchanged at the fitted view)
   function cyStyle() {
-    const f = 1 / cy.zoom(), z = v => v * f;
+    const zz = cy.zoom(), sc = baseZoom ? Math.min(2.5, Math.max(0.6, Math.pow(zz / baseZoom, 0.6))) : 1;
+    const f = sc / zz, z = v => v * f;
     const big = { width: z(16), height: z(16), color: css('--text'), 'font-weight': 700 };
     const ring = c => Object.assign({ 'border-color': c, 'border-width': z(4) }, big);
     cy.style([
@@ -1102,8 +1120,7 @@ details.mth > p { padding: 0 0 10px; }
         set('axB', `↓ ${end(1, 'neg')}`, tt);
       } else ['axL', 'axR', 'axT', 'axB'].forEach(id => set(id, ''));
       const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
-      note.textContent = `Edge words describe what each end of an axis leans toward. This picture keeps ` +
-        `${share === null || share === undefined ? '?' : Math.round(share * 100)}% of the variation.`;
+      note.textContent = 'Edge words describe what each end of an axis leans toward.';
     }
     const sh = SHIFTS.find(x => x.period === state.p);
     document.getElementById('shiftLine').innerHTML = sh
@@ -1206,7 +1223,7 @@ details.mth > p { padding: 0 0 10px; }
         cy.fit(cy.elements().not('.axnode, .axis'), 50);
         if (cy.zoom() > 2.5) { cy.zoom(2.5); cy.center(cy.nodes()); }
       }
-      fitted = true; lastFit = fitKey;
+      fitted = true; lastFit = fitKey; baseZoom = cy.zoom();
     }
     cyStyle();
     declutter();
@@ -2001,8 +2018,15 @@ details.mth > p { padding: 0 0 10px; }
     const p = state.p, here = NODES.filter(n => n.period === p);
     const solid = here.filter(n => !isThin(n)).length, thin = here.length - solid;
     const grp = M.host_group === 'All shows' ? 'all groups' : M.host_group;
-    document.getElementById('ctxLine').innerHTML = `Showing <b>${solid}</b> of ${HOSTS.length} shows from <b>${esc(grp)}</b>` +
-      `${thin ? ` (plus ${thin} faded: few episodes)` : ''}, for <b>'${esc(TERM)}'</b> in the ${M.period_days}-day period <b>${pShort(p)}, ${yr(p)}</b>.`;
+    const tile = (num, lab, sub, tip) => `<div class="kpi"${tip ? ` data-tip="${esc(tip)}" tabindex="0"` : ''}><span class="num">${num}</span><span class="lab">${lab}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+    const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
+    const unplaced = HOSTS.length - here.length;
+    document.getElementById('kpis').innerHTML = tile(solid, 'shows on the map', `of ${HOSTS.length} in ${esc(grp)}`) +
+      (thin ? tile(thin, 'faded dots', '3 to 7 episodes: rough') : '') +
+      tile(epTot[p] || 0, 'episodes counted', `mention '${esc(TERM)}' ${M.settings.min_mentions}+ times`) +
+      (state.mapMode !== 'anchored' && share !== null && share !== undefined ? tile(Math.round(share * 100) + '%', 'of the variation shown', 'a rough guide: hover for why',
+        `The map squeezes many dimensions into two, so it keeps only about ${Math.round(share * 100)}% of the differences between shows. Treat it as a broad-strokes guide for spotting interesting placement and movement relative to other shows. The numbers in the tabs below use the full detail.`) : '') +
+      `<p class="kpinote">Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
     document.getElementById('mapTitle').textContent = q[0];
     document.getElementById('modeDesc').innerHTML = `<b>How to read it:</b> ${q[1]}`;
@@ -2022,9 +2046,10 @@ details.mth > p { padding: 0 0 10px; }
   function drawPairSum() {
     const el = document.getElementById('pairSum'), p = state.p, k = kind();
     const when = `${pShort(p)}, ${yr(p)}`;
-    let who = '', find = '', note = '';
+    let who = '', find = '', note = '', kpi = null;
     const pairText = (a, b, e, list, unit) => {
-      const clear = e.lo > 1e-9, rank = 1 + list.filter(x => x.period === p && x.dist > e.dist).length;
+      const clear = e.lo > 1e-9; kpi = { n: e.dist, t: clear ? 'clearly different' : 'not distinguishable from chance' };
+      const rank = 1 + list.filter(x => x.period === p && x.dist > e.dist).length;
       const total = list.filter(x => x.period === p).length;
       const prev = placedPeriods.filter(q => q < p).slice(-1)[0], ep = prev !== undefined && findEdge(list, a, b, prev);
       find = (clear ? `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} talk about '${esc(TERM)}' with clearly different words. `
@@ -2049,6 +2074,7 @@ details.mth > p { padding: 0 0 10px; }
       else {
         const o = looOverride(p)?.get(state.a), d = o ? o.d : n.dist, lo = o ? o.lo : n.lo, hi = o ? o.hi : n.hi;
         find = `${dot(state.a, colorOf(state.a))}'s mentions of '${esc(TERM)}' sit closest to <span class="wa">${n.top_words.slice(0, 4).map(esc).join(', ')}</span>.`;
+        if (d !== null && d !== undefined) kpi = { n: d, t: 'from the rest of the group' };
         note = `${n.n} episodes${isThin(n) ? ' (few: rough)' : ''}` + (d !== null && d !== undefined
           ? `; vocabulary difference from the rest of the group ${d.toFixed(2)} (90% range ${lo.toFixed(2)} to ${hi.toFixed(2)})` : '') + '. Select a second show to compare.';
       }
@@ -2060,7 +2086,8 @@ details.mth > p { padding: 0 0 10px; }
     } else { el.innerHTML = ''; return; }
     const isEx = state.example === `${state.a}|${state.b}|${p}` && state.mode === 'shows' && k === 'pair';
     if (isEx) note += ' Example: of the long-running shows, this pair differs most clearly this period. Click a word in the chart below to read passages that use it.';
-    el.innerHTML = `<p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}`;
+    el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
+      `<div class="pairtext"><p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
   }
 
   // ── render ────────────────────────────────────────────────────────────
@@ -2068,6 +2095,7 @@ details.mth > p { padding: 0 0 10px; }
     if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
     slider.value = state.p;
     document.getElementById('pdates').textContent = fmtP(state.p);
+    document.getElementById('pnum').textContent = `(period ${placedPeriods.indexOf(state.p) + 1} of ${placedPeriods.length})`;
     drawStrip();
     // Before the original corpus start only the backfilled shows have episodes (methods log M5).
     const CORPUS_START = '2022-07-12', earlyEl = document.getElementById('early');
