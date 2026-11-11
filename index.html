@@ -320,12 +320,14 @@ details.mth > p { padding: 0 0 10px; }
 <main>
   <section id="intro" class="panel" aria-label="Start here">
     <h2>Start here</h2>
-    <p>This tool follows about 50 political podcasts and the words they use around one term, such as <i>iran</i>,
-      from 2021 to now. <b>Each dot is one show in one period.</b> Dots close together use similar words around the term;
-      that says nothing about whether the shows agree.</p>
-    <p class="steps"><span><b>1</b> Choose two shows on the map</span><span><b>2</b> Compare the words that set them apart</span>
-      <span><b>3</b> Follow the difference over time</span><span><b>4</b> Read the passages behind it</span></p>
+    <p>I follow about 60 political podcasts from 2021 to now and look at how they use the words around a single term,
+      like <i id="introTerm">iran</i>. <b>Each dot is one show in one period</b>, placed using only the words that appear
+      near the term in that show's episodes. When two dots are close, those shows use similar words around the term.
+      Being close together does not mean the shows share a stance or sentiment.</p>
+    <p class="steps"><span><b>1</b> Pick two or three shows on the map</span><span><b>2</b> See where they sit on the axes, and which words separate them</span>
+      <span><b>3</b> Follow how that changed (trails, Over time tab)</span><span><b>4</b> Read the actual passages</span></p>
     <div class="btnrow"><button type="button" id="exampleBtn" class="primary">Show me an example</button>
+      <a id="writeupLink" class="btnlink" href="#" target="_blank" rel="noopener" hidden>Write-up and demo</a>
       <button type="button" id="introHide">Hide this introduction</button></div>
   </section>
 
@@ -347,7 +349,7 @@ details.mth > p { padding: 0 0 10px; }
         <button id="next" type="button" aria-label="Next period">▶</button>
         <button id="play" type="button">▶ Play</button>
       </div>
-      <div class="stripnote" id="stripNote"><b>Move through time:</b> drag the red dot, press ◀ ▶, or click a bar. <span class="lgnd"><i class="sw cur"></i>= period on the map.</span> <span id="stripText"></span></div>
+      <div class="stripnote" id="stripNote"><b>Change the period:</b> drag the red dot, use ◀ ▶, or click a bar. <span class="lgnd"><i class="sw cur"></i>= the period on the map.</span> <span id="stripText"></span></div>
       <div class="stripnote" id="stripKey" hidden></div>
       <div id="partial" hidden></div>
       <div id="early" class="small" hidden></div>
@@ -357,10 +359,10 @@ details.mth > p { padding: 0 0 10px; }
       <div class="moregrid">
         <div><label class="f" for="refSel">Measure change since</label>
           <select id="refSel"><option value="">The previous period</option></select>
-          <p class="small">The hollow ring on the map and the "shift" line under it measure change from this period.</p></div>
+          <p class="small">The hollow ring on the map and the "shift" line below it show change since this period.</p></div>
         <div><label class="f" for="snapSel">Data version</label>
           <select id="snapSel" class="rsel" hidden></select><span class="val" id="snap"></span>
-          <p class="small">The date the data were exported. Earlier versions stay available for comparison; use the newest unless you are checking a past result.</p></div>
+          <p class="small">The date the data were exported. Older versions are kept so past results can be checked; otherwise use the newest.</p></div>
       </div>
     </details>
   </section>
@@ -400,15 +402,14 @@ details.mth > p { padding: 0 0 10px; }
     <div class="moderow"><p id="modeDesc"></p>
     <details class="help" id="mapHelp"><summary aria-label="About the map">? About the map</summary>
       <span class="lv-plain">
-      Each dot is one show in the period shown: a summary of the words its episodes use around the term.
-      Dots that are close talk about the term in similar ways; far apart means different vocabulary and topics,
-      not different opinions.<br>
-      <b>Similarity map:</b> spreads the shows out as faithfully as two dimensions allow. The words at each
-      edge hint at what that direction leans toward. The picture keeps only part of the detail, so trust the numbers in the tabs below over distances on the picture.<br>
-      <b>Relative to the group:</b> first subtracts the average vocabulary shift across the included shows in each period, so trails show how a show differs from that shared movement (which may reflect a common news cycle, among other things).<br>
-      The dashed lines cross at the average of all dots. Click an edge label to see all the words behind it. Labels marked AI are a model's short reading of those words: a reading aid, not a finding about the shows.<br>
+      Each dot sums up the words one show's episodes use around the term in this period. Close dots talk about the term
+      in similar ways. Distant dots differ in vocabulary and topics, which isn't the same as differing in opinion.<br>
+      <b>Similarity map:</b> places the shows as accurately as two dimensions allow. The words at each edge show what that
+      direction is about. A flat picture loses detail, so when the map and the numbers in the tabs disagree, go with the numbers.<br>
+      <b>Relative to the group:</b> measures each show from the group's average in each period. That removes what all the shows did together (often the news cycle, but not always), so trails show how a show moved compared with the group.<br>
+      The dashed lines cross at the average of all dots. Click an edge label to see every word behind it. Labels marked AI are a model's short summary of those words. They help you read the axis; they aren't findings about the shows.<br>
       Hover a dot to see its name and top words; Alt-click (Option-click) pins the name. Scrolling moves the page; hold Ctrl (⌘ on Mac) and scroll, or use + / −, to zoom the map.
-      <b>Zoom:</b> "This period" fits the dots shown; "All periods" keeps one fixed frame, so movement when you play through periods is real movement; "Selected shows" frames the selection and its trails.
+      <b>Zoom:</b> "This period" fits the dots shown; "All periods" keeps the frame fixed, so any movement you see while playing through periods is real; "Selected shows" frames the selection and its trails.
       </span><span class="lv-tech">
       Each dot is a cell (show × period): μ = mean over qualifying episodes (3+ mentions) of the episode-mean ALC embedding of the term (±5-token windows, word2vec 100-d × learned transform A).<br>
       <b>Similarity map:</b> joint classical MDS of all placed host cells (8+ episodes) on noise-corrected squared distances |μ_a − μ_b|² − v_a − v_b; one fixed frame for all periods.
@@ -453,8 +454,8 @@ details.mth > p { padding: 0 0 10px; }
     <div id="legend" aria-label="How to read the map">
       <span><i class="lg lg-dot"></i>One show in one period</span>
       <span><i class="lg lg-trail"></i>That show's own earlier positions (t−1, t−2…)</span>
-      <span><i class="lg lg-ring"></i>Period change is measured from</span>
-      <span><i class="lg lg-thin"></i>Few episodes: rough estimate</span>
+      <span><i class="lg lg-ring"></i>Where change is measured from</span>
+      <span><i class="lg lg-thin"></i>Few episodes (rough)</span>
       <span><i class="lg lg-dia"></i>Group average</span>
       <p>Trails connect a show to its own past, never to another show.<span id="mapshare" hidden></span></p>
     </div>
@@ -463,13 +464,13 @@ details.mth > p { padding: 0 0 10px; }
       <summary>Shows with few episodes this period <span id="thinCount" class="small"></span></summary>
       <details class="help"><summary>What the tiers mean</summary>
         <span class="lv-plain">
-        Episodes count if they mention the term 3+ times. In each period a show is:
+        An episode counts if it mentions the term 3+ times. In each period a show is:
         <ul class="tiers">
-          <li><b>Normal</b> with <span class="minEp">8</span>+ episodes.</li>
-          <li><b>Limited evidence</b> with 3 to 7: faded and marked rough. It is placed without moving the other shows and left out of the group average.</li>
-          <li><b>Too few</b> with 1 or 2: listed here, not placed.</li>
+          <li><b>Placed</b> with <span class="minEp">8</span>+ episodes.</li>
+          <li><b>Few episodes (rough)</b> with 3 to 7. It is shown faded and placed without moving the other shows. It's left out of the group average and can't be compared pair by pair.</li>
+          <li><b>Too few</b> with 1 or 2. It is listed here but not placed.</li>
         </ul>
-        Ticking <b>Include</b> adds a faded show to the group average. A note at the top of the page then explains what changes.
+        Ticking <b>Include</b> adds a faded show to the group average, and a note at the top of the page explains what changes.
         </span><span class="lv-tech">
         Tiers by qualifying episodes n (3+ mentions): n ≥ <span class="minEp">8</span> placed (bootstrap intervals); 3 ≤ n ≤ 7 "thin": v from the show's pooled per-episode
         spread (its 8+ cells in this bundle, else corpus-wide) / n, Gower out-of-sample placement, distance from the solid-show group with an analytic score-type interval
@@ -513,19 +514,19 @@ details.mth > p { padding: 0 0 10px; }
   <section id="pasPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-pas" hidden>
     <div class="ph"><span id="pasTitle"></span><span class="chip" id="pasChip"></span></div>
     <details class="help"><summary>How to read this</summary><span id="pasHelp"></span></details>
-    <p class="small" id="pasSel">Selected examples chosen to illustrate the vocabulary difference, not a random sample of each show's coverage.</p>
+    <p class="small" id="pasSel">These passages were picked to show the difference, so they aren't a random sample of what each show says.</p>
     <div id="pas"></div>
   </section>
 
   <section id="methodsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-methods" hidden>
     <h2>Methods</h2>
     <p class="small">Switch "Explanations" at the top between Plain and Technical for the level of detail.</p>
-    <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time, which words political podcasts use around it, and how similar or different those word choices are between shows and over time. It describes vocabulary and topics, not opinions, stance or ideology.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
-    <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes were transcribed automatically from public RSS feeds. Around every mention of the term, the nearby nouns, names and adjectives are turned into numbers that capture meaning; each episode with 3+ mentions is averaged, and each show-period averages its episodes. Counting episodes, not mentions, keeps very frequent shows from dominating. A show needs 8 such episodes in a period to be shown normally.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
-    <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map squeezes many dimensions into two, so it keeps only part of the detail. Positions are fitted once for all periods, so movement over time is comparable. The numbers in the tabs use the full detail.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
-    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Differences are corrected for the fact that a show with few episodes looks different by chance; zero means "can't be told apart from chance". Every number has a 90% range: a range touching zero means no clear difference. Shows with few episodes are marked rough and use a formula-based range. Each pair is checked on its own: with hundreds of pairs on a map, roughly 1 in 20 can look clearly different by chance alone, so one clear result is a lead, not a finding. The example pair is chosen because it is the strongest of up to 28 pairs, so its number is probably an overestimate.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction); the example pair is selected as the maximum lower bound over up to 28 pairs, so its estimate is subject to winner's-curse inflation.</span></p></details>
-    <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are clues about what to read, not proof. Passages are the words around real mentions, picked by ranking, so they show the clearest cases. AI labels on the map's edges are a model's reading of the edge words; they interpret directions on the map, not the podcasts.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
-    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts contain errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period is still in progress. Many comparisons are possible, so some differences will look interesting by chance: treat them as leads to read.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
+    <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time: which words political podcasts use around it, and how much those words differ between shows and over time. It measures vocabulary and topics, not opinions, stances or ideologies.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
+    <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes are transcribed automatically from the shows' public RSS feeds. For every mention of the term, the nearby nouns, names and adjectives are turned into numbers that represent meaning. An episode needs 3+ mentions to count, and its mentions are averaged. A show's dot for a period is the average of its episodes, so one episode that says the word constantly doesn't outweigh the others. A show needs 8 such episodes in a period to get a normal dot.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
+    <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map flattens many dimensions into two, so it loses some detail. Positions are fitted once across all periods, so movement over time can be compared. The numbers in the tabs use the full data.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
+    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Two shows will look a bit different by chance alone, especially with few episodes, so that expected amount is taken out of every difference. Zero means no difference the data can detect. Every number comes with a 90% range; if the range reaches zero, there's no clear difference. Shows with few episodes are marked rough and get their range from a formula instead. Each pair is checked separately, so with hundreds of pairs about 1 in 20 will look clearly different by chance. A single clear result deserves a closer look before you trust it. The example pair is the strongest of up to 28 pairs, so its number is probably too high.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction); the example pair is selected as the maximum lower bound over up to 28 pairs, so its estimate is subject to winner's-curse inflation.</span></p></details>
+    <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are a guide to what to read. Passages are the actual words around real mentions, picked by ranking, so they show the clearest cases. The AI labels on the map's edges are a model's reading of the edge words. They describe a direction on the map rather than any podcast.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
+    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
   </section>
 </main>
 <div id="pop" role="dialog" hidden></div>
@@ -700,10 +701,14 @@ details.mth > p { padding: 0 0 10px; }
   document.title = `'${TERM}', ${M.period_days} days · Podcast Term Map`;
   document.getElementById('snap').textContent = M.snapshot;
   document.getElementById('term').textContent = `'${TERM}'`;
+  document.getElementById('introTerm').textContent = TERM;
+  // Link to the write-up and demo on Boaz's website; hidden until a URL is set.
+  const WRITEUP_URL = 'https://boazalkalay.github.io/projects.html';
+  if (WRITEUP_URL) { const wl = document.getElementById('writeupLink'); wl.href = WRITEUP_URL; wl.hidden = false; }
   document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
   document.getElementById('plen').textContent = `${M.period_days} days, ${M.settings.min_episodes}+ episodes`;
   document.getElementById('mapshare').textContent =
-    `The 2-D map keeps ${Math.round(M.map_share * 100)}% of the variation; trust the distances over the picture.`;
+    `The map keeps ${Math.round(M.map_share * 100)}% of the variation; when in doubt, go with the numbers in the tabs.`;
 
   // ── bundle menus (shows on the map, term, period length, snapshot), from data/index.js ──
   // Picking a value reloads the page with that bundle. Other menus keep their value where possible.
@@ -721,7 +726,10 @@ details.mth > p { padding: 0 0 10px; }
         || hosts[0]
         || pool.find(e => e.term === want.term && e.days === want.days)
         || pool[0];
-      if (hit) location.search = '?b=' + encodeURIComponent(hit.path);
+      if (!hit) return;
+      const q = new URLSearchParams(location.search);
+      q.set('b', hit.path);
+      location.search = '?' + q.toString();
     };
     const inSnapAll = INDEX.filter(e => e.snapshot === cur.snapshot);
     const hostList = uniq(inSnapAll.map(e => e.hosts))
@@ -779,6 +787,24 @@ details.mth > p { padding: 0 0 10px; }
   solidNodes.forEach(n => { nPer[n.show] = (nPer[n.show] || 0) + 1; });
   const inP = solidNodes.filter(n => n.period === state.p).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]);
   if (inP.length >= 2) { state.a = inP[0]; state.b = inP[1]; state.starter = `${state.a}|${state.b}`; }
+  // Shareable links: the selection, period, map type and tab are kept in the URL
+  // (s1-s4 = shows A-D, g1/g2 = groups, mode=groups, p = period start date, map=centred, tab).
+  // Values that do not exist in this bundle are ignored, so a link survives a re-export.
+  const URLQ = new URLSearchParams(location.search);
+  {
+    const shows = new Set(NODES.map(n => n.show)), qp = URLQ.get('p');
+    const pi = qp ? periods.findIndex(x => x.start === qp) : -1;
+    if (pi >= 0 && placedPeriods.includes(pi)) state.p = pi;
+    const qs = ['s1', 's2', 's3', 's4'].map(k => URLQ.get(k) || '');
+    if (qs.some(s => shows.has(s))) {                    // keep the default pair if none of the linked shows exist here
+      ['a', 'b', 'c', 'd'].forEach((k, i) => { state[k] = shows.has(qs[i]) ? qs[i] : ''; });
+      state.starter = '';
+    }
+    if (GROUPS[URLQ.get('g1')]) state.ga = URLQ.get('g1');
+    if (GROUPS[URLQ.get('g2')]) state.gb = URLQ.get('g2');
+    if (URLQ.get('mode') === 'groups') state.mode = 'groups';
+    if (URLQ.get('map') === 'centred') state.mapMode = 'centred';
+  }
   const slider = document.getElementById('slider');
   slider.min = placedPeriods[0]; slider.max = placedPeriods[placedPeriods.length - 1];
 
@@ -866,7 +892,7 @@ details.mth > p { padding: 0 0 10px; }
     placedN[p] = NODES.filter(n => n.period === p).length;
   }
   const epMax = Math.max(1, ...Object.values(epTot));
-  document.getElementById('stripText').textContent = `Each bar = episodes with ${M.settings.min_mentions}+ mentions, across the included shows.`;
+  document.getElementById('stripText').textContent = `Each bar counts episodes that mention the term ${M.settings.min_mentions}+ times, across the shows in this group.`;
   document.getElementById('stripNote').title = `Bar height is the number of episodes that mention '${TERM}' ${M.settings.min_mentions}+ times, summed over the ${HOSTS.length} shows in this group. It is not the number of mentions.`;
   function drawStrip() {
     // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
@@ -900,7 +926,7 @@ details.mth > p { padding: 0 0 10px; }
     const key = document.getElementById('stripKey');
     key.hidden = !sel.length;
     key.innerHTML = sel.length ? sel.map(w => `<span class="swatch" style="background:${colorOf(w)}"></span>${esc(state.mode === 'groups' ? w : short(w))}`).join(' &nbsp; ') +
-      ` <span class="lgnd"><i class="lg lg-dot"></i>enough data</span> <span class="lgnd"><i class="lg lg-thin"></i>sparse: rough</span> <span class="lgnd"><i class="lg lg-tiny"></i>too few to place</span> <span class="lgnd">· blank = none</span>` : '';
+      ` <span class="lgnd"><i class="lg lg-dot"></i>enough data</span> <span class="lgnd"><i class="lg lg-thin"></i>few episodes (rough)</span> <span class="lgnd"><i class="lg lg-tiny"></i>too few to place</span> <span class="lgnd">· blank = none</span>` : '';
   }
   window.addEventListener('resize', () => drawStrip());
   strip.addEventListener('click', ev => {
@@ -1152,13 +1178,13 @@ details.mth > p { padding: 0 0 10px; }
         set('axB', end(1, 'neg', '↓ '), tt);
       } else ['axL', 'axR', 'axT', 'axB'].forEach(id => set(id, ''));
       const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
-      note.textContent = 'Edge words describe what each end of an axis leans toward.';
+      note.textContent = 'Edge words describe what sets each end of an axis apart from the other end.';
     }
     const sh = SHIFTS.find(x => x.period === state.p);
     document.getElementById('shiftLine').innerHTML = sh
-      ? `<b>What changed for everyone</b> (the shared shift) since the previous period: across the ${sh.n_shows} shows on the map in both, ` +
+      ? `<b>Shared shift since the previous period:</b> across the ${sh.n_shows} shows on the map in both periods, ` +
         (sh.lo <= 1e-9
-          ? `the average wording around '${esc(TERM)}' changed by ${sh.dist.toFixed(2)}, which cannot be told apart from noise, so read these words as weak hints: it leaned toward ${words(sh.toward)}, away from ${words(sh.away)}.`
+          ? `the average wording around '${esc(TERM)}' changed by ${sh.dist.toFixed(2)}, too little to tell apart from ordinary variation. For what it's worth, it drifted toward ${words(sh.toward)} and away from ${words(sh.away)}.`
           : `the average wording around '${esc(TERM)}' moved toward <b>${words(sh.toward)}</b> and away from ${words(sh.away)}.`) +
         ` <span class="small">Size of the change ${sh.dist.toFixed(2)} (90% range ${sh.lo.toFixed(2)} to ${sh.hi.toFixed(2)}).</span>`
       : 'No shared-shift estimate for this period (needs 2+ shows placed in this and the previous period).';
@@ -1329,21 +1355,21 @@ details.mth > p { padding: 0 0 10px; }
   };
   // ── explainers: every entry is [plain, technical]; the header switch picks one ──
   const NOTE_INT = [
-    ' The dot is the best estimate and the bar is the range it plausibly lies in (90%). A bar that touches zero means the difference can\'t be told apart from ordinary variation between episodes; those dots are hollow. Click a dot to jump to that period.',
+    ' Each dot is the best estimate; the bar shows the 90% range. If the bar reaches zero, the dot is hollow: the difference could just be ordinary variation between episodes. Click a dot to go to that period.',
     ' Noise-corrected: d² = |μ_a − μ_b|² − v_a − v_b with v = tr(Σ̂)/n, square root of the value clipped at 0 (0 = not distinguishable from sampling noise). Bars: 90% percentile bootstrap over episodes within each show-period (300 draws, noise term subtracted twice per draw); conservative near zero (methods log M4). ◇ points (fewer than 8 episodes) and points recomputed with Include use an analytic score-type interval from v, d_eff and r1 instead. Hollow = lower bound 0. Click a point to jump to that period.'];
   const NOTE_PAS = [
-    ' Passages are the words around each mention with small words removed (mostly nouns, names and adjectives), not full sentences. One passage per episode.',
+    ' These aren\'t full sentences. Each passage is the words around one mention, keeping mostly nouns, names and adjectives. One passage per episode.',
     ' Context = ±5-token lemmatized window (nouns, proper nouns, adjectives) around the mention, truncated at 240 characters; one mention per episode; token position = offset in the transcript.'];
   const both = (a, b) => [a[0] + b[0], a[1] + b[1]];
   const help = v => {
     const l = L(), ref = state.ref === '';
     const H = {
-      loo: both(['How far this show\'s way of talking about \'' + TERM + '\' is from the typical show on the map, period by period. "Typical" means the average of all the other shows on the map, each counted equally.',
+      loo: both(['How far this show\'s language around \'' + TERM + '\' is from the rest of the shows on the map, period by period. "The rest" is the average of all the other shows, each counted equally.',
         'Leave-one-out distance from the group: |μ_i − m₋ᵢ|² − (v_i + Σ_{j≠i} v_j / k²), m₋ᵢ = equal-weight mean of the k other placed shows (shows with fewer than 8 episodes are excluded unless Included).'], NOTE_INT),
       drift: both(ref
-        ? ['How much this show\'s way of talking about the term changed since the previous period. This compares the show with its own past, not with other shows. A point appears only when the show has enough episodes in both periods.',
+        ? ['How much the show\'s language around the term changed from one period to the next. It compares the show with itself, not with other shows. Points only appear when the show has enough episodes in both periods.',
           'Own drift: |μ_t − μ_{t−1}|² − v_t − v_{t−1}, both cells placed; bootstrap draws for each cell, noise term subtracted twice per draw.']
-        : [`How far this show's way of talking about the term is from where it was in ${refLabel()}, for every period it has enough episodes. You chose the reference period after looking, so a large value is something to read about, not a finding.`,
+        : [`How far this show's way of talking about the term is from where it was in ${refLabel()}, for every period it has enough episodes. Because you picked the reference period yourself, a big value is worth a closer look but isn't a result on its own.`,
           `Distance to the reference cell r (${refLabel()}): |μ_t − μ_r|² − v_t − v_r for every placed t. The reference is chosen post hoc, so intervals are descriptive, not a test.`], NOTE_INT),
       pair: both(['How differently the two shows talk about \'' + TERM + '\' in each period. 0 means no detectable difference; larger means more different vocabulary around the term.',
         'Pairwise noise-corrected distance d²_ab = |μ_a − μ_b|² − v_a − v_b per period (both shows need 8+ episodes).'], NOTE_INT),
@@ -1358,13 +1384,13 @@ details.mth > p { padding: 0 0 10px; }
       gcomp: ['How many of each group\'s shows had enough episodes to count in each period. An average built from fewer shows is less representative, and a change in who counts can move a group average even if no show changed.',
         'Members with n ≥ min_episodes per period (the members entering μ_G). Composition changes move μ_G without any member moving.'],
       gcomp1: ['How many of the group\'s shows had enough episodes to count in each period.', 'Members with n ≥ min_episodes per period (the members entering μ_G).'],
-      top: ['Words that sit closest in meaning to how this show uses the term in the period shown. A summary of the neighbourhood, not a list of words the show actually said.',
+      top: ['Words closest in meaning to how this show uses the term this period. The show may never have said them; they show the area of meaning it\'s in.',
         `Top 10 vocabulary words (≥ ${M.settings.vocab_min_count} corpus uses) by cosine similarity to the cell mean μ; nearest neighbours in embedding space, not necessarily present in the contexts.`],
       trend: ['The same summary words for every period the show has enough episodes, so you can see the topics drift.', 'Nearest-neighbour words to μ for each placed period of the show.'],
       top2: ['Words closest in meaning to each show\'s use of the term in the period shown.', 'Nearest-neighbour words to each cell mean μ.'],
       gtop: ['Words closest in meaning to each group\'s average use of the term.', 'Nearest-neighbour words to μ_G.'],
       gtop1: ['Words closest in meaning to the group\'s average use of the term.', 'Nearest-neighbour words to μ_G.'],
-      pull: [`Words that sit noticeably closer to one show's use of '${TERM}' than to the other's: left-hand words lean toward the left show, right-hand words toward the right show. They are clues about what to read, not proof. "Previous" and "Next" show the same comparison in neighbouring periods. Click a word to read passages that use it; click a show's name to see its groups.`,
+      pull: [`Words that are much closer in meaning to one show's use of '${TERM}' than to the other's. Words on the left go with the left show, words on the right with the right show. Use them as pointers for what to read, not as proof. Previous and Next show the same comparison for nearby periods. Click a word to read passages that use it; click a show's name to see its groups.`,
         `Candidates: union of each side's ${M.settings.pull_candidates || 150} nearest vocabulary words; ranked by cos(w, μ_B) / cos(w, μ_A), words with non-positive cosine dropped; x = log2 ratio; top ${M.settings.pull_top_n || 12} per side (Cell 16). Selected for contrast, so they separate the sides by construction: use them to direct reading, not as evidence. Previous/Next step this chart to adjacent periods with both sides placed.`],
       pullbc: [`The words that separate ${l.y1} from ${l.y2}: the vocabulary ${l.x} would be leaning toward if it moved to one or the other.`, `Word-pull between μ_${l.y1} and μ_${l.y2} (same procedure as the pair view).`],
       gpull: [`As for shows, but for the two group averages. Click a group's name to see which shows it includes this period.`,
@@ -1867,11 +1893,11 @@ details.mth > p { padding: 0 0 10px; }
       `<p class="small">Closest first${lab[side + '_r'] ? '; × = how much closer to this end than to the other' : ''}.</p>${list(side)}`;
     if (ai && ai[side]) html += `<div class="airead"><p><b>AI reading of these word cues:</b> ${esc(ai[side].label)}<span class="aibadge">AI</span>` +
       ` <span class="small">(opposite end: ${esc(ai[other] ? ai[other].label : '?')})</span></p>` +
-      `<p class="small">A model-generated interpretation of the words above. It is a reading aid, not a finding about the shows.</p>` +
+      `<p class="small">A model's interpretation of the words above, meant to help you read the axis.</p>` +
       (ai.why ? `<p class="small"><b>Model's reason:</b> ${esc(ai.why)}</p>` : '') +
       `<p class="small">${esc(AX_AI.model || '')}${AX_AI.created ? ', ' + esc(AX_AI.created.slice(0, 10)) : ''}${AX_AI.prompt_version ? ', prompt ' + esc(AX_AI.prompt_version) : ''}; details in Methods.</p></div>`;
     html += `<p><b>Words at the opposite edge</b></p>${list(other)}` +
-      `<p class="small">These words describe where the axis points in the space of how shows use '${esc(TERM)}'; the map keeps only part of the variation.</p>`;
+      `<p class="small">These words show which way the axis points among the ways shows use '${esc(TERM)}'. The map only captures part of the variation.</p>`;
     openPop(ev, html);
   }
   for (const id of Object.keys(AX_SIDE)) document.getElementById(id).addEventListener('click', ev => axisPop(ev, id));
@@ -1926,8 +1952,8 @@ details.mth > p { padding: 0 0 10px; }
         ch.map(([s, d]) => `${esc(short(s))} ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(3)}`).join(', ') + '.' : '';
     }
     el.innerHTML = `<b>Group average now includes:</b> ${[...included].map(s => esc(short(s))).join(', ')} (few episodes). ` +
-      `In the periods affected, every show's vocabulary difference from the group is recomputed (a little noisier, not biased), and its 90% ranges switch to a formula ` +
-      `that is slightly less cautious than the default, so a show can look "different" partly because of the method. Map positions do not change. ${change}` +
+      `In the affected periods, each show's difference from the group is recalculated. The numbers get a little noisier but not biased. The 90% ranges switch to a formula ` +
+      `that is slightly less cautious than the default, so some shows can look "different" partly because of the method. Map positions stay the same. ${change}` +
       `<button type="button" id="inclReset2">Reset</button>`;
     el.hidden = false;
     document.getElementById('inclReset2').addEventListener('click', resetIncl);
@@ -1977,7 +2003,7 @@ details.mth > p { padding: 0 0 10px; }
     const n = nodeAt(id, state.p); if (!n) return '';
     const o = looOverride(state.p)?.get(id);
     const d = o ? o.d : n.dist, lo = o ? o.lo : n.lo, hi = o ? o.hi : n.hi;
-    return `<b>${esc(n.show)}</b><span class="small">${n.n} episodes${isThin(n) ? ' (few: rough)' : ''}` +
+    return `<b>${esc(n.show)}</b><span class="small">${n.n} episodes${isThin(n) ? ' (few episodes, rough)' : ''}` +
       (d !== null && d !== undefined ? `; vocabulary difference from the group ${d.toFixed(3)} (90%: ${lo.toFixed(3)} to ${hi.toFixed(3)}${o || isThin(n) ? ', approximate' : ''})` : '') +
       `</span><span class="small">Top words: ${n.top_words.slice(0, 6).map(esc).join(', ')}</span>`;
   }
@@ -1993,6 +2019,7 @@ details.mth > p { padding: 0 0 10px; }
   const TABS = { words: 'wordsPanel', ts: 'tsPanel', pas: 'pasPanel', methods: 'methodsPanel' };
   state.tab = 'words';
   try { const t = localStorage.getItem('dashTab'); if (TABS[t]) state.tab = t; } catch (e) {}
+  if (TABS[URLQ.get('tab')]) state.tab = URLQ.get('tab');
   function setTab(t) {
     state.tab = t;
     try { localStorage.setItem('dashTab', t); } catch (e) {}
@@ -2044,8 +2071,8 @@ details.mth > p { padding: 0 0 10px; }
   const nm = s => state.mode === 'groups' ? s : short(s);          // groups keep their full names
   const dot = (s, c) => `<b style="color:${c}">${esc(nm(s))}</b>`;
   const MODE_Q = {
-    overall: ['Which shows use similar vocabulary?', `Each dot is one show. Dots that sit closer together use more similar words around '${TERM}'; position is not agreement. The labels on the four edges say what the words at each end are about.`],
-    centred: ['Which shows moved differently from the rest?', `Each dot is one show, after subtracting the average vocabulary shift across the included shows that period (it may reflect a common news cycle, but also other shared changes). Dots far from the centre moved differently from the group average. The edge labels say what the words at each end are about.`],
+    overall: ['Which shows use similar vocabulary?', `Each dot is one show. The closer two dots are, the more alike their words around '${TERM}'. Closeness isn't agreement. Each edge label describes the words that set that side apart from the opposite side.`],
+    centred: ['Which shows moved differently from the rest?', `Each dot is one show, measured from the group's average that period. That removes what all the shows did together (often the news cycle, but not always). Dots far from the centre differ most from the group that period; trails show how a show moved compared with the group.`],
     anchored: ['Where do shows fall between two predefined word lists?', `Each dot is one show. Each axis runs between two draft word lists; a show sits toward the list whose words it uses more, so a position means the same thing in every period.`]
   };
   function drawContext() {
@@ -2056,10 +2083,10 @@ details.mth > p { padding: 0 0 10px; }
     const share = state.mapMode === 'centred' ? M.map_share_centred : M.map_share;
     const unplaced = HOSTS.length - here.length;
     document.getElementById('kpis').innerHTML = tile(solid, 'shows on the map', `of ${HOSTS.length} in ${esc(grp)}`) +
-      (thin ? tile(thin, 'faded dots', '3 to 7 episodes: rough') : '') +
+      (thin ? tile(thin, 'faded dots', 'few episodes (rough): 3 to 7') : '') +
       tile(epTot[p] || 0, 'episodes counted', `mention '${esc(TERM)}' ${M.settings.min_mentions}+ times`) +
       (state.mapMode !== 'anchored' && share !== null && share !== undefined ? tile(Math.round(share * 100) + '%', 'of the variation shown', 'a rough guide: hover for why',
-        `The map squeezes many dimensions into two, so it keeps only about ${Math.round(share * 100)}% of the differences between shows. Treat it as a broad-strokes guide for spotting interesting placement and movement relative to other shows. The numbers in the tabs below use the full detail.`) : '') +
+        `The map flattens many dimensions into two and keeps about ${Math.round(share * 100)}% of the differences between shows. Use it to spot shows worth a closer look; the tabs below use the full data.`) : '') +
       `<p class="kpinote">${/^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? `Data through ${M.snapshot}. ` : ''}Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
     document.getElementById('mapTitle').textContent = q[0];
@@ -2087,10 +2114,10 @@ details.mth > p { padding: 0 0 10px; }
       const total = list.filter(x => x.period === p).length;
       const prev = placedPeriods.filter(q => q < p).slice(-1)[0], ep = prev !== undefined && findEdge(list, a, b, prev);
       find = (clear ? `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} use measurably different words around '${esc(TERM)}'. `
-        : `${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} show no clear difference in how they talk about '${esc(TERM)}' (inconclusive: the data cannot resolve a difference, which does not mean their wording is the same); treat the words below as weak leads. `) +
+        : `The data aren't enough to say whether ${dot(a, colorOf(a))} and ${dot(b, colorOf(b))} talk about '${esc(TERM)}' differently. They might, or they might not, so read the words below as rough hints. `) +
         `${esc(nm(a))}'s wording sits closer to <span class="wa">${lean3(e, a)}</span>; ${esc(nm(b))}'s to <span class="wb">${lean3(e, b)}</span>.`;
-      note = `Vocabulary difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)} to ${e.hi.toFixed(2)}: values the data are consistent with), ${rank <= 5 || total < 20 ? `the ${ord(rank)}largest of the ${total} ${unit} pairs this period` : `larger than about ${Math.floor(100 * (total - rank) / (total - 1))}% of the ${total} ${unit} pairs this period`}` +
-        `${ep ? `; ${ep.dist.toFixed(2)} in the previous period` : ''}. This describes words used, not opinions.`;
+      note = `Vocabulary difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)}–${e.hi.toFixed(2)}). That's ${rank <= 5 || total < 20 ? `the ${ord(rank)}largest of the ${total} ${unit} pairs this period` : `bigger than about ${Math.floor(100 * (total - rank) / (total - 1))}% of the ${total} ${unit} pairs this period`}` +
+        `${ep ? `; last period it was ${ep.dist.toFixed(2)}` : ''}. This doesn't measure opinion, only the words used near '${esc(TERM)}'.`;
     };
     if (k === 'pair' || k === 'tri' || k === 'ties') {
       who = `${esc(short(state.a))} vs ${esc(short(state.b))}, ${when}`;
@@ -2109,7 +2136,7 @@ details.mth > p { padding: 0 0 10px; }
         const o = looOverride(p)?.get(state.a), d = o ? o.d : n.dist, lo = o ? o.lo : n.lo, hi = o ? o.hi : n.hi;
         find = `${dot(state.a, colorOf(state.a))}'s mentions of '${esc(TERM)}' sit closest to <span class="wa">${n.top_words.slice(0, 4).map(esc).join(', ')}</span>.`;
         if (d !== null && d !== undefined) kpi = { n: d, t: 'from the rest of the group' };
-        note = `${n.n} episodes${isThin(n) ? ' (few: rough)' : ''}` + (d !== null && d !== undefined
+        note = `${n.n} episodes${isThin(n) ? ' (few episodes, rough)' : ''}` + (d !== null && d !== undefined
           ? `; vocabulary difference from the rest of the group ${d.toFixed(2)} (90% range ${lo.toFixed(2)} to ${hi.toFixed(2)})` : '') + '. Select a second show to compare.';
       }
     } else if (k === 'gpair') {
@@ -2119,8 +2146,8 @@ details.mth > p { padding: 0 0 10px; }
       else find = 'These groups are not compared in this period (too few shows placed, or they share a show).';
     } else { el.innerHTML = ''; return; }
     const isEx = state.example === `${state.a}|${state.b}|${p}` && state.mode === 'shows' && k === 'pair';
-    if (isEx) note += ' Example: the strongest contrast this period among the long-running shows, chosen to demonstrate the tool. It is not a typical comparison. Click a word in the chart below to read passages that use it.';
-    el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi" data-tip="How far apart the two shows' wording is, after subtracting the difference you would expect from chance alone. 0 means no resolvable difference. The 90% range is the span of values the data are consistent with; if it includes 0, the result is inconclusive. With many pairs on a map, about 1 in 20 can look clear by chance alone, so treat a single clear result as a lead." tabindex="0"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
+    if (isEx) note += ' This is an example pair: the two long-running shows that differed most this period. Most pairs won\'t be this far apart. Click a word in the chart below to read passages that use it.';
+    el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi" data-tip="How different the two shows' wording is, minus the difference you'd expect from ordinary variation between episodes. 0 means no detectable difference. The 90% range shows how high or low the real value could plausibly be; if it reaches 0, the result is inconclusive. With hundreds of pairs, roughly 1 in 20 will look clear just by chance, so one clear result on its own isn't proof." tabindex="0"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
       `<div class="pairtext"><p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
   }
 
@@ -2139,7 +2166,7 @@ details.mth > p { padding: 0 0 10px; }
     const partialEl = document.getElementById('partial');
     const isPartial = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[state.p].end > M.snapshot;
     partialEl.hidden = !isPartial;
-    if (isPartial) partialEl.innerHTML = lv([`This period is still in progress: it runs to ${periods[state.p].end}, but the data stop at the ${M.snapshot} snapshot, so fewer shows have enough episodes yet.`,
+    if (isPartial) partialEl.innerHTML = lv([`This period isn't over yet. It runs to ${periods[state.p].end}, but the data end on ${M.snapshot}, so some shows don't have enough episodes yet.`,
       `Partial period: end ${periods[state.p].end} is after snapshot ${M.snapshot}; n counts are incomplete, so fewer cells reach ${MIN_EP} qualifying episodes and intervals are wider.`]);
     for (const id of ['A', 'B', 'C', 'D']) document.getElementById('sel' + id).value = state[id.toLowerCase()];
     document.getElementById('selGA').value = state.ga; document.getElementById('selGB').value = state.gb;
@@ -2164,6 +2191,22 @@ details.mth > p { padding: 0 0 10px; }
     if (state.tab === 'ts') drawTs();
     if (state.tab === 'words') drawWords();
     if (state.tab === 'pas') drawPas();
+    syncURL();
+  }
+  // Keep the address bar in step with the view, so copying it gives a link to exactly this comparison.
+  const CUR_PATH = CHOSEN || (INDEX.find(e => e.snapshot === M.snapshot && e.term === M.term &&
+    e.days === M.period_days && e.hosts === M.host_group) || {}).path;
+  function syncURL() {
+    const q = new URLSearchParams();
+    const set = (k, v) => { if (v) q.set(k, v); };
+    set('b', CUR_PATH);
+    if (state.mode === 'groups') { set('mode', 'groups'); set('g1', state.ga); set('g2', state.gb); }
+    else { set('s1', state.a); set('s2', state.b); set('s3', state.c); set('s4', state.d); }
+    set('p', periods[state.p] && periods[state.p].start);
+    if (state.mapMode === 'centred') set('map', 'centred');
+    if (state.tab && state.tab !== 'words') set('tab', state.tab);
+    const s = '?' + q.toString();
+    if (s !== location.search) try { history.replaceState(null, '', s + location.hash); } catch (e) {}
   }
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   // Theme button: Auto (follows the computer) -> Light -> Dark. Remembered in this browser if possible.
@@ -2183,7 +2226,7 @@ details.mth > p { padding: 0 0 10px; }
   });
   let rt = null;
   window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { cy.resize(); fitted = false; render(); }, 150); });
-  render();
+  if (state.mode === 'groups') setMode('groups'); else render();
 })();
 </script>
 </body>
