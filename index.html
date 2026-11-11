@@ -281,6 +281,9 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #zoomBtns { position: absolute; right: 6px; bottom: 6px; z-index: 3; display: flex; gap: 4px; }
 #zoomBtns button { padding: 2px 10px; font-size: 14px; }
 #zoomHint { margin: 4px 0 0; }
+#mapPeriod { position: absolute; left: 8px; top: 6px; z-index: 3; pointer-events: none; font-size: 12px;
+  color: var(--text-2); background: var(--surface); padding: 1px 6px; border-radius: 3px; transition: color .6s, box-shadow .6s; }
+#mapPeriod.flash { color: var(--text); box-shadow: 0 0 0 1px var(--text-2); transition: none; }
 /* review 3 (2026-11-03): tabs that look and move like tabs; less text at once */
 #tabs { gap: 3px; padding: 8px 0 0; border-bottom: 1px solid var(--border); }
 #tabs button[role=tab] { border: 1px solid var(--border); border-bottom: 0; border-radius: 8px 8px 0 0; padding: 8px 18px 9px;
@@ -448,11 +451,12 @@ details.mth > p { padding: 0 0 10px; }
       <div id="cy" role="img" aria-label="Map of shows for the period shown"></div>
       <div class="axl" id="axL"></div><div class="axl" id="axR"></div>
       <div class="axl" id="axT"></div><div class="axl" id="axB"></div>
+      <div id="mapPeriod" aria-live="polite"></div>
       <div id="zoomBtns" role="group" aria-label="Zoom the map">
         <button type="button" id="zIn" aria-label="Zoom in">+</button><button type="button" id="zOut" aria-label="Zoom out">−</button>
         <button type="button" id="zFit">Reset view</button></div>
     </div>
-    <p class="small" id="zoomHint">Scrolling moves the page. To zoom the map, hold Ctrl (⌘ on Mac) and scroll, or use the buttons.</p>
+    <p class="small" id="zoomHint">Scrolling moves the page. To zoom the map, hold Ctrl (⌘ on Mac) and scroll, or use the buttons. Press ← → to change the period.</p>
     <div id="legend" aria-label="How to read the map">
       <span><i class="lg lg-dot"></i>One show in one period</span>
       <span><i class="lg lg-trail"></i>That show's own earlier positions (t−1, t−2…)</span>
@@ -938,6 +942,15 @@ details.mth > p { padding: 0 0 10px; }
   const step = d => { const i = placedPeriods.indexOf(state.p) + d;
     if (i >= 0 && i < placedPeriods.length) { state.p = placedPeriods[i]; render(); } };
   document.getElementById('prev').addEventListener('click', () => step(-1));
+  // ← / → anywhere on the page step through periods, except while typing, in a menu, on the
+  // slider (it handles arrows itself) or on the tab bar (arrows move between tabs there).
+  document.addEventListener('keydown', e => {
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    const el = e.target;
+    if (el.closest && el.closest('input, select, textarea, [contenteditable], [role=tab], [role=slider]')) return;
+    e.preventDefault();
+    step(e.key === 'ArrowRight' ? 1 : -1);
+  });
   document.getElementById('next').addEventListener('click', () => step(1));
   let timer = null;
   document.getElementById('play').addEventListener('click', e => {
@@ -2132,6 +2145,11 @@ details.mth > p { padding: 0 0 10px; }
     if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
     slider.value = state.p;
     document.getElementById('pdates').textContent = fmtP(state.p);
+    const mp = document.getElementById('mapPeriod'), mpText = `${pShort(state.p)}, ${yr(state.p)}`;
+    if (mp.textContent !== mpText) {
+      if (mp.textContent) { mp.classList.add('flash'); setTimeout(() => mp.classList.remove('flash'), 60); }
+      mp.textContent = mpText;
+    }
     document.getElementById('pnum').textContent = `(period ${placedPeriods.indexOf(state.p) + 1} of ${placedPeriods.length})`;
     drawStrip();
     // Before the original corpus start only the backfilled shows have episodes (methods log M5).
