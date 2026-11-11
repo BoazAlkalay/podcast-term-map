@@ -77,6 +77,9 @@ header, #banner, #inclBanner { max-width: 1360px; margin-left: auto; margin-righ
 #intro h2 { font-size: 17px; margin: 0 0 6px; }
 #intro p { margin: 0 0 8px; max-width: 75ch; }
 button.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+a.btnlink { display: inline-flex; align-items: center; padding: 4px 10px; border: 1px solid var(--border); border-radius: 3px; text-decoration: none; color: var(--text); background: var(--surface); }
+a.btnlink.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+a.btnlink:hover { opacity: .9; }
 #introShow { align-self: flex-start; font-size: 12px; }
 #controls { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: flex-start; }
 #controls .ctl { min-width: 150px; }
@@ -326,8 +329,7 @@ details.mth > p { padding: 0 0 10px; }
       Being close together does not mean the shows share a stance or sentiment.</p>
     <p class="steps"><span><b>1</b> Pick two or three shows on the map</span><span><b>2</b> See where they sit on the axes, and which words separate them</span>
       <span><b>3</b> Follow how that changed (trails, Over time tab)</span><span><b>4</b> Read the actual passages</span></p>
-    <div class="btnrow"><button type="button" id="exampleBtn" class="primary">Show me an example</button>
-      <a id="writeupLink" class="btnlink" href="#" target="_blank" rel="noopener" hidden>Write-up and demo</a>
+    <div class="btnrow"><a id="writeupLink" class="btnlink primary" href="#" target="_blank" rel="noopener" hidden>Write-up and demo</a>
       <button type="button" id="introHide">Hide this introduction</button></div>
   </section>
 
@@ -524,7 +526,7 @@ details.mth > p { padding: 0 0 10px; }
     <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time: which words political podcasts use around it, and how much those words differ between shows and over time. It measures vocabulary and topics, not opinions, stances or ideologies.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
     <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes are transcribed automatically from the shows' public RSS feeds. For every mention of the term, the nearby nouns, names and adjectives are turned into numbers that represent meaning. An episode needs 3+ mentions to count, and its mentions are averaged. A show's dot for a period is the average of its episodes, so one episode that says the word constantly doesn't outweigh the others. A show needs 8 such episodes in a period to get a normal dot.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
     <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map flattens many dimensions into two, so it loses some detail. Positions are fitted once across all periods, so movement over time can be compared. The numbers in the tabs use the full data.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
-    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Two shows will look a bit different by chance alone, especially with few episodes, so that expected amount is taken out of every difference. Zero means no difference the data can detect. Every number comes with a 90% range; if the range reaches zero, there's no clear difference. Shows with few episodes are marked rough and get their range from a formula instead. Each pair is checked separately, so with hundreds of pairs about 1 in 20 will look clearly different by chance. A single clear result deserves a closer look before you trust it. The example pair is the strongest of up to 28 pairs, so its number is probably too high.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction); the example pair is selected as the maximum lower bound over up to 28 pairs, so its estimate is subject to winner's-curse inflation.</span></p></details>
+    <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Two shows will look a bit different by chance alone, especially with few episodes, so that expected amount is taken out of every difference. Zero means no difference the data can detect. Every number comes with a 90% range; if the range reaches zero, there's no clear difference. Shows with few episodes are marked rough and get their range from a formula instead. Each pair is checked separately, so with hundreds of pairs about 1 in 20 will look clearly different by chance. A single clear result deserves a closer look before you trust it.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction).</span></p></details>
     <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are a guide to what to read. Passages are the actual words around real mentions, picked by ranking, so they show the clearest cases. The AI labels on the map's edges are a model's reading of the edge words. They describe a direction on the map rather than any podcast.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
     <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
   </section>
@@ -2041,30 +2043,6 @@ details.mth > p { padding: 0 0 10px; }
   try { if (localStorage.getItem('dashIntro') === 'no') setIntro(false); } catch (e) {}
   document.getElementById('introHide').addEventListener('click', () => setIntro(false));
   introShow.addEventListener('click', () => setIntro(true));
-  // The worked example: among the 8 shows placed in the most periods, the pair whose vocabulary difference
-  // in the opening period is most clearly above zero (largest lower bound), so the first chart has a story.
-  // EXAMPLES: optional hand-picked pair per term, e.g. { iran: ['Mark Levin Podcast', 'The Tucker Carlson Show'] }.
-  const EXAMPLES = {};
-  function examplePair() {
-    const pick = EXAMPLES[TERM];
-    if (pick && pick.every(s => solidNodes.some(n => n.show === s && n.period === startP))) return pick;
-    const here = solidNodes.filter(n => n.period === startP).map(n => n.show).sort((x, y) => nPer[y] - nPer[x]).slice(0, 8);
-    let best = null;
-    for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) {
-      const e = edgeFor(here[i], here[j], startP);
-      if (e && (!best || e.lo > best.lo)) best = { a: here[i], b: here[j], lo: e.lo };
-    }
-    return best ? [best.a, best.b] : here.slice(0, 2);
-  }
-  document.getElementById('exampleBtn').addEventListener('click', () => {
-    if (state.mode !== 'shows') setMode('shows');
-    state.p = startP; state.mapMode = 'overall'; state.ref = ''; state.wP = null;
-    [state.a, state.b] = examplePair(); state.c = state.d = '';
-    state.example = `${state.a}|${state.b}|${state.p}`;
-    state.tab = 'words'; state.view.words.pair = 'pull'; fitted = false;
-    render();
-    document.getElementById('pairSum').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
 
   // ── reading aids: context line, map-type question, selection prompt, pair summary ──
   const yr = p => periods[p].end.slice(0, 4);
@@ -2097,7 +2075,7 @@ details.mth > p { padding: 0 0 10px; }
     h.innerHTML = {
       none: `<b>Click a dot</b> to choose Show A, then a second dot for Show B.`,
       one: `<b>Now click a second dot</b> to compare it with ${A}.`,
-      pair: `${(state.example && state.example.startsWith(`${state.a}|${state.b}|`)) || state.starter === `${state.a}|${state.b}` ? 'Starting comparison: ' : 'Comparing '}${A} and ${Bn}.<span class="k">Click another dot to change either show, or choose by name. Another dot replaces ${esc(short(state.b))}; Shift-click adds a third; double-click empty space clears.</span>`,
+      pair: `${state.starter === `${state.a}|${state.b}` ? 'Starting comparison: ' : 'Comparing '}${A} and ${Bn}.<span class="k">Click another dot to change either show, or choose by name. Another dot replaces ${esc(short(state.b))}; Shift-click adds a third; double-click empty space clears.</span>`,
     }[k] || `Comparing ${A} and ${Bn}, plus ${state.c ? dot(state.c, colorOf(state.c)) : 'a second pair'}.<span class="k">Shift-click the third show again to remove it.</span>`;
   }
   const ord = n => { if (n === 1) return ''; const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
@@ -2145,10 +2123,8 @@ details.mth > p { padding: 0 0 10px; }
       if (e) pairText(state.ga, state.gb, e, GEDGES, 'group');
       else find = 'These groups are not compared in this period (too few shows placed, or they share a show).';
     } else { el.innerHTML = ''; return; }
-    const isEx = state.example === `${state.a}|${state.b}|${p}` && state.mode === 'shows' && k === 'pair';
-    if (isEx) note += ' This is an example pair: the two long-running shows that differed most this period. Most pairs won\'t be this far apart. Click a word in the chart below to read passages that use it.';
     el.innerHTML = `<div class="pairrow">${kpi ? `<div class="pairkpi" data-tip="How different the two shows' wording is, minus the difference you'd expect from ordinary variation between episodes. 0 means no detectable difference. The 90% range shows how high or low the real value could plausibly be; if it reaches 0, the result is inconclusive. With hundreds of pairs, roughly 1 in 20 will look clear just by chance, so one clear result on its own isn't proof." tabindex="0"><span class="num">${kpi.n.toFixed(2)}</span><span class="lab">Vocabulary difference</span><span class="sub">${kpi.t}</span></div>` : ''}` +
-      `<div class="pairtext"><p class="who">${isEx ? '<span class="ex">Example</span>' : ''}${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
+      `<div class="pairtext"><p class="who">${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
   }
 
   // ── render ────────────────────────────────────────────────────────────
