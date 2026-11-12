@@ -326,7 +326,7 @@ details.mth > p { padding: 0 0 10px; }
 <main>
   <section id="intro" class="panel" aria-label="Start here">
     <h2>Start here</h2>
-    <p>I follow about 60 political podcasts from 2021 to now and look at how they use the words around a single term,
+    <p>I follow more than 80 political podcasts from 2021 to now and look at how they use the words around a single term,
       like <i id="introTerm">iran</i>. <b>Each dot is one show in one period</b>, placed using only the words that appear
       near the term in that show's episodes. When two dots are close, those shows use similar words around the term.
       Being close together does not mean the shows share a stance or sentiment.</p>
@@ -528,11 +528,12 @@ details.mth > p { padding: 0 0 10px; }
     <h2>Methods</h2>
     <p class="small">Switch "Explanations" at the top between Plain and Technical for the level of detail.</p>
     <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time: which words political podcasts use around it, and how much those words differ between shows and over time. It measures vocabulary and topics, not opinions, stances or ideologies.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
-    <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes are transcribed automatically from the shows' public RSS feeds. For every mention of the term, the nearby nouns, names and adjectives are turned into numbers that represent meaning. An episode needs 3+ mentions to count, and its mentions are averaged. A show's dot for a period is the average of its episodes, so one episode that says the word constantly doesn't outweigh the others. A show needs 8 such episodes in a period to get a normal dot.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.88). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
+    <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes are transcribed automatically from the shows' public RSS feeds. For every mention of the term, the nearby nouns, names and adjectives are turned into numbers that represent meaning. An episode needs 3+ mentions to count, and its mentions are averaged. A show's dot for a period is the average of its episodes, so one episode that says the word constantly doesn't outweigh the others. A show needs 8 such episodes in a period to get a normal dot.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.875, round-2 model). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
     <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map flattens many dimensions into two, so it loses some detail. Positions are fitted once across all periods, so movement over time can be compared. The numbers in the tabs use the full data.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
     <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Two shows will look a bit different by chance alone, especially with few episodes, so that expected amount is taken out of every difference. Zero means no difference the data can detect. Every number comes with a 90% range; if the range reaches zero, there's no clear difference. Shows with few episodes are marked rough and get their range from a formula instead. Each pair is checked separately, so with hundreds of pairs about 1 in 20 will look clearly different by chance. A single clear result deserves a closer look before you trust it.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction).</span></p></details>
     <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are a guide to what to read. Passages are the actual words around real mentions, picked by ranking, so they show the clearest cases. The AI labels on the map's edges are a model's reading of the edge words. They describe a direction on the map rather than any podcast.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
-    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Before July 2022 only some conservative shows are in the data, so "the group" means those shows then. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes before 2022-07-12 (backfill only); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation typically ~50%.</span></p></details>
+    <details class="mth"><summary>How groups were chosen</summary><p><span class="lv-plain">The groups are my judgment, not a fact about the shows. I wrote a one-line rule for each group first, then placed each show by things outside this data (its network, how its hosts describe themselves, its format), never by where it sits on the map. A show can be in more than one group. The rules:</span><span class="lv-tech">Researcher-assigned groups (reviewed 2026-11-12). Rule written per group before placement; placement from external criteria (network, self-description, format), not from the embedding. Groups may overlap; two groups compared with each other share no shows. A group needs 2+ placed shows in a period to get a group point. Rules:</span></p><ul class="tiers"><li><b>Nationalist / Populist Right</b>: Hosts who put national identity or anti-establishment populism at the centre, outside the established conservative networks.</li><li><b>Conservative Media</b>: Large-audience conservative commentary shows, broadly supportive of Trump, inside established conservative media.</li><li><b>Daily Wire</b>: Shows produced by The Daily Wire, during their Daily Wire years.</li><li><b>Anti-Trump Right</b>: Right-leaning or formerly right-leaning hosts whose shows are mainly critical of Trump.</li><li><b>Conservatives Trump criticised (Apr 9, 2026)</b>: Conservative hosts whom Trump named in his post of April 9, 2026.</li><li><b>Centrist / Heterodox</b>: Hosts who do not consistently take one party's side, or whose format is explicitly cross-partisan.</li><li><b>Liberal</b>: Center-left commentary, broadly aligned with the Democratic Party.</li><li><b>Progressive / Leftist</b>: Commentary from the left, more adversarial than mainstream liberal shows.</li><li><b>Christian</b>: Shows whose main lens is Christian faith, whatever their politics.</li><li><b>Men's Self-Improvement</b>: Shows mainly about men's self-improvement.</li><li><b>Mainstream News</b>: News programs made by news organizations, in a reporting format rather than one host's commentary.</li></ul></details>
+    <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Shows joined the data at different times (39 of 83 have episodes from 2021, 60 by 2025), so earlier periods compare fewer shows. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes over time (39 of 83 shows present by mid-2021, 47 by 2022-07, 60 by 2025-01); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation median 56% (27-100%) across the 2026-11-12 bundles.</span></p></details>
   </section>
 </main>
 <div id="pop" role="dialog" hidden></div>
@@ -543,6 +544,15 @@ details.mth > p { padding: 0 0 10px; }
   // ── libraries: try a second source if the first did not load ──────────
   const loadScript = src => new Promise(r => { const t = document.createElement('script');
     t.src = src; t.onload = () => r(true); t.onerror = () => r(false); document.head.appendChild(t); });
+  // Data files live on a Hugging Face dataset (too big for GitHub Pages). Remote files are
+  // fetched and run (a script tag can be refused there because of the file's content type);
+  // local files (page opened from disk, or a "data" folder next to it) still load as scripts.
+  const DATA_REMOTE = 'https://huggingface.co/datasets/aSilkyAnteater/podcast-dashboard-data/resolve/main/';
+  const loadData = async src => {
+    if (!/^https?:/.test(src)) return loadScript(src);
+    try { const r = await fetch(src); if (!r.ok) return false; (0, eval)(await r.text()); return true; }
+    catch (e) { return false; }
+  };
   if (!window.cytoscape) await loadScript('https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js');
   if (!window.Plotly) await loadScript('https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js');
   if (!window.cytoscape || !window.Plotly) {
@@ -556,7 +566,11 @@ details.mth > p { padding: 0 0 10px; }
   // Bundles are loaded as .js so the page also works when opened from disk.
   const PICK = (() => { const b = new URLSearchParams(location.search).get('b');
     return b && /^[\w.-]+\/[\w.-]+$/.test(b) ? b : null; })();
-  await loadScript('data/index.js');
+  // ?data=local forces the local "data" folder; otherwise try the remote copy first.
+  let DATA = 'data/';
+  if (location.protocol !== 'file:' && new URLSearchParams(location.search).get('data') !== 'local'
+      && await loadData(DATA_REMOTE + 'index.js') && Array.isArray(window.BUNDLE_INDEX)) DATA = DATA_REMOTE;
+  else await loadScript('data/index.js');
   const INDEX = Array.isArray(window.BUNDLE_INDEX) ? window.BUNDLE_INDEX : [];
   // Without ?b=, open a fixed starting view from the newest snapshot (not whichever bundle
   // happened to be exported last), so a shared link always lands in the same place.
@@ -569,14 +583,14 @@ details.mth > p { padding: 0 0 10px; }
       || inNewest.find(e => e.hosts === DEFAULT_VIEW.hosts) || inNewest[0];
     CHOSEN = d.path;
   }
-  let BASE = CHOSEN ? `data/${CHOSEN}/` : null;
-  await loadScript(CHOSEN ? BASE + 'bundle.js' : 'data/bundle_latest.js');
+  let BASE = CHOSEN ? `${DATA}${CHOSEN}/` : null;
+  await loadData(CHOSEN ? BASE + 'bundle.js' : DATA + 'bundle_latest.js');
   let B = window.BUNDLE;
   if (!B) {
     try {
       if (!BASE) {
-        const latest = await (await fetch('data/latest.json')).json();
-        BASE = 'data/' + latest.bundle + '/';
+        const latest = await (await fetch(DATA + 'latest.json')).json();
+        BASE = DATA + latest.bundle + '/';
       }
       const parts = ['manifest', 'nodes', 'edges', 'gnodes', 'gedges', 'leans', 'drifts', 'shifts'];
       const got = await Promise.all(parts.map(n => fetch(BASE + n + '.json').then(r => r.ok ? r.json() : [])));
@@ -590,10 +604,10 @@ details.mth > p { padding: 0 0 10px; }
     }
   }
   // AI-interpreted axis labels (label_axes.py): optional file next to the bundle.
-  if (CHOSEN) await loadScript(BASE + 'axislabels.js');
+  if (CHOSEN) await loadData(BASE + 'axislabels.js');
   const AX_AI = window.AXISLABELS && window.AXISLABELS.maps ? window.AXISLABELS : null;
-  const PAS_SRC = CHOSEN ? BASE + 'passages.js' : 'data/passages_latest.js';
-  const WX_SRC = CHOSEN ? BASE + 'wordex.js' : 'data/wordex_latest.js';
+  const PAS_SRC = CHOSEN ? BASE + 'passages.js' : DATA + 'passages_latest.js';
+  const WX_SRC = CHOSEN ? BASE + 'wordex.js' : DATA + 'wordex_latest.js';
   const M = B.manifest, NODES = B.nodes, EDGES = B.edges;
   const GNODES = B.gnodes || [], GEDGES = B.gedges || [], LEANS = B.leans || [], DRIFTS = B.drifts || [];
   const SHIFTS = B.shifts || [], AXES = M.anchor_axes || [], MAP_AXES = M.map_axes || {};
@@ -670,14 +684,11 @@ details.mth > p { padding: 0 0 10px; }
   function loadPassages() {
     if (PAS || pasLoading) return pasLoading;
     pasLoading = new Promise(res => {
-      const s = document.createElement('script');
-      s.src = PAS_SRC;
-      s.onload = () => { PAS = window.PASSAGES; res(); };
-      s.onerror = async () => {
-        try { if (BASE) PAS = await (await fetch(BASE + 'passages.json')).json(); } catch (e) {}
+      loadData(PAS_SRC).then(async ok => {
+        if (ok) PAS = window.PASSAGES;
+        else { try { if (BASE) PAS = await (await fetch(BASE + 'passages.json')).json(); } catch (e) {} }
         res();
-      };
-      document.head.appendChild(s);
+      });
     }).then(() => { pasLoading = null; render(); });
     return pasLoading;
   }
@@ -687,14 +698,11 @@ details.mth > p { padding: 0 0 10px; }
   function loadWordex() {
     if (WX || wxLoading) return wxLoading;
     wxLoading = new Promise(res => {
-      const s = document.createElement('script');
-      s.src = WX_SRC;
-      s.onload = () => { WX = window.WORDEX; res(); };
-      s.onerror = async () => {
-        try { if (BASE) WX = await (await fetch(BASE + 'wordex.json')).json(); } catch (e) {}
+      loadData(WX_SRC).then(async ok => {
+        if (ok) WX = window.WORDEX;
+        else { try { if (BASE) WX = await (await fetch(BASE + 'wordex.json')).json(); } catch (e) {} }
         res();
-      };
-      document.head.appendChild(s);
+      });
     }).then(() => { wxLoading = null; render(); });
     return wxLoading;
   }
@@ -1184,7 +1192,7 @@ details.mth > p { padding: 0 0 10px; }
       const lab = MAP_AXES[state.mapMode === 'centred' ? 'centred' : 'overall'];
       const ai = state.axLab === 'ai' && AX_AI && AX_AI.maps[state.mapMode === 'centred' ? 'centred' : 'overall'];
       const end = (k, side, pre = '', post = '') => ai && ai[k] && ai[k][side] && ai[k][side].label
-        ? `${pre}<b>${esc(ai[k][side].label)}</b><span class="aibadge">AI</span>${post}<span class="axw">${(lab[k][side] || []).slice(0, 3).map(esc).join(', ')}</span>` : pre + words(lab[k][side]) + post;
+        ? `${pre}<b>${esc(ai[k][side].label)}</b><span class="aibadge">AI${ai[k][side].weak ? ' · weak' : ''}</span>${post}<span class="axw">${(lab[k][side] || []).slice(0, 3).map(esc).join(', ')}</span>` : pre + words(lab[k][side]) + post;
       const tt = 'Click for the words behind this label';
       if (lab) {
         set('axL', end(0, 'neg', '← '), tt);
@@ -1906,7 +1914,7 @@ details.mth > p { padding: 0 0 10px; }
     // The words are the evidence, so they come first; the AI reading is a second layer under them.
     let html = `<h3>Words at the ${dirName[side]} edge<button type="button" aria-label="Close">×</button></h3>` +
       `<p class="small">Closest first${lab[side + '_r'] ? '; × = how much closer to this end than to the other' : ''}.</p>${list(side)}`;
-    if (ai && ai[side]) html += `<div class="airead"><p><b>AI reading of these word cues:</b> ${esc(ai[side].label)}<span class="aibadge">AI</span>` +
+    if (ai && ai[side]) html += `<div class="airead"><p><b>AI reading of these word cues:</b> ${esc(ai[side].label)}<span class="aibadge">AI</span>${ai[side].weak ? ' <span class="small">(rests on few of these words: read it with care)</span>' : ''}${(ai[side].basis || []).length ? `<br><span class="small">Based on: ${ai[side].basis.map(esc).join(', ')}</span>` : ''}` +
       ` <span class="small">(opposite end: ${esc(ai[other] ? ai[other].label : '?')})</span></p>` +
       `<p class="small">A model's interpretation of the words above, meant to help you read the axis.</p>` +
       (ai.why ? `<p class="small"><b>Model's reason:</b> ${esc(ai.why)}</p>` : '') +
@@ -2153,10 +2161,10 @@ details.mth > p { padding: 0 0 10px; }
     document.getElementById('pnum').textContent = `(period ${placedPeriods.indexOf(state.p) + 1} of ${placedPeriods.length})`;
     drawStrip();
     // Before the original corpus start only the backfilled shows have episodes (methods log M5).
-    const CORPUS_START = '2022-07-12', earlyEl = document.getElementById('early');
+    const CORPUS_START = '2025-01-01', earlyEl = document.getElementById('early');
     earlyEl.hidden = periods[state.p].start >= CORPUS_START;
-    if (!earlyEl.hidden) earlyEl.innerHTML = lv([`Before July 2022 only the shows added in the back-catalogue download have episodes: the Daily Wire shows, Candace Owens (Daily Wire era), Bongino, Levin, Rubin and Crowder. "The group" in these years means those shows only.`,
-      `Pre-${CORPUS_START} periods contain only the backfill (DW history from Mar 2021, Candace Owens (DW), Bongino, Levin, Rubin, Crowder, Klavan). Group means m₋ᵢ and the pack are computed over that subset, so levels are not comparable with later periods' compositions.`]);
+    if (!earlyEl.hidden) earlyEl.innerHTML = lv([`Not every show is in the data for this period: shows joined at different times (39 of 83 have episodes from 2021, 60 by 2025). "The group" here means the shows present then.`,
+      `Composition changes before ${CORPUS_START}: shows enter the corpus at different dates (39 of 83 by mid-2021, 47 by 2022-07, 60 by 2025-01). Group means m₋ᵢ and the pack are computed over the shows present, so levels are not directly comparable across periods.`]);
     const partialEl = document.getElementById('partial');
     const isPartial = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[state.p].end > M.snapshot;
     partialEl.hidden = !isPartial;
