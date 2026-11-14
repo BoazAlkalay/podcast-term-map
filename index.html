@@ -279,6 +279,11 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 /* review 4 (2026-11-03): map title, bigger axis labels, scroll no longer zooms */
 .maphead h2 { font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
 #zoomBtns { position: absolute; right: 6px; bottom: 6px; z-index: 3; display: flex; gap: 4px; }
+#cite { margin: 24px 16px 32px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-2); max-width: 900px; }
+#cite h2 { font-size: 14px; margin: 0 0 6px; color: var(--text); }
+#cite p { margin: 4px 0; }
+#cite .citecopy { margin-left: 6px; padding: 0 8px; font-size: 12px; }
+#cite a { color: var(--a); }
 #zoomBtns button { padding: 2px 10px; font-size: 14px; }
 #zoomHint { margin: 4px 0 0; }
 #mapPeriod { position: absolute; left: 8px; top: 6px; z-index: 3; pointer-events: none; font-size: 12px;
@@ -536,6 +541,12 @@ details.mth > p { padding: 0 0 10px; }
     <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Shows joined the data at different times (39 of 83 have episodes from 2021, 60 by 2025), so earlier periods compare fewer shows. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes over time (39 of 83 shows present by mid-2021, 47 by 2022-07, 60 by 2025-01); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation median 56% (27-100%) across the 2026-11-12 bundles.</span></p></details>
   </section>
 </main>
+<footer id="cite">
+  <h2>How to cite</h2>
+  <p class="citeline"><span id="citeAll"></span> <button type="button" class="citecopy" data-src="citeAll">Copy</button></p>
+  <p class="small">This view: <span id="citeView"></span> <button type="button" class="citecopy" data-src="citeView">Copy</button></p>
+  <p class="small">Data files: <a href="https://huggingface.co/datasets/aSilkyAnteater/podcast-dashboard-data" target="_blank" rel="noopener">Hugging Face dataset</a>. Method: Rodriguez, P. L., Spirling, A., &amp; Stewart, B. M. (2023). Embedding regression: Models for context-specific description and inference. <i>American Political Science Review</i>, 117(4), 1255–1274. <a href="https://doi.org/10.1017/S0003055422001228" target="_blank" rel="noopener">https://doi.org/10.1017/S0003055422001228</a></p>
+</footer>
 <div id="pop" role="dialog" hidden></div>
 <div id="tip" hidden></div>
 
@@ -2209,7 +2220,26 @@ details.mth > p { padding: 0 0 10px; }
     if (state.tab && state.tab !== 'words') set('tab', state.tab);
     const s = '?' + q.toString();
     if (s !== location.search) try { history.replaceState(null, '', s + location.hash); } catch (e) {}
+    updateCite(s);
   }
+  // "How to cite" footer: the dashboard as a whole, plus the exact view (its shareable link).
+  const SITE_URL = 'https://boazalkalay.github.io/podcast-term-map/';
+  const SNAP = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? M.snapshot : null;
+  const YEAR = SNAP ? SNAP.slice(0, 4) : String(new Date().getFullYear());
+  document.getElementById('citeAll').textContent =
+    `Alkalay, B. (${YEAR}). Podcast Term Map [Interactive dashboard]. ${SITE_URL}` + (SNAP ? ` (data through ${SNAP}).` : '');
+  function updateCite(search) {
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('citeView').textContent =
+      `Alkalay, B. (${YEAR}). Podcast Term Map: '${M.term}', ${M.period_days}-day periods, ${M.host_group} [Interactive dashboard]. ` +
+      `${SITE_URL}${search}. Accessed ${today}.`;
+  }
+  document.querySelectorAll('#cite .citecopy').forEach(b => b.addEventListener('click', async () => {
+    const t = document.getElementById(b.dataset.src).textContent;
+    try { await navigator.clipboard.writeText(t); b.textContent = 'Copied'; }
+    catch (e) { b.textContent = 'Select the text to copy'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  }));
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   // Theme button: Auto (follows the computer) -> Light -> Dark. Remembered in this browser if possible.
   const themeBtn = document.getElementById('themeBtn');
