@@ -123,7 +123,7 @@ details.pair2[open] { display: block; flex-basis: 100%; }
 #tabs button[role=tab]:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
 /* episode strip under the period slider: one bar per period, height = qualifying episodes */
 .periodcol { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-#epStrip { display: block; width: 100%; height: 30px; cursor: pointer; overflow: visible; }
+#epStrip { display: block; width: 100%; height: 56px; cursor: pointer; overflow: visible; }
 #epStrip rect { fill: var(--node); }
 #epStrip rect.cur { fill: var(--onair); }
 #epStrip rect.part { opacity: .5; }
@@ -135,6 +135,10 @@ details.pair2[open] { display: block; flex-basis: 100%; }
 #controls .ctl:not(.ctl-period) > span:not(.seg) { display: block; margin-top: 3px; }
 #pdates { font-size: 16px; }
 .stripnote { font-size: 12px; color: var(--muted); }
+.termnote { display: block; margin-top: 2px; }
+#epStrip .grid { stroke: var(--border); stroke-dasharray: 3 3; }
+#epStrip .base { stroke: var(--text-2); }
+#epStrip text { font-size: 10px; fill: var(--muted); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
 #methodsPanel h3 { font-size: 14px; margin: 16px 0 4px; }
 #methodsPanel p { max-width: 80ch; margin: 0; }
 .ptag { font-size: 11px; border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; margin-right: 6px; color: var(--text-2); }
@@ -343,13 +347,12 @@ details.mth > p { padding: 0 0 10px; }
 
   <section id="controls" class="panel" aria-label="What to show">
     <div class="ctl"><label class="f" for="termSel">Term</label>
-      <select id="termSel" class="rsel" hidden></select><span class="val" id="term"></span></div>
+      <select id="termSel" class="rsel" hidden></select><span class="val" id="term"></span>
+      <span class="small termnote">Hand-picked examples, not a sample. <a href="#" id="whyTerms">Why these terms?</a></span></div>
     <div class="ctl"><label class="f" for="hostsSel">Group of shows</label>
       <select id="hostsSel" class="rsel" hidden></select><span class="val" id="group"></span></div>
-    <div class="ctl"><label class="f" for="daysSel">Time window</label>
-      <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span></div>
     <div class="ctl ctl-period">
-      <label class="f" for="slider">Current period</label><span class="val" id="pdates"></span> <span class="small" id="pnum"></span>
+      <label class="f" for="slider">Choose a time period to study</label><span class="val" id="pdates"></span> <span class="small" id="pnum"></span>
       <div class="periodrow">
         <button id="prev" type="button" aria-label="Previous period">◀</button>
         <div class="periodcol">
@@ -367,6 +370,9 @@ details.mth > p { padding: 0 0 10px; }
     <details class="ctl ctl-more" id="moreSet">
       <summary>Advanced settings</summary>
       <div class="moregrid">
+        <div><label class="f" for="daysSel">Time interval</label>
+          <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span>
+          <p class="small">How long each period is. Longer periods give more shows enough episodes to be placed; shorter ones show quicker changes but place fewer shows.</p></div>
         <div><label class="f" for="refSel">Measure change since</label>
           <select id="refSel"><option value="">The previous period</option></select>
           <p class="small">The hollow ring on the map and the "shift" line below it show change since this period.</p></div>
@@ -518,6 +524,7 @@ details.mth > p { padding: 0 0 10px; }
 
   <section id="tsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-ts" hidden>
     <div class="ph"><span id="tsTitle"></span><span class="chip" id="tsChip"></span></div>
+    <p class="small tsread" id="tsRead"></p>
     <details class="help"><summary>How to read this</summary><span id="tsHelp"></span></details>
     <div id="ts"></div>
   </section>
@@ -537,6 +544,7 @@ details.mth > p { padding: 0 0 10px; }
     <details class="mth"><summary>The map</summary><p><span class="lv-plain">The map flattens many dimensions into two, so it loses some detail. Positions are fitted once across all periods, so movement over time can be compared. The numbers in the tabs use the full data.</span><span class="lv-tech">Classical MDS of all placed cells on noise-corrected squared distances (one joint frame); centred variant subtracts each period's equal-weight mean. Share of variation kept is shown under the map.</span></p></details>
     <details class="mth"><summary>Measuring differences, and uncertainty</summary><p><span class="lv-plain">Two shows will look a bit different by chance alone, especially with few episodes, so that expected amount is taken out of every difference. Zero means no difference the data can detect. Every number comes with a 90% range; if the range reaches zero, there's no clear difference. Shows with few episodes are marked rough and get their range from a formula instead. Each pair is checked separately, so with hundreds of pairs about 1 in 20 will look clearly different by chance. A single clear result deserves a closer look before you trust it.</span><span class="lv-tech">d² = |μ_a − μ_b|² − v_a − v_b, clipped at 0; distance from the group is leave-one-out against the equal-weight mean of the others. 90% percentile bootstrap over episodes with the noise term subtracted twice per draw (conservative near zero). Thin cells and the include toggle use an analytic score-type interval from v, d_eff and r1 (simulated coverage ≈ 90%). Intervals are per pair, not adjusted for multiple comparisons (no FDR/familywise correction).</span></p></details>
     <details class="mth"><summary>Words, passages and AI labels</summary><p><span class="lv-plain">The words that pull toward each side are a guide to what to read. Passages are the actual words around real mentions, picked by ranking, so they show the clearest cases. The AI labels on the map's edges are a model's reading of the edge words. They describe a direction on the map rather than any podcast.</span><span class="lv-tech">Word-pull: cosine ratio between the two sides' means over the union of each side's 150 nearest words (≥ 50 corpus uses). Passages: mentions ranked by distance to μ or projection on the contrast/drift direction, one per episode. AI direction interpretations: Claude (claude-sonnet-5-5), prompt stored with the output, cached; only the word lists are sent.</span></p></details>
+    <details class="mth" id="mthTerms"><summary>How the terms were chosen</summary><p><span class="lv-plain">I picked the terms by hand, as examples. They are not a sample of political vocabulary, so the results describe these words only, not how the shows talk about politics in general. I chose them to cover different kinds of topics: foreign affairs (iran, israel, ukraine, gaza), immigration and the economy (immigration, tariff), political labels (trump, democrat, socialist, maga), scandal (epstein), religion (muslim) and social issues (abortion). Each term also had to come up often enough to map: enough shows with 8+ episodes that use it 3+ times in a period. The last seven were written down before I looked at any of their results. Only single words work, so phrases such as "the left" can't be terms.</span><span class="lv-tech">Purposive, researcher-chosen terms (not sampled): spread across topic types, then screened for coverage (periods with 5+ placed shows at 91 days). The second batch (immigration, tariff, gaza, epstein, maga, muslim, abortion) was fixed before any results were seen; islam was replaced by muslim on coverage alone (median 0 placed shows), before mapping. Matching is on single lemmatized tokens (democrat ≠ democratic; multi-word phrases unsupported). Findings do not generalise beyond the chosen terms.</span></p></details>
     <details class="mth"><summary>How groups were chosen</summary><p><span class="lv-plain">The groups are my judgment, not a fact about the shows. I wrote a one-line rule for each group first, then placed each show by things outside this data (its network, how its hosts describe themselves, its format), never by where it sits on the map. A show can be in more than one group. The rules:</span><span class="lv-tech">Researcher-assigned groups (reviewed 2026-11-12). Rule written per group before placement; placement from external criteria (network, self-description, format), not from the embedding. Groups may overlap; two groups compared with each other share no shows. A group needs 2+ placed shows in a period to get a group point. Rules:</span></p><ul class="tiers"><li><b>Nationalist / Populist Right</b>: Hosts who put national identity or anti-establishment populism at the centre, outside the established conservative networks.</li><li><b>Conservative Media</b>: Large-audience conservative commentary shows, broadly supportive of Trump, inside established conservative media.</li><li><b>Daily Wire</b>: Shows produced by The Daily Wire, during their Daily Wire years.</li><li><b>Anti-Trump Right</b>: Right-leaning or formerly right-leaning hosts whose shows are mainly critical of Trump.</li><li><b>Conservatives Trump criticised (Apr 9, 2026)</b>: Conservative hosts whom Trump named in his post of April 9, 2026.</li><li><b>Centrist / Heterodox</b>: Hosts who do not consistently take one party's side, or whose format is explicitly cross-partisan.</li><li><b>Liberal</b>: Center-left commentary, broadly aligned with the Democratic Party.</li><li><b>Progressive / Leftist</b>: Commentary from the left, more adversarial than mainstream liberal shows.</li><li><b>Christian</b>: Shows whose main lens is Christian faith, whatever their politics.</li><li><b>Men's Self-Improvement</b>: Shows mainly about men's self-improvement.</li><li><b>Mainstream News</b>: News programs made by news organizations, in a reporting format rather than one host's commentary.</li></ul></details>
     <details class="mth"><summary>Limits</summary><p><span class="lv-plain">Automatic transcripts have errors. Shows joined the data at different times (39 of 83 have episodes from 2021, 60 by 2025), so earlier periods compare fewer shows. The newest period isn't finished yet. With this many possible comparisons, some differences will look interesting by chance, so treat them as places to start reading.</span><span class="lv-tech">Composition changes over time (39 of 83 shows present by mid-2021, 47 by 2022-07, 60 by 2025-01); partial last period; multiple comparisons across terms × pairs; AI labels unvalidated; map share of variation median 56% (27-100%) across the 2026-11-12 bundles.</span></p></details>
   </section>
@@ -626,7 +634,13 @@ details.mth > p { padding: 0 0 10px; }
   const periods = M.periods, TERM = M.term;
   const short = s => s.replace(/^The /, '').replace(/ (Show|Podcast|Program)$/, '').slice(0, 24);
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  const fmtP = p => `${periods[p].start} to ${periods[p].end}`;
+  // Dates in words: "2025: March 13 to June 11"; a period that crosses a new year gives both years.
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const fmtD = iso => `${MONTHS[+iso.slice(5, 7) - 1]} ${+iso.slice(8, 10)}, ${iso.slice(0, 4)}`;
+  const fmtP = p => {
+    const a = periods[p].start, b = periods[p].end, md = iso => `${MONTHS[+iso.slice(5, 7) - 1]} ${+iso.slice(8, 10)}`;
+    return a.slice(0, 4) === b.slice(0, 4) ? `${a.slice(0, 4)}: ${md(a)} to ${md(b)}` : `${fmtD(a)} to ${fmtD(b)}`;
+  };
   const midP = p => new Date((Date.parse(periods[p].start) + Date.parse(periods[p].end)) / 2).toISOString().slice(0, 10);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const placedPeriods = [...new Set([...NODES, ...GNODES].map(n => n.period))].sort((a, b) => a - b);
@@ -917,19 +931,30 @@ details.mth > p { padding: 0 0 10px; }
     placedN[p] = NODES.filter(n => n.period === p).length;
   }
   const epMax = Math.max(1, ...Object.values(epTot));
-  document.getElementById('stripText').textContent = `Each bar counts episodes that mention the term ${M.settings.min_mentions}+ times, across the shows in this group.`;
+  document.getElementById('stripText').textContent = `Taller bar = more qualifying episodes in that period (episodes that mention '${TERM}' ${M.settings.min_mentions}+ times, across the shows in this group), so more shows can be compared. Each period is ${M.period_days} days (change it under Advanced settings).`;
   document.getElementById('stripNote').title = `Bar height is the number of episodes that mention '${TERM}' ${M.settings.min_mentions}+ times, summed over the ${HOSTS.length} shows in this group. It is not the number of mentions.`;
   function drawStrip() {
     // Bars are centred under the slider thumb positions (thumb centre runs from 8px to width − 8px).
-    const W = strip.clientWidth || 600, H = 30, TH = 8, n = Math.max(1, P1 - P0);
+    const W = strip.clientWidth || 600, H = 56, TH = 8, n = Math.max(1, P1 - P0);
     // One row of dots per selected show or group: filled = placed, dashed ring = rough (3-7 episodes), tiny = 1-2 episodes.
     const sel = (state.mode === 'groups' ? [state.ga, state.gb] : selectedShows()).filter(Boolean);
     const HT = H + (sel.length ? 6 + sel.length * 10 : 0);
     const slot = (W - 2 * TH) / n;
     let out = '';
+    // Value axis: dashed gridlines at round episode counts, labelled at the left edge (drawn over the bars).
+    let axisLabels = '';
+    const top = H - 2, raw = epMax / 2, mag = Math.pow(10, Math.floor(Math.log10(Math.max(1, raw))));
+    const stepV = [1, 2, 5, 10].map(f => f * mag).find(v => v >= raw) || mag * 10;
+    for (let v = stepV; v <= epMax; v += stepV) {
+      const y = (H - top * v / epMax).toFixed(1);
+      out += `<line class="grid" x1="0" x2="${W}" y1="${y}" y2="${y}"/>`;
+      axisLabels += `<text x="2" y="${(+y - 2).toFixed(1)}">${v.toLocaleString()} episodes</text>`;
+    }
+    out += `<line class="base" x1="0" x2="${W}" y1="${H}" y2="${H}"/>`;
     for (let p = P0; p <= P1; p++) {
-      const h = epTot[p] ? Math.max(2, Math.round((H - 2) * epTot[p] / epMax)) : 0;
-      const w = Math.max(1, Math.min(slot - 2, 40)), x = TH + (p - P0) * slot - w / 2;
+      const h = epTot[p] ? Math.max(2, Math.round(top * epTot[p] / epMax)) : 0;
+      // keep the outermost bars inside the strip so they never run under the ◀ ▶ buttons
+      const w = Math.max(1, Math.min(slot - 2, 40)), x = Math.min(W - w, Math.max(0, TH + (p - P0) * slot - w / 2));
       const part = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[p].end > M.snapshot;
       out += `<rect data-p="${p}" x="${x.toFixed(1)}" y="${H - h}" width="${w.toFixed(1)}" height="${h}"` +
         ` class="${p === state.p ? 'cur' : ''}${part ? ' part' : ''}"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed${part ? ' (period still in progress)' : ''}</title></rect>`;
@@ -945,6 +970,7 @@ details.mth > p { padding: 0 0 10px; }
         else if (cov > 0) out += `<circle data-p="${p}" cx="${x}" cy="${cy0}" r="1.6" fill="${col}" opacity=".5"><title>${esc(nm)}: ${cov} episode${cov === 1 ? '' : 's'}, too few to place (${fmtP(p)})</title></circle>`;
       }
     });
+    out += axisLabels;
     strip.style.height = HT + 'px';
     strip.setAttribute('viewBox', `0 0 ${W} ${HT}`);
     strip.innerHTML = out;
@@ -1346,10 +1372,10 @@ details.mth > p { padding: 0 0 10px; }
     ts: {
       none: [], gnone: [], gone: [['gcomp1', l => `How many of ${l.ga}'s shows count in each period?`, 'nothing']],
       one: [['loo', l => `How different is ${l.a} from the other shows?`, 'the group'],
-            ['drift', l => state.ref === '' ? `How much did ${l.a} change from one period to the next?` : `How far has ${l.a} moved since ${periods[+state.ref].start}?`, 'own past']],
+            ['drift', l => state.ref === '' ? `How much did ${l.a} change from one period to the next?` : `How far has ${l.a} moved since ${fmtD(periods[+state.ref].start)}?`, 'own past']],
       pair: [['pair', l => `When did ${l.a} and ${l.b} sound more or less alike?`, 'the other show'],
              ['loo2', () => 'How different is each show from the others?', 'the group'],
-             ['drift2', () => state.ref === '' ? 'How much did each show change from one period to the next?' : `How far has each show moved since ${periods[+state.ref].start}?`, 'own past']],
+             ['drift2', () => state.ref === '' ? 'How much did each show change from one period to the next?' : `How far has each show moved since ${fmtD(periods[+state.ref].start)}?`, 'own past']],
       tri: [['lean', l => `Is ${l.x} closer to ${l.y1} or ${l.y2}?`, 'the other shows'],
             ['ties', l => `How different is ${l.x} from each of them?`, 'the other shows'],
             ['loo3', () => 'How different is each selected show from the others?', 'the group']],
@@ -1530,7 +1556,13 @@ details.mth > p { padding: 0 0 10px; }
       legend: { orientation: 'h', y: 1.12, x: 0, font: { color: css('--text') } },
       margin: { l: 56, r: 16, t: series.length > 1 ? 36 : 12, b: 44 },
       xaxis: axis({ type: 'date' }), shapes: [shade(), ...(opt.shapes || [])],
-      annotations: [...(opt.annotations || []), ...(hasRough ? [{ x: 1, xref: 'paper', y: 0, yref: 'paper', yshift: -40, xanchor: 'right',
+      annotations: [...(opt.annotations || []),
+        ...(opt.signed ? [] : [
+          { x: 0, xref: 'paper', y: 1, yref: 'paper', xanchor: 'left', yanchor: 'top', showarrow: false,
+            text: '↑ more different', font: { size: 11, color: css('--muted') } },
+          { x: 0, xref: 'paper', y: 0, yref: 'y', xanchor: 'left', yanchor: 'bottom', showarrow: false,
+            text: '0 = no difference beyond chance', font: { size: 11, color: css('--muted') } }]),
+        ...(hasRough ? [{ x: 1, xref: 'paper', y: 0, yref: 'paper', yshift: -40, xanchor: 'right',
         yanchor: 'bottom', showarrow: false, text: `◇ fewer than ${MIN_EP} episodes: rough, approximate interval`, font: { size: 11, color: css('--muted') } }] : [])],
       yaxis: axis(Object.assign({ title: { text: opt.ytitle, font: { size: 12 } } },
         opt.signed ? { zeroline: true, zerolinecolor: css('--text-2'), zerolinewidth: 1.5 } : { rangemode: 'tozero' })) });
@@ -1599,6 +1631,14 @@ details.mth > p { padding: 0 0 10px; }
       return message(el, state.mode === 'groups' ? 'No groups chosen yet. Pick Group A and Group B above the map.'
         : 'No show selected yet. Click a dot on the map to see how that show moves over time, or two dots to see how far apart they are.'); }
     setHelp(helpEl, help(v));
+    // Always-visible reading guide (the full explanation stays under "How to read this").
+    const readEl = document.getElementById('tsRead');
+    readEl.textContent = v === 'lean'
+      ? 'Above or below 0 shows which of the two shows it is closer to (see the arrows on the chart). A hollow dot means its 90% range crosses 0, so the data can\'t tell which one it is closer to.'
+      : /^gcomp/.test(v) ? ''
+      : (v === 'drift' || v === 'drift2' ? 'Higher = the show\'s words around the term changed more. ' : 'Higher = more different words around the term. ') +
+        '0 means no difference beyond what chance alone would produce (two random sets of episodes from the same show also differ a little; that amount is subtracted). A hollow dot means its 90% range reaches 0: the difference can\'t be told apart from chance.';
+    readEl.hidden = !readEl.textContent;
     const t2 = tie2() || [], t = tri();
     const S = s => ({ name: short(s), color: colorOf(s) });
     const refShapes = state.ref === '' ? [] : [refLine(+state.ref)];
@@ -2059,6 +2099,10 @@ details.mth > p { padding: 0 0 10px; }
     try { localStorage.setItem('dashTab', t); } catch (e) {}
     render();
   }
+  document.getElementById('whyTerms').addEventListener('click', e => {
+    e.preventDefault(); setTab('methods');
+    const d = document.getElementById('mthTerms'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   document.querySelectorAll('#tabs button[role=tab]').forEach(b => {
     b.addEventListener('click', () => setTab(b.dataset.tab));
     b.addEventListener('keydown', e => {                       // arrow keys move between tabs
@@ -2097,7 +2141,7 @@ details.mth > p { padding: 0 0 10px; }
       tile(epTot[p] || 0, 'episodes counted', `mention '${esc(TERM)}' ${M.settings.min_mentions}+ times`) +
       (state.mapMode !== 'anchored' && share !== null && share !== undefined ? tile(Math.round(share * 100) + '%', 'of the variation shown', 'a rough guide: hover for why',
         `The map flattens many dimensions into two and keeps about ${Math.round(share * 100)}% of the differences between shows. Use it to spot shows worth a closer look; the tabs below use the full data.`) : '') +
-      `<p class="kpinote">${/^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? `Data through ${M.snapshot}. ` : ''}Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
+      `<p class="kpinote">${/^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? `Data through ${fmtD(M.snapshot)}. ` : ''}Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
     document.getElementById('mapTitle').textContent = q[0];
     document.getElementById('modeDesc').innerHTML = `<b>How to read it:</b> ${q[1]}`;
@@ -2179,7 +2223,7 @@ details.mth > p { padding: 0 0 10px; }
     const partialEl = document.getElementById('partial');
     const isPartial = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[state.p].end > M.snapshot;
     partialEl.hidden = !isPartial;
-    if (isPartial) partialEl.innerHTML = lv([`This period isn't over yet. It runs to ${periods[state.p].end}, but the data end on ${M.snapshot}, so some shows don't have enough episodes yet.`,
+    if (isPartial) partialEl.innerHTML = lv([`This period isn't over yet. It runs to ${fmtD(periods[state.p].end)}, but the data end on ${fmtD(M.snapshot)}, so some shows don't have enough episodes yet.`,
       `Partial period: end ${periods[state.p].end} is after snapshot ${M.snapshot}; n counts are incomplete, so fewer cells reach ${MIN_EP} qualifying episodes and intervals are wider.`]);
     for (const id of ['A', 'B', 'C', 'D']) document.getElementById('sel' + id).value = state[id.toLowerCase()];
     document.getElementById('selGA').value = state.ga; document.getElementById('selGB').value = state.gb;
