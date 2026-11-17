@@ -80,7 +80,10 @@ button.primary { background: var(--text); color: var(--surface); border-color: v
 a.btnlink { display: inline-flex; align-items: center; padding: 4px 10px; border: 1px solid var(--border); border-radius: 3px; text-decoration: none; color: var(--text); background: var(--surface); }
 a.btnlink.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
 a.btnlink:hover { opacity: .9; }
-#introShow { align-self: flex-start; font-size: 12px; }
+#introShow { align-self: flex-start; font-weight: 600; border: 2px solid var(--text); }
+#introShow.flash { animation: introFlash 1.6s ease-out 1; }
+@keyframes introFlash { 0%, 40% { box-shadow: 0 0 0 4px var(--onair); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.wipnote { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
 #controls { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: flex-start; }
 #controls .ctl { min-width: 150px; }
 #controls .ctl-period { order: 9; flex: 1 1 100%; max-width: none; border-top: 1px solid var(--border); padding-top: 12px; }
@@ -341,8 +344,9 @@ details.mth > p { padding: 0 0 10px; }
       Being close together does not mean the shows share a stance or sentiment.</p>
     <p class="steps"><span><b>1</b> Pick two or three shows on the map</span><span><b>2</b> See where they sit on the axes, and which words separate them</span>
       <span><b>3</b> Follow how that changed (trails, Over time tab)</span><span><b>4</b> Read the actual passages</span></p>
-    <div class="btnrow"><a id="writeupLink" class="btnlink primary" href="#" target="_blank" rel="noopener" hidden>Write-up and demo</a>
+    <div class="btnrow"><a id="writeupLink" class="btnlink primary" href="#" target="_blank" rel="noopener" hidden>Write-up and demo*</a>
       <button type="button" id="introHide">Hide this introduction</button></div>
+    <p class="wipnote" id="writeupNote" hidden>*In progress. For now this opens the project overview.</p>
   </section>
 
   <section id="controls" class="panel" aria-label="What to show">
@@ -743,7 +747,8 @@ details.mth > p { padding: 0 0 10px; }
   document.getElementById('introTerm').textContent = TERM;
   // Link to the write-up and demo on Boaz's website; hidden until a URL is set.
   const WRITEUP_URL = 'https://boazalkalay.github.io/projects.html';
-  if (WRITEUP_URL) { const wl = document.getElementById('writeupLink'); wl.href = WRITEUP_URL; wl.hidden = false; }
+  if (WRITEUP_URL) { const wl = document.getElementById('writeupLink'); wl.href = WRITEUP_URL; wl.hidden = false;
+    document.getElementById('writeupNote').hidden = false; }  // remove the * and this note when the full write-up is live
   document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
   document.getElementById('plen').textContent = `${M.period_days} days, ${M.settings.min_episodes}+ episodes`;
   document.getElementById('mapshare').textContent =
@@ -953,8 +958,10 @@ details.mth > p { padding: 0 0 10px; }
     out += `<line class="base" x1="0" x2="${W}" y1="${H}" y2="${H}"/>`;
     for (let p = P0; p <= P1; p++) {
       const h = epTot[p] ? Math.max(2, Math.round(top * epTot[p] / epMax)) : 0;
-      // keep the outermost bars inside the strip so they never run under the ◀ ▶ buttons
-      const w = Math.max(1, Math.min(slot - 2, 40)), x = Math.min(W - w, Math.max(0, TH + (p - P0) * slot - w / 2));
+      // Bars sit centred under the slider positions. The outermost bars are trimmed on their outer side
+      // (not shifted) so they stay inside the strip, clear of the ◀ ▶ buttons, and keep the gap to their neighbour.
+      const bw = Math.max(1, Math.min(slot - 4, 40)), c = TH + (p - P0) * slot;
+      const x = Math.max(0, c - bw / 2), w = Math.min(W, c + bw / 2) - x;
       const part = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) && periods[p].end > M.snapshot;
       out += `<rect data-p="${p}" x="${x.toFixed(1)}" y="${H - h}" width="${w.toFixed(1)}" height="${h}"` +
         ` class="${p === state.p ? 'cur' : ''}${part ? ' part' : ''}"><title>${fmtP(p)}: ${epTot[p]} episodes, ${placedN[p]} shows placed${part ? ' (period still in progress)' : ''}</title></rect>`;
@@ -2117,7 +2124,10 @@ details.mth > p { padding: 0 0 10px; }
   const setIntro = on => { intro.hidden = !on; introShow.hidden = on;
     try { localStorage.setItem('dashIntro', on ? 'yes' : 'no'); } catch (e) {} };
   try { if (localStorage.getItem('dashIntro') === 'no') setIntro(false); } catch (e) {}
-  document.getElementById('introHide').addEventListener('click', () => setIntro(false));
+  // When the introduction is hidden, flash the "Show the introduction" button once so people see where it went.
+  document.getElementById('introHide').addEventListener('click', () => {
+    setIntro(false); introShow.classList.remove('flash'); void introShow.offsetWidth; introShow.classList.add('flash');
+  });
   introShow.addEventListener('click', () => setIntro(true));
 
   // ── reading aids: context line, map-type question, selection prompt, pair summary ──
