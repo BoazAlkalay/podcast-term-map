@@ -73,7 +73,7 @@ h1 { font-size: 24px; line-height: 1.2; margin: 0; font-weight: 700; letter-spac
 #pop h3 button { margin-left: auto; padding: 0 6px; }
 #pop ul { margin: 2px 0 8px; padding-left: 18px; } #pop p { margin: 4px 0; }
 main { display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 32px; max-width: 1360px; margin: 0 auto; }
-header, #banner, #inclBanner { max-width: 1360px; margin-left: auto; margin-right: auto; }
+header, #banner, #inclBanner, #siteNav, #corpusStrip { max-width: 1360px; margin-left: auto; margin-right: auto; }
 #intro h2 { font-size: 17px; margin: 0 0 6px; }
 #intro p { margin: 0 0 8px; max-width: 75ch; }
 #intro a { color: var(--a); font-weight: 600; }
@@ -285,7 +285,9 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 /* review 4 (2026-11-03): map title, bigger axis labels, scroll no longer zooms */
 .maphead h2 { font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
 #zoomBtns { position: absolute; right: 6px; bottom: 6px; z-index: 3; display: flex; gap: 4px; }
-#cite { margin: 24px 16px 32px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-2); max-width: 900px; }
+#cite { max-width: 1360px; margin: 24px auto 32px; padding: 12px 16px 0; color: var(--text-2); }
+#cite > * { max-width: 900px; }
+#cite::before { content: ''; display: block; border-top: 1px solid var(--border); margin: -12px 0 12px; }
 #cite h2 { font-size: 14px; margin: 0 0 6px; color: var(--text); }
 #cite p { margin: 4px 0; }
 #cite .citecopy { margin-left: 6px; padding: 0 8px; font-size: 12px; }
@@ -332,6 +334,7 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 .stNav button, a.btnbig { min-height: 44px; padding: 0 20px; font-weight: 600; }
 a.btnbig { display: inline-flex; align-items: center; border-radius: 3px; background: var(--text); color: var(--surface); text-decoration: none; }
 #controls label.f[for="slider"] { font-size: 20px; line-height: 1.25; letter-spacing: -0.01em; }
+h3.restH { font-size: 14px; margin: 10px 0 0; display: flex; align-items: center; gap: 6px; }
 #zoomBtns button { padding: 2px 10px; font-size: 14px; }
 #zoomHint { margin: 4px 0 0; }
 #mapPeriod { position: absolute; left: 8px; top: 6px; z-index: 3; pointer-events: none; font-size: 12px;
@@ -715,6 +718,7 @@ details.mth > p { padding: 0 0 10px; }
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const placedPeriods = [...new Set([...NODES, ...GNODES].map(n => n.period))].sort((a, b) => a - b);
   const nodeAt = (s, p) => NODES.find(n => n.show === s && n.period === p);
+  const HAS_REST = NODES.some(n => n.rest);
   const gnodeAt = (g, p) => GNODES.find(n => n.group === g && n.period === p);
   const findEdge = (list, a, b, p) => list.find(e => e.period === p && ((e.a === a && e.b === b) || (e.a === b && e.b === a)));
   const edgeFor = (a, b, p) => findEdge(EDGES, a, b, p);
@@ -1472,9 +1476,11 @@ details.mth > p { padding: 0 0 10px; }
     },
     words: {
       none: [], gnone: [], gone: [['gtop1', l => `Which words sit closest to how ${l.ga} uses '${TERM}'?`, 'nothing (own average)']],
-      one: [['top', l => `Which words sit closest to how ${l.a} uses '${TERM}'?`, 'nothing (own average)'],
+      one: [['rest', l => `What sets ${l.a} apart from the other shows on the map?`, 'the rest of the map'],
+            ['top', l => `Which words sit closest to how ${l.a} uses '${TERM}'?`, 'nothing (own average)'],
             ['trend', l => `${l.a}: closest words in every period`, 'nothing (own average)']],
       pair: [['pull', () => 'Which words distinguish these two shows?', 'the other show'],
+             ['rest2', () => 'What sets each show apart from the rest of the map?', 'the rest of the map'],
              ['top2', () => 'Closest words for each show', 'nothing (own average)']],
       tri: [['pullbc', l => `Which words separate ${l.y1} from ${l.y2}?`, 'the other show'],
             ['pull', l => `Which words distinguish ${l.a} and ${l.b}?`, 'the other show'],
@@ -1538,6 +1544,10 @@ details.mth > p { padding: 0 0 10px; }
       gtop1: ['Words closest in meaning to the group\'s average use of the term.', 'Nearest-neighbour words to μ_G.'],
       pull: [`Words that are much closer in meaning to one show's use of '${TERM}' than to the other's. Words on the left go with the left show, words on the right with the right show. Use them as pointers for what to read, not as proof. Previous and Next show the same comparison for nearby periods. Click a word to read passages that use it; click a show's name to see its groups.`,
         `Candidates: union of each side's ${M.settings.pull_candidates || 150} nearest vocabulary words; ranked by cos(w, μ_B) / cos(w, μ_A), words with non-positive cosine dropped; x = log2 ratio; top ${M.settings.pull_top_n || 12} per side (Cell 16). Selected for contrast, so they separate the sides by construction: use them to direct reading, not as evidence. Previous/Next step this chart to adjacent periods with both sides placed.`],
+      rest: [`Words that are closer in meaning to this show's use of '${TERM}' than to the average of the other shows on the map this period (left), and the other way round (right). The left side is what's distinctive about the show; the right side is mostly the shared, more generic language of the rest. The map's group decides who "the rest" is: change "Group of shows" to compare with a different set. Pointers for what to read, not proof.`,
+        `Word-pull between μ_show and the equal-weight mean of the other placed shows on the map in the same period (leave-one-out, as for the distance from the group); candidates: union of each side's ${M.settings.pull_candidates || 150} nearest words; x = log2 cos(w, μ_rest) / cos(w, μ_show); top ${M.settings.pull_top_n || 12} per side. Needs ${MIN_EP}+ episodes for the show and 3+ shows placed on the map.`],
+      rest2: [`For each selected show: the words closer in meaning to that show's use of '${TERM}' than to the average of the other shows on the map this period. Useful next to the two-show chart: it shows what each show does differently from everyone, not just from the other.`,
+        `Per show: word-pull between μ_show and the leave-one-out equal-weight mean of the other placed shows on the map (see the one-show view).`],
       pullbc: [`The words that separate ${l.y1} from ${l.y2}: the vocabulary ${l.x} would be leaning toward if it moved to one or the other.`, `Word-pull between μ_${l.y1} and μ_${l.y2} (same procedure as the pair view).`],
       gpull: [`As for shows, but for the two group averages. Click a group's name to see which shows it includes this period.`,
         `Word-pull between μ_GA and μ_GB (equal-weight group means). Previous/Next step to adjacent periods with both groups placed.`],
@@ -1568,6 +1578,7 @@ details.mth > p { padding: 0 0 10px; }
   function setupPanel(panel) {
     const k = kind();
     let opts = VIEWS[panel][k] || [];
+    if (!HAS_REST) opts = opts.filter(o => !/^rest/.test(o[0]));   // bundles exported before 2026-11-18
     if (panel === 'pas' && wordValid()) {
       const w = state.word;
       opts = [['word', () => `How each side uses '${w.w}'`, w.kind === 'g' ? 'the other group' : 'the other show'], ...opts];
@@ -1833,6 +1844,19 @@ details.mth > p { padding: 0 0 10px; }
     lollipop(el, e.pull_a, e.pull_b, e.a !== a, short(a), short(b), colorOf(a), colorOf(b), { kind: 'c', a, b });
   }
 
+  // A show against the average of the other shows on the map (exported as nodes[].rest).
+  function restFor(el, shows) {
+    const why = (s, n) => n && isThin(n) ? `${esc(short(s))} has only ${n.n} episodes this period; this chart needs ${MIN_EP}+.`
+      : n ? `Too few other shows are placed this period to compare ${esc(short(s))} with.` : `${esc(short(s))} is not placed in this period.`;
+    const draw = (box, s) => { const n = nodeAt(s, state.p);
+      if (!n || !n.rest) { message(box, why(s, n)); return; }
+      lollipop(box, n.rest.pull_a, n.rest.pull_b, false, short(s), 'Other shows on the map', colorOf(s), css('--node-edge'), null); };
+    if (shows.length === 1) return draw(el, shows[0]);
+    Plotly.purge(el);
+    el.innerHTML = shows.map((s, i) => `<h3 class="restH"><span class="swatch" style="background:${colorOf(s)}"></span>${esc(short(s))} vs the rest of the map</h3><div id="restC${i}"></div>`).join('');
+    shows.forEach((s, i) => draw(document.getElementById('restC' + i), s));
+  }
+
   // Word-pull charts can step to the neighbouring periods without moving the rest of the page.
   const wp = () => state.wP === null ? state.p : state.wP;
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1882,6 +1906,8 @@ details.mth > p { padding: 0 0 10px; }
       return;
     }
     if (v === 'pull') return pullFor(el, state.a, state.b);
+    if (v === 'rest') return restFor(el, [state.a]);
+    if (v === 'rest2') return restFor(el, [state.a, state.b]);
     if (v === 'pull2') { const [x, y] = tie2(); return pullFor(el, x, y); }
     if (v === 'pullbc') { const t = tri(); return pullFor(el, t.o1, t.o2); }
     if (v === 'gpull') {
