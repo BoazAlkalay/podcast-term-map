@@ -76,12 +76,11 @@ main { display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 32px
 header, #banner, #inclBanner { max-width: 1360px; margin-left: auto; margin-right: auto; }
 #intro h2 { font-size: 17px; margin: 0 0 6px; }
 #intro p { margin: 0 0 8px; max-width: 75ch; }
+#intro a { color: var(--a); font-weight: 600; }
 button.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
 a.btnlink { display: inline-flex; align-items: center; padding: 4px 10px; border: 1px solid var(--border); border-radius: 3px; text-decoration: none; color: var(--text); background: var(--surface); }
 a.btnlink.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
 a.btnlink:hover { opacity: .9; }
-#introShow { align-self: flex-start; font-weight: 600; border: 2px solid var(--text); }
-#introShow.flash { animation: introFlash 1.6s ease-out 1; }
 @keyframes introFlash { 0%, 40% { box-shadow: 0 0 0 4px var(--onair); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .wipnote { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
 #controls { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: flex-start; }
@@ -118,7 +117,7 @@ details.pair2[open] { display: block; flex-basis: 100%; }
 #mapPanel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; }
 #intro { border-top: 0; padding: 6px 0 4px; }
 #intro h2 { display: none; }
-#intro p:first-of-type { font-size: 17px; line-height: 1.5; }
+#intro p:first-of-type { font-size: 15px; line-height: 1.5; }
 #controls { padding: 12px 0; }
 #tabs { padding-top: 6px; }
 #tabs button[role=tab] { border: 0; border-radius: 0; background: transparent; padding: 8px 14px 9px; font-size: 15px; }
@@ -218,7 +217,7 @@ ul.pas li { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .wcount b { color: var(--text); }
 h4.sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0 2px; }
 /* review 2 (2026-11-03): steps, settings hierarchy, selection prompt, pair summary */
-#intro p:first-of-type { font-size: 16px; }
+#intro p:first-of-type { font-size: 15px; }
 p.steps { max-width: none !important; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 14px; color: var(--text-2); margin: 0 0 8px; }
 p.steps b { display: inline-block; width: 20px; height: 20px; line-height: 18px; text-align: center; border: 1px solid var(--text-2);
   border-radius: 50%; font-size: 12px; margin-right: 6px; color: var(--text); }
@@ -291,6 +290,48 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #cite p { margin: 4px 0; }
 #cite .citecopy { margin-left: 6px; padding: 0 8px; font-size: 12px; }
 #cite a { color: var(--a); }
+/* Site sections: The story / Explore the map / How it works / About */
+#siteNav { display: flex; flex-wrap: wrap; gap: 2px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+#siteNav button { background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 14px;
+  font-size: 15px; font-weight: 600; color: var(--text-2); cursor: pointer; min-height: 44px; }
+#siteNav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--text); }
+#corpusStrip { display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 8px 16px; font-size: 13px; color: var(--text-2); }
+#corpusStrip b { color: var(--text); }
+#storyView, #aboutView { width: 100%; max-width: 1000px; margin: 0 auto; padding: 4px 0 8px; }
+.stHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0 18px; }
+.stChaps { display: flex; flex-wrap: wrap; gap: 6px; }
+.stChaps button { border-radius: 999px; font-size: 13px; font-weight: 600; padding: 4px 12px; min-height: 36px; }
+.stChaps button[aria-current="step"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+.stStep h2 { font-size: 32px; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 10px; }
+.stStep p { max-width: 75ch; margin: 0 0 12px; }
+.stStep .lead { font-size: 17px; color: var(--text-2); }
+.stStep .note { font-size: 13px; color: var(--muted); }
+.stTech { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; max-width: 80ch; }
+.stTech b:first-child { display: block; margin-bottom: 2px; }
+.stBox { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+.stChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.stChips a { padding: 8px 16px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); text-decoration: none; font-size: 15px; }
+.stChips a.on { background: var(--text); color: var(--surface); border-color: var(--text); font-weight: 600; }
+.stLinks { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; margin: 0 0 12px; }
+.stLinks a, .stCard .go { color: var(--a); font-weight: 600; }
+.stMapIn { position: relative; }
+.stMapIn svg { position: absolute; inset: 0; }
+.stAxList { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.stAxList .stAx { position: static; max-width: none; }
+.stAx { position: absolute; max-width: 230px; padding: 4px 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px;
+  font-size: 13px; line-height: 1.3; color: var(--text); }
+.stAx .axw { display: block; font-size: 11px; color: var(--muted); }
+.stCards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 0 0 14px; }
+.stCard { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); text-decoration: none; }
+.stCard:hover { border-color: var(--text-2); }
+.stCard .tags { display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; font-weight: 600; color: var(--text-2); }
+.stCard .tags span { padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px; }
+.stCard .q { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.stNav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.stNav button, a.btnbig { min-height: 44px; padding: 0 20px; font-weight: 600; }
+a.btnbig { display: inline-flex; align-items: center; border-radius: 3px; background: var(--text); color: var(--surface); text-decoration: none; }
+#controls label.f[for="slider"] { font-size: 20px; line-height: 1.25; letter-spacing: -0.01em; }
 #zoomBtns button { padding: 2px 10px; font-size: 14px; }
 #zoomHint { margin: 4px 0 0; }
 #mapPeriod { position: absolute; left: 8px; top: 6px; z-index: 3; pointer-events: none; font-size: 12px;
@@ -322,31 +363,47 @@ details.mth > p { padding: 0 0 10px; }
 </head>
 <body>
 <header>
-  <h1>How do political podcasts talk about the same word?</h1>
+  <h1>Podcast Term Map</h1>
   <div id="hdrCtl">
     <span class="small">Explanations</span>
     <span class="seg" role="group" aria-label="Explanation level">
       <button type="button" id="explOff" aria-pressed="false">Hidden</button>
       <button type="button" id="explPlain" aria-pressed="true">Plain</button>
       <button type="button" id="explTech" aria-pressed="false">Technical</button></span>
-    <button type="button" id="introShow" hidden>Show the introduction</button>
     <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
   </div>
 </header>
+<nav id="siteNav" aria-label="Site sections">
+  <button type="button" data-view="story">The story</button>
+  <button type="button" data-view="explore">Explore the map</button>
+  <button type="button" data-view="methods">How it works</button>
+  <button type="button" data-view="about">About</button>
+</nav>
+<div id="corpusStrip"><span><b>80+</b> political podcasts</span><span><b>About 88,000</b> episodes</span><span><b>2021</b> to now</span><span id="corpusDate"></span></div>
 <div id="banner"></div>
 <div id="inclBanner" hidden></div>
 <main>
+  <section id="storyView" aria-label="The story" hidden>
+    <div class="stHead">
+      <div class="stChaps" id="stChaps"></div>
+      <a href="#" id="stSkip" class="small">Skip to the map →</a>
+    </div>
+    <div id="stBody"></div>
+    <div class="stNav">
+      <button type="button" id="stBack">← Back</button>
+      <button type="button" id="stNext" class="primary">Next →</button>
+    </div>
+  </section>
+  <section id="aboutView" class="panel" aria-label="About" hidden>
+    <h2>About this project</h2>
+    <p>Podcast Term Map is a research project by Boaz Alkalay, a graduate student in Data Analytics and Computational Social Science at UMass Amherst. It follows more than 80 political podcasts from 2021 to now, about 88,000 episodes transcribed automatically from their public feeds, and compares the language each show uses around a chosen word, period by period.</p>
+    <p>It measures language, not opinions. Two shows can sit close together on the map and disagree completely; what they share is the vocabulary around the word.</p>
+    <p>The data files (word lists, positions and short passages, no full transcripts) are published as a <a href="https://huggingface.co/datasets/aSilkyAnteater/podcast-dashboard-data" target="_blank" rel="noopener">Hugging Face dataset</a>. How to cite the project is at the bottom of every page.</p>
+    <p id="aboutWriteup"></p>
+  </section>
+  <div id="exploreView">
   <section id="intro" class="panel" aria-label="Start here">
-    <h2>Start here</h2>
-    <p>I follow more than 80 political podcasts from 2021 to now and look at how they use the words around a single term,
-      like <i id="introTerm">iran</i>. <b>Each dot is one show in one period</b>, placed using only the words that appear
-      near the term in that show's episodes. When two dots are close, those shows use similar words around the term.
-      Being close together does not mean the shows share a stance or sentiment.</p>
-    <p class="steps"><span><b>1</b> Pick two or three shows on the map</span><span><b>2</b> See where they sit on the axes, and which words separate them</span>
-      <span><b>3</b> Follow how that changed (trails, Over time tab)</span><span><b>4</b> Read the actual passages</span></p>
-    <div class="btnrow"><a id="writeupLink" class="btnlink primary" href="#" target="_blank" rel="noopener" hidden>Write-up and demo*</a>
-      <button type="button" id="introHide">Hide this introduction</button></div>
-    <p class="wipnote" id="writeupNote" hidden>*In progress. For now this opens the project overview.</p>
+    <p>Each dot is one show in one period; dots close together use similar words around <i id="introTerm">iran</i>, which is not the same as agreeing. New here? <a href="#" id="introStory">The story</a> walks through one example in six steps.</p>
   </section>
 
   <section id="controls" class="panel" aria-label="What to show">
@@ -515,7 +572,6 @@ details.mth > p { padding: 0 0 10px; }
     <button type="button" role="tab" data-tab="words" id="tab-words">Compare words</button>
     <button type="button" role="tab" data-tab="ts" id="tab-ts">Change over time</button>
     <button type="button" role="tab" data-tab="pas" id="tab-pas">Passages</button>
-    <button type="button" role="tab" data-tab="methods" id="tab-methods">Methods</button>
     <span id="status">Loading…</span>
   </nav>
 
@@ -540,8 +596,9 @@ details.mth > p { padding: 0 0 10px; }
     <div id="pas"></div>
   </section>
 
-  <section id="methodsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-methods" hidden>
-    <h2>Methods</h2>
+  </div>
+  <section id="methodsPanel" class="panel" aria-label="How it works" hidden>
+    <h2>How it works</h2>
     <p class="small">Switch "Explanations" at the top between Plain and Technical for the level of detail.</p>
     <details class="mth" open><summary>What it measures</summary><p><span class="lv-plain">For one term at a time: which words political podcasts use around it, and how much those words differ between shows and over time. It measures vocabulary and topics, not opinions, stances or ideologies.</span><span class="lv-tech">For a target term, the distribution of its local contexts per show and period, summarised as a mean à la carte (ALC) embedding (Rodriguez, Spirling and Stewart 2023), and noise-corrected distances between those means. Vocabulary and topic, not stance.</span></p></details>
     <details class="mth"><summary>From episodes to a dot</summary><p><span class="lv-plain">Episodes are transcribed automatically from the shows' public RSS feeds. For every mention of the term, the nearby nouns, names and adjectives are turned into numbers that represent meaning. An episode needs 3+ mentions to count, and its mentions are averaged. A show's dot for a period is the average of its episodes, so one episode that says the word constantly doesn't outweigh the others. A show needs 8 such episodes in a period to get a normal dot.</span><span class="lv-tech">Whisper medium (int8) transcripts; spaCy lemmatisation (NOUN, PROPN, ADJ); word2vec 100-d (window 5); ALC transform A learned on words with ≥ 10 uses (hold-out median cosine 0.875, round-2 model). Mention embedding = A × mean of ±5-token context vectors; episode = mean of its mentions (≥ 3); cell μ = mean over episodes, v = tr(cov)/n. Placed if n ≥ 8; 3-7 "thin".</span></p></details>
@@ -597,8 +654,17 @@ details.mth > p { padding: 0 0 10px; }
   const INDEX = Array.isArray(window.BUNDLE_INDEX) ? window.BUNDLE_INDEX : [];
   // Without ?b=, open a fixed starting view from the newest snapshot (not whichever bundle
   // happened to be exported last), so a shared link always lands in the same place.
-  const DEFAULT_VIEW = { term: 'iran', days: 91, hosts: 'Conservative Media' };
-  let CHOSEN = PICK;
+  // The front-page story uses one fixed example (chosen 2026-11-17): 'democrat', Ben Shapiro vs Mark Levin,
+  // January to April 2026, Conservative Media, 91-day periods. A plain address (no ?query) opens the story.
+  const STORY = { term: 'democrat', days: 91, hosts: 'Conservative Media', a: 'The Ben Shapiro Show', b: 'Mark Levin Podcast', start: '2026-01-06' };
+  const Q0 = new URLSearchParams(location.search);
+  const SITE_VIEWS = ['story', 'explore', 'methods', 'about'];
+  let VIEW = SITE_VIEWS.includes(Q0.get('view')) ? Q0.get('view') : Q0.get('tab') === 'methods' ? 'methods' : location.search.length > 1 ? 'explore' : 'story';
+  const DEFAULT_VIEW = { term: STORY.term, days: STORY.days, hosts: STORY.hosts };
+  const NEWEST = INDEX.map(e => e.snapshot).sort().slice(-1)[0];
+  const pathFor = (term, days, hosts) => (INDEX.find(e => e.snapshot === NEWEST && e.term === term && e.days === days && e.hosts === hosts) || {}).path;
+  const STORY_PATH = pathFor(STORY.term, STORY.days, STORY.hosts);
+  let CHOSEN = VIEW === 'story' && STORY_PATH ? STORY_PATH : PICK;
   if (!CHOSEN && INDEX.length) {
     const newest = INDEX.map(e => e.snapshot).sort().slice(-1)[0];
     const inNewest = INDEX.filter(e => e.snapshot === newest);
@@ -747,8 +813,6 @@ details.mth > p { padding: 0 0 10px; }
   document.getElementById('introTerm').textContent = TERM;
   // Link to the write-up and demo on Boaz's website; hidden until a URL is set.
   const WRITEUP_URL = 'https://boazalkalay.github.io/projects.html';
-  if (WRITEUP_URL) { const wl = document.getElementById('writeupLink'); wl.href = WRITEUP_URL; wl.hidden = false;
-    document.getElementById('writeupNote').hidden = false; }  // remove the * and this note when the full write-up is live
   document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
   document.getElementById('plen').textContent = `${M.period_days} days, ${M.settings.min_episodes}+ episodes`;
   document.getElementById('mapshare').textContent =
@@ -835,6 +899,16 @@ details.mth > p { padding: 0 0 10px; }
   // (s1-s4 = shows A-D, g1/g2 = groups, mode=groups, p = period start date, map=centred, tab).
   // Values that do not exist in this bundle are ignored, so a link survives a re-export.
   const URLQ = new URLSearchParams(location.search);
+  const IS_STORY = M.term === STORY.term && M.period_days === STORY.days && M.host_group === STORY.hosts &&
+    NODES.some(n => n.show === STORY.a) && NODES.some(n => n.show === STORY.b);
+  const STORY_P = (() => {
+    if (!IS_STORY) return -1;
+    const both = p => [STORY.a, STORY.b].every(s => NODES.some(n => n.show === s && n.period === p && !isThin(n)));
+    const want = periods.findIndex(x => x.start === STORY.start);
+    if (want >= 0 && both(want)) return want;
+    const ok = placedPeriods.filter(both).filter(p => !(periods[p].end > M.snapshot));
+    return ok.length ? ok[ok.length - 1] : -1;
+  })();
   {
     const shows = new Set(NODES.map(n => n.show)), qp = URLQ.get('p');
     const pi = qp ? periods.findIndex(x => x.start === qp) : -1;
@@ -848,6 +922,10 @@ details.mth > p { padding: 0 0 10px; }
     if (GROUPS[URLQ.get('g2')]) state.gb = URLQ.get('g2');
     if (URLQ.get('mode') === 'groups') state.mode = 'groups';
     if (URLQ.get('map') === 'centred') state.mapMode = 'centred';
+    if (IS_STORY && !qs.some(x => x) && !URLQ.get('g1')) {
+      state.a = STORY.a; state.b = STORY.b; state.c = state.d = ''; state.starter = '';
+      if (!qp && STORY_P >= 0) state.p = STORY_P;
+    }
   }
   const slider = document.getElementById('slider');
   slider.min = placedPeriods[0]; slider.max = placedPeriods[placedPeriods.length - 1];
@@ -998,6 +1076,7 @@ details.mth > p { padding: 0 0 10px; }
   // slider (it handles arrows itself) or on the tab bar (arrows move between tabs there).
   document.addEventListener('keydown', e => {
     if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (VIEW !== 'explore') return;                 // in the story, arrows move between steps instead
     const el = e.target;
     if (el.closest && el.closest('input, select, textarea, [contenteditable], [role=tab], [role=slider]')) return;
     e.preventDefault();
@@ -2097,7 +2176,7 @@ details.mth > p { padding: 0 0 10px; }
   box.addEventListener('mouseleave', () => { tip.hidden = true; });
 
   // ── tabs under the map: one analysis panel at a time, map stays visible ──
-  const TABS = { words: 'wordsPanel', ts: 'tsPanel', pas: 'pasPanel', methods: 'methodsPanel' };
+  const TABS = { words: 'wordsPanel', ts: 'tsPanel', pas: 'pasPanel' };
   state.tab = 'words';
   try { const t = localStorage.getItem('dashTab'); if (TABS[t]) state.tab = t; } catch (e) {}
   if (TABS[URLQ.get('tab')]) state.tab = URLQ.get('tab');
@@ -2107,7 +2186,7 @@ details.mth > p { padding: 0 0 10px; }
     render();
   }
   document.getElementById('whyTerms').addEventListener('click', e => {
-    e.preventDefault(); setTab('methods');
+    e.preventDefault(); setView('methods');
     const d = document.getElementById('mthTerms'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   document.querySelectorAll('#tabs button[role=tab]').forEach(b => {
@@ -2120,15 +2199,6 @@ details.mth > p { padding: 0 0 10px; }
     });
   });
   // ── introduction and the worked example ─────────────────────────────────
-  const intro = document.getElementById('intro'), introShow = document.getElementById('introShow');
-  const setIntro = on => { intro.hidden = !on; introShow.hidden = on;
-    try { localStorage.setItem('dashIntro', on ? 'yes' : 'no'); } catch (e) {} };
-  try { if (localStorage.getItem('dashIntro') === 'no') setIntro(false); } catch (e) {}
-  // When the introduction is hidden, flash the "Show the introduction" button once so people see where it went.
-  document.getElementById('introHide').addEventListener('click', () => {
-    setIntro(false); introShow.classList.remove('flash'); void introShow.offsetWidth; introShow.classList.add('flash');
-  });
-  introShow.addEventListener('click', () => setIntro(true));
 
   // ── reading aids: context line, map-type question, selection prompt, pair summary ──
   const yr = p => periods[p].end.slice(0, 4);
@@ -2266,6 +2336,7 @@ details.mth > p { padding: 0 0 10px; }
   function syncURL() {
     const q = new URLSearchParams();
     const set = (k, v) => { if (v) q.set(k, v); };
+    if (VIEW !== 'explore') set('view', VIEW);
     set('b', CUR_PATH);
     if (state.mode === 'groups') { set('mode', 'groups'); set('g1', state.ga); set('g2', state.gb); }
     else { set('s1', state.a); set('s2', state.b); set('s3', state.c); set('s4', state.d); }
@@ -2312,7 +2383,207 @@ details.mth > p { padding: 0 0 10px; }
   });
   let rt = null;
   window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { cy.resize(); fitted = false; render(); }, 150); });
+  // ── site sections and the front-page story ───────────────────────────────
+  const storyView = document.getElementById('storyView'), exploreView = document.getElementById('exploreView');
+  const aboutView = document.getElementById('aboutView'), methodsPanel = document.getElementById('methodsPanel');
+  document.getElementById('corpusDate').textContent = SNAP ? `Data through ${fmtD(SNAP)}` : '';
+  if (WRITEUP_URL) document.getElementById('aboutWriteup').innerHTML =
+    `A <a href="${esc(WRITEUP_URL)}" target="_blank" rel="noopener">write-up and demo</a> is in progress; for now that link opens the project overview.`;
+  let stStep = 0;
+  function setView(v, push = true) {
+    if (!SITE_VIEWS.includes(v)) v = 'explore';
+    if (v === 'story' && !IS_STORY) {               // the story needs its own bundle: reload with it
+      if (STORY_PATH) { location.href = location.pathname + '?view=story'; return; }
+      v = 'explore';
+    }
+    VIEW = v;
+    storyView.hidden = v !== 'story'; exploreView.hidden = v !== 'explore';
+    methodsPanel.hidden = v !== 'methods'; aboutView.hidden = v !== 'about';
+    document.querySelectorAll('#siteNav button').forEach(b => {
+      if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    if (v === 'explore') { cy.resize(); fitted = false; render(); }
+    else { if (v === 'story') drawStory(); syncURL(); }
+    if (push) window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('#siteNav button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+  // Leave the story for the map, set up on the story's comparison.
+  const toExplore = (tab) => {
+    if (IS_STORY) { state.mode = 'shows'; state.a = STORY.a; state.b = STORY.b; state.c = state.d = ''; if (STORY_P >= 0) state.p = STORY_P; }
+    if (tab) { state.tab = tab; }
+    setView('explore');
+  };
+  document.getElementById('stSkip').addEventListener('click', e => { e.preventDefault(); toExplore(); });
+
+  const STEPS = ['Word', 'Two shows', 'The map', 'Movement', 'Over time', 'Questions'];
+  const tech = (title, html) => `<div class="stTech lv-tech"><b>${title}</b>${html}</div>`;
+  const viewLink = (path, extra) => `?view=explore&b=${encodeURIComponent(path)}${extra ? '&' + extra : ''}`;
+  // Map frame shared by steps 3 and 4: this period's dots plus both trails, aspect ratio kept.
+  function storyMap(el, withTrails) {
+    const P = STORY_P, A = STORY.a, Bs = STORY.b, back = 4;
+    const here = NODES.filter(n => n.period === P && n.x !== null && n.x !== undefined);
+    const trail = s => NODES.filter(n => n.show === s && n.x !== null && n.x !== undefined && n.period <= P && n.period >= P - back)
+      .sort((a, b) => a.period - b.period);
+    const tA = trail(A), tB = trail(Bs);
+    const pts = here.concat(tA, tB);
+    const W = el.clientWidth || 900, narrow = W < 640, H = narrow ? 340 : 440, padX = narrow ? 24 : 60, padY = narrow ? 24 : 64;
+    const xs = pts.map(n => n.x), ys = pts.map(n => n.y);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const k = Math.min((W - 2 * padX) / ((x1 - x0) || 1), (H - 2 * padY) / ((y1 - y0) || 1));
+    const ox = (W - k * (x1 - x0)) / 2, oy = (H - k * (y1 - y0)) / 2;
+    const X = x => ox + (x - x0) * k, Y = y => H - (oy + (y - y0) * k);
+    const cA = css('--a'), cB = css('--b'), grey = css('--node'), edge = css('--node-edge'), txt = css('--text');
+    let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Map of shows for '${esc(TERM)}' in ${esc(fmtP(P))}">`;
+    svg += `<line x1="0" x2="${W}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="${css('--border')}" stroke-dasharray="4 4"/>` +
+      `<line y1="0" y2="${H}" x1="${X(0).toFixed(1)}" x2="${X(0).toFixed(1)}" stroke="${css('--border')}" stroke-dasharray="4 4"/>`;
+    const sel = new Set([A, Bs]);
+    for (const n of here) {
+      if (sel.has(n.show)) continue;
+      const thin = isThin(n);
+      svg += `<circle cx="${X(n.x).toFixed(1)}" cy="${Y(n.y).toFixed(1)}" r="${thin ? 5 : 7}" fill="${thin ? 'none' : grey}" stroke="${edge}"${thin ? ' stroke-dasharray="2 2"' : ''} opacity="${withTrails ? 0.45 : 0.9}"><title>${esc(n.show)} (n=${n.n})</title></circle>`;
+    }
+    if (!withTrails) {                                // name the larger shows lightly for context
+      here.filter(n => !sel.has(n.show) && !isThin(n)).sort((a, b) => b.n - a.n).slice(0, 6).forEach(n => {
+        svg += `<text x="${(X(n.x) + 9).toFixed(1)}" y="${(Y(n.y) + 4).toFixed(1)}" font-size="11" fill="${css('--muted')}">${esc(short(n.show))}</text>`; });
+    }
+    const months = p => Math.round((P - p) * M.period_days / 30.4);
+    for (const [t, col, s] of [[tA, cA, A], [tB, cB, Bs]]) {
+      const now = t.find(n => n.period === P);
+      if (withTrails && t.length > 1) {
+        svg += `<polyline points="${t.map(n => `${X(n.x).toFixed(1)},${Y(n.y).toFixed(1)}`).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="6 4" opacity="0.8"/>`;
+        t.filter(n => n.period !== P).forEach((n, i, arr) => {
+          svg += `<circle cx="${X(n.x).toFixed(1)}" cy="${Y(n.y).toFixed(1)}" r="5" fill="${col}" opacity="${(0.3 + 0.45 * i / Math.max(1, arr.length - 1)).toFixed(2)}"><title>${esc(short(s))}, ${esc(fmtP(n.period))}</title></circle>`; });
+        const old = t[0];
+        if (old.period !== P) svg += `<text x="${(X(old.x) + 8).toFixed(1)}" y="${(Y(old.y) + (s === A ? 16 : -8)).toFixed(1)}" font-size="11" fill="${col}" paint-order="stroke" stroke="${css('--surface')}" stroke-width="3">${months(old.period)} months earlier</text>`;
+      }
+      if (now) svg += `<circle cx="${X(now.x).toFixed(1)}" cy="${Y(now.y).toFixed(1)}" r="10" fill="${col}" stroke="${css('--surface')}" stroke-width="2"/>` +
+        `<text x="${(X(now.x) + 14).toFixed(1)}" y="${(Y(now.y) + 5).toFixed(1)}" font-size="14" font-weight="700" fill="${col}" paint-order="stroke" stroke="${css('--bg')}" stroke-width="3">${esc(short(s))}</text>`;
+    }
+    svg += '</svg>';
+    // AI axis labels at the four edges, with the words they rest on.
+    const ai = AX_AI && AX_AI.maps && AX_AI.maps.overall, lab = MAP_AXES.overall;
+    const end = (kk, side, arrow) => {
+      const words = lab && lab[kk] && lab[kk][side] ? lab[kk][side].slice(0, 3).map(esc).join(', ') : '';
+      const L = ai && ai[kk] && ai[kk][side] && ai[kk][side].label;
+      return L ? `${arrow}<b>${esc(L)}</b> <span class="aibadge">AI${ai[kk][side].weak ? ' · weak' : ''}</span><span class="axw">${words}</span>`
+        : words ? `${arrow}<span class="axw">${words}</span>` : '';
+    };
+    const ax = [[end(0, 'neg', '← '), 'left:6px;top:50%;transform:translateY(-50%)'], [end(0, 'pos', '→ '), 'right:6px;top:50%;transform:translateY(-50%);text-align:right'],
+      [end(1, 'pos', '↑ '), 'top:6px;left:50%;transform:translateX(-50%);text-align:center'], [end(1, 'neg', '↓ '), 'bottom:6px;left:50%;transform:translateX(-50%);text-align:center']];
+    const axHtml = ax.filter(a => a[0]).map(a => `<div class="stAx"${narrow ? '' : ` style="${a[1]}"`}>${a[0]}</div>`).join('');
+    // On narrow screens the edge labels would cover the dots, so they go in a list under the map.
+    el.innerHTML = `<div class="stMapIn" style="height:${H}px">${svg}${narrow ? '' : axHtml}</div>` + (narrow && axHtml ? `<div class="stAxList">${axHtml}</div>` : '');
+    // Plain description of each trail: which edge it moved toward, or that it stayed put.
+    const span = Math.max(x1 - x0, y1 - y0) || 1;
+    const move = t => {
+      const now = t.find(n => n.period === P), old = t[0];
+      if (!now || !old || old.period === P) return null;
+      const dx = now.x - old.x, dy = now.y - old.y, m = months(old.period);
+      if (Math.hypot(dx, dy) < 0.12 * span) return { m, txt: 'stayed close to where it was' };
+      const [kk, side] = Math.abs(dx) >= Math.abs(dy) ? [0, dx > 0 ? 'pos' : 'neg'] : [1, dy > 0 ? 'pos' : 'neg'];
+      const L = ai && ai[kk] && ai[kk][side] && ai[kk][side].label;
+      const where = { '0neg': 'left', '0pos': 'right', '1pos': 'up', '1neg': 'down' }[kk + side];
+      return { m, txt: L ? `moved ${where}, toward “${L}”` : `moved ${where}` };
+    };
+    return { a: move(tA), b: move(tB) };
+  }
+  function storySeries(el) {
+    const es = EDGES.filter(e => (e.a === STORY.a && e.b === STORY.b) || (e.a === STORY.b && e.b === STORY.a)).sort((x, y) => x.period - y.period);
+    if (!es.length) { el.textContent = 'No comparison available.'; return null; }
+    const zero = e => e.lo <= 1e-9;
+    const tr = { x: es.map(e => midP(e.period)), y: es.map(e => e.dist), mode: 'lines+markers', line: { color: css('--text'), width: 2 },
+      marker: { size: 9, color: es.map(e => e.period === STORY_P ? css('--a') : css('--text')), symbol: es.map(e => zero(e) ? 'circle-open' : 'circle') },
+      error_y: { type: 'data', symmetric: false, array: es.map(e => e.hi - e.dist), arrayminus: es.map(e => e.dist - e.lo), color: css('--text-2'), thickness: 1.2, width: 0 },
+      hovertemplate: es.map(e => `${esc(fmtP(e.period))}<br>difference ${e.dist.toFixed(2)} (90% range ${e.lo.toFixed(2)} to ${e.hi.toFixed(2)})<extra></extra>`) };
+    const sp = periods[STORY_P];
+    const layout = Object.assign(baseLayout(), { height: 340,
+      xaxis: axis({ type: 'date' }), yaxis: axis({ rangemode: 'tozero', title: { text: 'Difference in words', font: { size: 12 } } }),
+      shapes: sp ? [{ type: 'rect', xref: 'x', yref: 'paper', x0: sp.start, x1: sp.end, y0: 0, y1: 1, fillcolor: css('--shade'), line: { width: 0 } }] : [],
+      annotations: [{ x: 0, xref: 'paper', y: 1, yref: 'paper', xanchor: 'left', yanchor: 'top', showarrow: false, text: '↑ more different', font: { size: 11, color: css('--muted') } }] });
+    Plotly.react(el, [tr], layout, cfg);
+    const hi = es.reduce((a, b) => b.dist > a.dist ? b : a), lo = es.reduce((a, b) => b.dist < a.dist ? b : a);
+    return { n: es.length, z: es.filter(zero).length, hi, lo };
+  }
+  function drawStory() {
+    const chaps = document.getElementById('stChaps');
+    chaps.innerHTML = STEPS.map((t, i) => `<button type="button" data-i="${i}"${i === stStep ? ' aria-current="step"' : ''}>${i + 1}. ${t}</button>`).join('');
+    chaps.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { stStep = +b.dataset.i; drawStory(); }));
+    document.getElementById('stBack').style.visibility = stStep === 0 ? 'hidden' : 'visible';
+    const next = document.getElementById('stNext');
+    next.hidden = stStep === STEPS.length - 1;
+    const body = document.getElementById('stBody');
+    const A = short(STORY.a), Bn = short(STORY.b), T = esc(TERM), P = STORY_P;
+    const who = M.host_group === 'Conservative Media' ? 'conservative' : '';
+    const newestTerms = [...new Set(INDEX.filter(e => e.snapshot === NEWEST).map(e => e.term))].sort();
+    if (stStep === 0) {
+      body.innerHTML = `<div class="stStep"><h2>What do political podcasts talk about when they say “${T}”?</h2>
+        <p class="lead">Pick a word. For each show, the map looks at the words that come up around it in every episode, and compares the shows.</p>
+        <div class="stChips">${newestTerms.map(t => { const pth = pathFor(t, STORY.days, 'All shows') || pathFor(t, STORY.days, STORY.hosts);
+          return pth ? `<a href="${t === TERM ? '#' : viewLink(pth)}"${t === TERM ? ' class="on" data-next="1"' : ''}>${esc(t)}</a>` : ''; }).join('')}</div>
+        <p class="note">Hand-picked example words, not a sample of all political topics. This story follows “${T}”; any other word opens the map.</p>
+        ${tech('How a word is matched', 'Terms are single lemmatized words, so phrases and spelling variants are handled only through a corrections list. An episode counts for a show when it uses the term 3+ times; a show is placed in a period when it has 8+ such episodes (3 to 7 gives a faded, rough dot).')}</div>`;
+      const on = body.querySelector('a.on'); if (on) on.addEventListener('click', e => { e.preventDefault(); stStep = 1; drawStory(); });
+    } else if (stStep === 1) {
+      body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart from ${esc(Bn)} on the vocabulary they use around “${T}”</h2>
+        <p class="lead">Two ${who} hosts, ${esc(fmtP(P))}. On each side are the words that sit closer in meaning to one host’s language around “${T}” than to the other’s. They are the words closest to how each host talks, not this project’s description of either. They point you to what to read; the passages show what was actually said.</p>
+        <div class="stBox"><div id="stWords"></div></div>
+        <div class="stLinks"><a href="#" id="stToPas">Read the passages behind these words →</a><span class="note">This compares language, not opinion.</span></div>
+        ${tech('How the words are picked', 'Each mention becomes a vector: the word2vec vectors of its context window are averaged and multiplied by the à la carte transform (Khodak et al. 2018; Rodriguez, Spirling and Stewart 2023), which corrects for common words dominating the average. Mentions are averaged within episodes, episodes within show and period. Candidate words are the neighbours of either show’s vector, ranked by the log2 ratio of their cosine similarity to one show versus the other. A word can lean toward a show without that show ever saying it.')}</div>`;
+      const e = edgeFor(STORY.a, STORY.b, P), el = document.getElementById('stWords');
+      if (e) lollipop(el, e.pull_a, e.pull_b, e.a !== STORY.a, A, Bn, css('--a'), css('--b'), null); else el.textContent = 'No word comparison for this period.';
+      document.getElementById('stToPas').addEventListener('click', ev => { ev.preventDefault(); toExplore('pas'); });
+    } else if (stStep === 2) {
+      body.innerHTML = `<div class="stStep"><h2>Every show on one map</h2>
+        <p class="lead">Each dot is one ${who} show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, sit close together. Close means similar language, not similar opinions.</p>
+        <div class="stBox"><div id="stMap1"></div></div>
+        <p class="note">The two coloured dots are the hosts from the last step. Each end of an axis gets a short label written by an AI model from the words at that end; the words are always shown with it.</p>
+        ${tech('How the map is drawn', `Distances between show-period vectors are corrected for sampling noise, then laid out in two dimensions (classical multidimensional scaling, one layout for all periods). Two dimensions keep only part of the variation (${Math.round((M.map_share || 0) * 100)}% for this map), so exact distances are in the charts, not read off the map. Axis labels come from an AI model (Claude) given up to 25 words at each end of an axis; it is told to ignore names and dates, and a label resting on fewer than 4 of those words is marked weak.`)}</div>`;
+      storyMap(document.getElementById('stMap1'), false);
+    } else if (stStep === 3) {
+      body.innerHTML = `<div class="stStep"><h2>Dots move from period to period</h2>
+        <p class="lead" id="stMoveText">Each show leaves a trail of its earlier positions.</p>
+        <div class="stBox"><div id="stMap2"></div></div>
+        <p class="note">Faded dots are earlier periods, one step per ${M.period_days} days. A move on the map is a clue; the next step checks it.</p>
+        ${tech('Reading a trail', 'All periods share one layout, so a show’s dots in different periods can be compared, but only two dimensions are shown, so part of any move can be the layout rather than the language. Faded (3 to 7 episode) dots move more from noise alone. That is why the distance chart with its ranges, not the trail, is the test.')}</div>`;
+      const mv = storyMap(document.getElementById('stMap2'), true);
+      const s = [mv.a && `${esc(A)}’s dot ${mv.a.txt} over the past ${mv.a.m} months`, mv.b && `${esc(Bn)}’s ${mv.b.txt}`].filter(Boolean).join(', while ');
+      document.getElementById('stMoveText').innerHTML = 'Each show leaves a trail of its earlier positions. Read it against the axis labels' + (s ? `: ${s}.` : '.');
+    } else if (stStep === 4) {
+      body.innerHTML = `<div class="stStep"><h2>Following two shows over time</h2>
+        <p class="lead">How different were ${esc(A)}’s and ${esc(Bn)}’s words around “${T}”, period by period? Higher means more different. The lines show the 90% range; the shaded period is the one above.</p>
+        <div class="stBox"><div id="stTs"></div></div><p class="note" id="stTsNote"></p>
+        ${tech('What the numbers are', 'Each point is the distance between the two hosts’ vectors in that period minus the distance expected from sampling noise alone (two random sets of episodes from one show also differ a little). 90% intervals come from resampling episodes; a hollow dot means the interval reaches 0, so the difference can’t be told apart from chance.')}</div>`;
+      const r = storySeries(document.getElementById('stTs'));
+      if (r) document.getElementById('stTsNote').textContent = `${r.n} periods with enough episodes for both. ` +
+        (r.z ? `In ${r.z} of them the range reaches 0, so the difference can’t be told apart from chance. ` : 'In none of them does the range reach 0: they always differ by more than chance. ') +
+        `Most different: ${fmtP(r.hi.period)}. Least different: ${fmtP(r.lo.period)}.`;
+    } else {
+      const Q = [
+        ['immigration', 'Group vs group', 'How do Daily Wire shows and Progressive / Leftist shows talk about immigration?', 'All shows', 'mode=groups&g1=Daily%20Wire&g2=' + encodeURIComponent('Progressive / Leftist')],
+        ['iran', 'Over time', 'How did conservative shows’ language around Iran shift over 2026?', 'Conservative Media', 'tab=ts'],
+        ['israel', 'Two shows', 'Which words separate Mark Levin from Ben Shapiro on Israel?', 'All shows', 's1=' + encodeURIComponent('Mark Levin Podcast') + '&s2=' + encodeURIComponent('The Ben Shapiro Show')],
+        ['epstein', 'Group vs group', 'How do liberal and conservative shows talk about Epstein?', 'All shows', 'mode=groups&g1=Liberal&g2=' + encodeURIComponent('Conservative Media')]];
+      const cards = Q.map(([t, kind, q, hosts, extra]) => { const pth = pathFor(t, 91, hosts);
+        return pth ? `<a class="stCard" href="${viewLink(pth, extra)}"><span class="tags"><span>“${esc(t)}”</span><span>${esc(kind)}</span></span><span class="q">${esc(q)}</span><span class="go">Open this view →</span></a>` : ''; }).join('');
+      body.innerHTML = `<div class="stStep"><h2>Start with a question</h2>
+        <p class="lead">Each one opens the map already set up for it. These are questions to explore, not findings.</p>
+        <div class="stCards">${cards}</div>
+        <a href="#" class="btnbig" id="stOpen">Or open the full map</a></div>`;
+      document.getElementById('stOpen').addEventListener('click', e => { e.preventDefault(); toExplore(); });
+    }
+  }
+  document.getElementById('stBack').addEventListener('click', () => { if (stStep > 0) { stStep--; drawStory(); } });
+  // ← / → step through the story, like the periods in Explore (not while typing or in a menu).
+  document.addEventListener('keydown', e => {
+    if (VIEW !== 'story' || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (e.target.closest && e.target.closest('input, select, textarea, [contenteditable]')) return;
+    const n = stStep + (e.key === 'ArrowRight' ? 1 : -1);
+    if (n < 0 || n >= STEPS.length) return;
+    e.preventDefault(); stStep = n; drawStory();
+  });
+  document.getElementById('introStory').addEventListener('click', e => { e.preventDefault(); stStep = 0; setView('story'); });
+  document.getElementById('stNext').addEventListener('click', () => { if (stStep < STEPS.length - 1) { stStep++; drawStory(); } });
   if (state.mode === 'groups') setMode('groups'); else render();
+  setView(VIEW, false);
 })();
 </script>
 </body>
