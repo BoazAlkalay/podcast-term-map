@@ -18,26 +18,6 @@
   --shade: rgba(42,120,214,0.10); --mark: #fde9a8; --onair: #c8102e;
   --warn-bg: #fdf0d8; --warn-text: #6b4a00;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #13171e; --surface: #1a1f28; --border: #303744;
-    --text: #e8ebf0; --text-2: #b6bdc9; --muted: #8890a0;
-    --node: #59606d; --node-edge: #a3aab6; --edge: #39404c;
-    --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
-    --shade: rgba(57,135,229,0.16); --mark: #5a4a12; --onair: #e5484d;
-    --warn-bg: #3a2c0a; --warn-text: #f3d48a;
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #13171e; --surface: #1a1f28; --border: #303744;
-  --text: #e8ebf0; --text-2: #b6bdc9; --muted: #8890a0;
-  --node: #59606d; --node-edge: #a3aab6; --edge: #39404c;
-  --a: #3987e5; --b: #d95926; --c: #9085e9; --d: #199e70;
-  --shade: rgba(57,135,229,0.16); --mark: #5a4a12; --onair: #e5484d;
-  --warn-bg: #3a2c0a; --warn-text: #f3d48a;
-}
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text);
@@ -293,13 +273,33 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #cite .citecopy { margin-left: 6px; padding: 0 8px; font-size: 12px; }
 #cite a { color: var(--a); }
 /* Site sections: The story / Explore the map / How it works / About */
-#siteNav { display: flex; flex-wrap: wrap; gap: 2px; padding: 0 16px; border-bottom: 1px solid var(--border); }
-#siteNav button { background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 14px;
-  font-size: 15px; font-weight: 600; color: var(--text-2); cursor: pointer; min-height: 44px; }
-#siteNav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--text); }
+#siteNav { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 16px 0; border-bottom: 1px solid var(--border); }
+#siteNav button { border: 1px solid var(--border); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 10px 18px;
+  background: color-mix(in srgb, var(--border) 45%, var(--bg)); font-size: 15px; font-weight: 600; color: var(--text-2); cursor: pointer; min-height: 44px; }
+#siteNav button:hover { background: var(--surface); color: var(--text); }
+#siteNav button[aria-current="page"] { background: var(--surface); color: var(--text); font-weight: 700; margin-bottom: -1px; padding-bottom: 11px; box-shadow: inset 0 3px 0 var(--text); }
 #corpusStrip { display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 8px 16px; font-size: 13px; color: var(--text-2); }
 #corpusStrip b { color: var(--text); }
 #storyView, #aboutView { width: 100%; max-width: 1000px; margin: 0 auto; padding: 4px 0 8px; }
+#storyView { max-width: 1240px; padding-top: 14px; }
+.tut { display: flex; gap: 28px; align-items: flex-start; }
+.tutnav { display: flex; flex-direction: column; gap: 4px; flex: 0 0 190px; position: sticky; top: 12px; }
+.tutlab { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); padding: 2px 10px 6px; }
+#stChaps { display: flex; flex-direction: column; gap: 4px; }
+#stChaps button { text-align: left; min-height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid transparent; background: transparent;
+  font-size: 14px; font-weight: 500; color: var(--text-2); }
+#stChaps button:hover { border-color: var(--border); color: var(--text); }
+#stChaps button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); font-weight: 700; }
+#stSkip { padding: 10px 10px 0; font-size: 13px; font-weight: 600; color: var(--a); }
+.tutbody { flex: 1 1 560px; min-width: 0; }
+@media (max-width: 760px) { .tut { flex-direction: column; gap: 14px; } .tutnav { flex-direction: row; flex-wrap: wrap; position: static; flex: 1 1 auto; }
+  #stChaps { flex-direction: row; flex-wrap: wrap; } .tutlab { flex-basis: 100%; } }
+.stTerm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin: 0 0 14px; }
+.stOn { padding: 9px 18px; border-radius: 999px; font-size: 17px; font-weight: 700; background: var(--text); color: var(--surface); }
+#stSkip2 { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--a); }
+.stOthersLab { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 0 0 6px; }
+.stOthers { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.stOthers span { padding: 5px 12px; border-radius: 999px; font-size: 14px; color: var(--text-2); border: 1px solid var(--border); background: var(--surface); }
 .stHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0 18px; }
 .stChaps { display: flex; flex-wrap: wrap; gap: 6px; }
 .stChaps button { border-radius: 999px; font-size: 13px; font-weight: 600; padding: 4px 12px; min-height: 36px; }
@@ -355,6 +355,44 @@ h3.restH { font-size: 14px; margin: 10px 0 0; display: flex; align-items: center
 details.help summary { width: auto; height: auto; line-height: 1.4; padding: 3px 10px; text-align: left; font-weight: 600; color: var(--text-2); }
 details.help summary::before { content: "\25B8  "; } details.help[open] summary::before { content: "\25BE  "; }
 details.mth { border-top: 1px solid var(--border); padding: 2px 0; }
+/* dashboard v2 (2026-11-20): numbered expandable sections, "Now studying" bar */
+#dashIntro { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 2px 0 0; font-size: 14px; color: var(--text-2); }
+#dashIntro a { color: var(--a); font-weight: 600; }
+.dall { display: inline-flex; gap: 4px; }
+.dall button { background: none; border: 0; color: var(--a); font-weight: 600; font-size: 13px; padding: 2px 6px; }
+#status { margin-left: auto; font-size: 12px; color: var(--text-2); }
+#status.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#nowBar { position: sticky; top: 0; z-index: 12; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 8px 14px;
+  background: var(--text); color: var(--surface); border-radius: 6px; font-size: 14px; }
+#nowBar .nl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+#nowBar b { font-weight: 700; }
+#nbShows { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#nowBar select { background: #2a3140; color: var(--surface); border: 1px solid #5b6474; font-weight: 600; max-width: 230px; padding: 3px 6px; }
+#nowBar .vs { opacity: .7; }
+#nowBar .xbtn { background: none; border: 0; color: var(--surface); opacity: .7; padding: 0 4px; font-size: 16px; }
+#nowBar .addbtn { background: none; color: var(--surface); border: 1px dashed #7d8494; font-size: 13px; font-weight: 600; padding: 3px 8px; }
+#nowBar .nbHint { margin-left: auto; font-size: 12px; opacity: .65; }
+.dsec { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.dsechead { display: flex; gap: 14px; align-items: flex-start; width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 14px 18px; cursor: pointer; }
+.dsechead:hover { background: color-mix(in srgb, var(--border) 25%, var(--surface)); border: 0; }
+.dnum { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--text); color: var(--surface); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.dtx { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dtitle { font-size: 19px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.dwhy { font-size: 14px; color: var(--text-2); }
+.dsum { font-size: 13px; font-weight: 600; color: var(--text); }
+.dsechead[aria-expanded="true"] .dsum { display: none; }
+.darr { flex: none; font-size: 13px; font-weight: 600; color: var(--a); padding-top: 6px; }
+.darr::after { content: "Open ▾"; } .dsechead[aria-expanded="true"] .darr::after { content: "Close ▴"; }
+.dsecbody { padding: 0 18px 18px 62px; }
+@media (max-width: 700px) { .dsecbody { padding: 0 12px 14px; } .nbHint { display: none; } }
+.ctlrow { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: flex-start; }
+#controls2 .ctl-period { flex: 1 1 100%; }
+#controls2 .ctl-period .val { display: inline; margin-left: 10px; }
+#controls2 .ctl-period label.f { display: inline; }
+#mapPanel { background: none; border: 0; padding: 0; }
+#mapTitle { display: none; }
+#showSel .selrow { display: none; }   /* shows are picked on the map or in the "Now studying" bar */
+#pairSum { margin-bottom: 12px; }
 /* word chart: scatterplot (2026-11-20) */
 .wtools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 8px; }
 #wordsDiff { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 10px; padding: 8px 12px;
@@ -386,12 +424,11 @@ details.mth > p { padding: 0 0 10px; }
       <button type="button" id="explOff" aria-pressed="false">Hidden</button>
       <button type="button" id="explPlain" aria-pressed="true">Plain</button>
       <button type="button" id="explTech" aria-pressed="false">Technical</button></span>
-    <button type="button" id="themeBtn" aria-label="Colour theme">Theme: Auto</button>
   </div>
 </header>
 <nav id="siteNav" aria-label="Site sections">
   <button type="button" data-view="story">The story</button>
-  <button type="button" data-view="explore">Explore the map</button>
+  <button type="button" data-view="explore">Dashboard</button>
   <button type="button" data-view="methods">How it works</button>
   <button type="button" data-view="about">About</button>
 </nav>
@@ -399,15 +436,16 @@ details.mth > p { padding: 0 0 10px; }
 <div id="banner"></div>
 <div id="inclBanner" hidden></div>
 <main>
-  <section id="storyView" aria-label="The story" hidden>
-    <div class="stHead">
-      <div class="stChaps" id="stChaps"></div>
-      <a href="#" id="stSkip" class="small">Skip to the map →</a>
-    </div>
-    <div id="stBody"></div>
-    <div class="stNav">
-      <button type="button" id="stBack">← Back</button>
-      <button type="button" id="stNext" class="primary">Next →</button>
+  <section id="storyView" aria-label="Tutorial" hidden>
+    <div class="tut">
+      <nav class="tutnav" aria-label="Tutorial steps"><span class="tutlab">Tutorial</span><div id="stChaps" role="tablist"></div><a href="#" id="stSkip">Skip to the dashboard →</a></nav>
+      <div class="tutbody">
+        <div id="stBody"></div>
+        <div class="stNav">
+          <button type="button" id="stBack">← Back</button>
+          <button type="button" id="stNext" class="primary">Next →</button>
+        </div>
+      </div>
     </div>
   </section>
   <section id="aboutView" class="panel" aria-label="About" hidden>
@@ -418,18 +456,28 @@ details.mth > p { padding: 0 0 10px; }
     <p id="aboutWriteup"></p>
   </section>
   <div id="exploreView">
-  <section id="intro" class="panel" aria-label="Start here">
-    <p>Each dot is one show in one period; dots close together use similar words around <i id="introTerm">iran</i>, which is not the same as agreeing. New here? <a href="#" id="introStory">The story</a> walks through one example in six steps.</p>
-  </section>
-
-  <section id="controls" class="panel" aria-label="What to show">
+  <p id="dashIntro">Each section answers one question; open the ones you need. New here? <a href="#" id="introStory">The tutorial</a> walks through one example. <span class="dall"><button type="button" id="openAll">Open all</button><button type="button" id="closeAll">Close all</button></span><span id="status" role="status">Loading…</span></p>
+  <div id="nowBar" aria-label="Now studying"><span class="nl">Now studying</span><span id="nbTerm"></span><span id="nbGroup"></span><span id="nbPer"></span><span id="nbShows"></span><span class="nbHint">Stays at the top as you scroll · up to 4 shows · ← → change the interval</span></div>
+  <section class="dsec" id="sec1" aria-labelledby="sech1">
+    <button type="button" class="dsechead" id="sech1" data-sec="1" aria-expanded="true" aria-controls="secb1">
+      <span class="dnum">1</span><span class="dtx"><span class="dtitle" id="sect1">Choose a term and a group of shows</span><span class="dwhy">The word to follow and which shows to compare.</span><span class="dsum" id="sums1"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb1">
+  <div id="controls" class="ctlrow">
     <div class="ctl"><label class="f" for="termSel">Term</label>
       <select id="termSel" class="rsel" hidden></select><span class="val" id="term"></span>
       <span class="small termnote">Hand-picked examples, not a sample. <a href="#" id="whyTerms">Why these terms?</a></span></div>
     <div class="ctl"><label class="f" for="hostsSel">Group of shows</label>
       <select id="hostsSel" class="rsel" hidden></select><span class="val" id="group"></span></div>
+  </div>
+    </div>
+  </section>
+  <section class="dsec" id="sec2" aria-labelledby="sech2">
+    <button type="button" class="dsechead" id="sech2" data-sec="2" aria-expanded="true" aria-controls="secb2">
+      <span class="dnum">2</span><span class="dtx"><span class="dtitle" id="sect2">Choose a time interval to explore</span><span class="dwhy">Everything below looks at this one interval, except section 5.</span><span class="dsum" id="sums2"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb2">
+  <div id="controls2" class="ctlrow">
     <div class="ctl ctl-period">
-      <label class="f" for="slider">Choose a time period to study</label><span class="val" id="pdates"></span> <span class="small" id="pnum"></span>
+      <label class="f" for="slider">Interval</label><span class="val" id="pdates"></span> <span class="small" id="pnum"></span>
       <div class="periodrow">
         <button id="prev" type="button" aria-label="Previous period">◀</button>
         <div class="periodcol">
@@ -447,9 +495,9 @@ details.mth > p { padding: 0 0 10px; }
     <details class="ctl ctl-more" id="moreSet">
       <summary>Advanced settings</summary>
       <div class="moregrid">
-        <div><label class="f" for="daysSel">Time interval</label>
+        <div><label class="f" for="daysSel">Interval length</label>
           <select id="daysSel" class="rsel" hidden></select><span class="val" id="plen"></span>
-          <p class="small">How long each period is. Longer periods give more shows enough episodes to be placed; shorter ones show quicker changes but place fewer shows.</p></div>
+          <p class="small">How long each interval is. Longer periods give more shows enough episodes to be placed; shorter ones show quicker changes but place fewer shows.</p></div>
         <div><label class="f" for="refSel">Measure change since</label>
           <select id="refSel"><option value="">The previous period</option></select>
           <p class="small">The hollow ring on the map and the "shift" line below it show change since this period.</p></div>
@@ -458,9 +506,14 @@ details.mth > p { padding: 0 0 10px; }
           <p class="small">The date the data were exported. Older versions are kept so past results can be checked; otherwise use the newest.</p></div>
       </div>
     </details>
+  </div>
+    </div>
   </section>
-
-  <section id="mapPanel" class="panel" aria-label="Map">
+  <section class="dsec" id="sec3" aria-labelledby="sech3">
+    <button type="button" class="dsechead" id="sech3" data-sec="3" aria-expanded="true" aria-controls="secb3">
+      <span class="dnum">3</span><span class="dtx"><span class="dtitle" id="sect3">Which shows use similar vocabulary during the focused time interval?</span><span class="dwhy">Where each show sits. Close dots use similar language around the term, not similar opinions.</span><span class="dsum" id="sums3"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb3">
+  <div id="mapPanel">
     <div class="maphead">
       <h2 id="mapTitle">Which shows use similar vocabulary?</h2>
       <div id="kpis"></div>
@@ -580,18 +633,15 @@ details.mth > p { padding: 0 0 10px; }
     </details>
     <div id="shiftLine"></div>
     <div id="axisNote"></div>
+  </div>
+    </div>
   </section>
-
+  <section class="dsec" id="sec4" aria-labelledby="sech4">
+    <button type="button" class="dsechead" id="sech4" data-sec="4" aria-expanded="true" aria-controls="secb4">
+      <span class="dnum">4</span><span class="dtx"><span class="dtitle" id="sect4">What sets them apart?</span><span class="dwhy">The words that mark each side’s language around the term. Read them as a group.</span><span class="dsum" id="sums4"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb4">
   <section id="pairSum" aria-live="polite"></section>
-
-  <nav id="tabs" role="tablist" aria-label="Analysis">
-    <button type="button" role="tab" data-tab="words" id="tab-words">Compare words</button>
-    <button type="button" role="tab" data-tab="ts" id="tab-ts">Change over time</button>
-    <button type="button" role="tab" data-tab="pas" id="tab-pas">Passages</button>
-    <span id="status">Loading…</span>
-  </nav>
-
-  <section id="wordsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-words">
+  <div id="wordsPanel">
     <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span>
       <span class="perlab" id="wordsPerLab" hidden>Word comparison period</span><span id="wordsPer" class="seg" role="group" aria-label="Period for this chart" hidden></span></div>
     <div class="wtools" id="wordsTools" hidden><span class="small">Show as</span>
@@ -600,20 +650,32 @@ details.mth > p { padding: 0 0 10px; }
     <div id="wordsDiff" hidden></div>
     <details class="help"><summary>How to read this</summary><span id="wordsHelp"></span></details>
     <div id="words"></div>
+  </div>
+    </div>
   </section>
-
-  <section id="tsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-ts" hidden>
+  <section class="dsec" id="sec5" aria-labelledby="sech5">
+    <button type="button" class="dsechead" id="sech5" data-sec="5" aria-expanded="true" aria-controls="secb5">
+      <span class="dnum">5</span><span class="dtx"><span class="dtitle" id="sect5">How did it change over time?</span><span class="dwhy">Whether the difference holds up across intervals, with ranges for chance.</span><span class="dsum" id="sums5"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb5">
+  <div id="tsPanel">
     <div class="ph"><span id="tsTitle"></span><span class="chip" id="tsChip"></span></div>
     <p class="small tsread" id="tsRead"></p>
     <details class="help"><summary>How to read this</summary><span id="tsHelp"></span></details>
     <div id="ts"></div>
+  </div>
+    </div>
   </section>
-
-  <section id="pasPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-pas" hidden>
+  <section class="dsec" id="sec6" aria-labelledby="sech6">
+    <button type="button" class="dsechead" id="sech6" data-sec="6" aria-expanded="true" aria-controls="secb6">
+      <span class="dnum">6</span><span class="dtx"><span class="dtitle" id="sect6">What was actually said?</span><span class="dwhy">The passages behind the words. The words point you here; the passages are the evidence.</span><span class="dsum" id="sums6"></span></span><span class="darr" aria-hidden="true"></span></button>
+    <div class="dsecbody" id="secb6">
+  <div id="pasPanel">
     <div class="ph"><span id="pasTitle"></span><span class="chip" id="pasChip"></span></div>
     <details class="help"><summary>How to read this</summary><span id="pasHelp"></span></details>
     <p class="small" id="pasSel">These passages were picked to show the difference, so they aren't a random sample of what each show says.</p>
     <div id="pas"></div>
+  </div>
+    </div>
   </section>
 
   </div>
@@ -848,7 +910,6 @@ details.mth > p { padding: 0 0 10px; }
   document.title = `'${TERM}', ${M.period_days} days · Podcast Term Map`;
   document.getElementById('snap').textContent = M.snapshot;
   document.getElementById('term').textContent = `'${TERM}'`;
-  document.getElementById('introTerm').textContent = TERM;
   // Link to the write-up and demo on Boaz's website; hidden until a URL is set.
   const WRITEUP_URL = 'https://boazalkalay.github.io/projects.html';
   document.getElementById('group').textContent = `${M.host_group} (${HOSTS.length} shows)`;
@@ -1878,7 +1939,7 @@ details.mth > p { padding: 0 0 10px; }
   function wordChart(el, o) {
     const bars = () => lollipop(el, o.pullA, o.pullB, o.flip, o.labA, o.labB, o.colA, o.colB, o.sides);
     if (state.wChart === 'bars' || !HAS_CLOUD || !CLOUD_PERIODS.has(o.p)) return bars();
-    if (!cloudPart(o.p)) { message(el, 'Loading the words…'); loadCloud(o.p).then(part => { if (part) render(); }); return; }
+    if (!cloudPart(o.p)) { message(el, 'Loading the words…'); loadCloud(o.p).then(part => { if (part) (o.redraw || render)(); }); return; }
     const rows = cloudRows(o.p, o.key, o.flip);
     if (!rows || !rows.length) return bars();
     prefetchCloud(o.p);
@@ -2373,28 +2434,24 @@ details.mth > p { padding: 0 0 10px; }
   cy.on('mouseout', 'node', () => { tip.hidden = true; });
   box.addEventListener('mouseleave', () => { tip.hidden = true; });
 
-  // ── tabs under the map: one analysis panel at a time, map stays visible ──
-  const TABS = { words: 'wordsPanel', ts: 'tsPanel', pas: 'pasPanel' };
-  state.tab = 'words';
-  try { const t = localStorage.getItem('dashTab'); if (TABS[t]) state.tab = t; } catch (e) {}
-  if (TABS[URLQ.get('tab')]) state.tab = URLQ.get('tab');
-  function setTab(t) {
-    state.tab = t;
-    try { localStorage.setItem('dashTab', t); } catch (e) {}
-    render();
+  // ── dashboard sections (v2, 2026-11-20): six numbered sections that open and close independently ──
+  const SEC_OF = { words: 4, ts: 5, pas: 6 };
+  state.open = { 1: true, 2: true, 3: true, 4: true, 5: false, 6: false };
+  { const q = URLQ.get('open'); if (q && /^[1-6]*$/.test(q)) for (let i = 1; i <= 6; i++) state.open[i] = q.includes(String(i)); }
+  if (SEC_OF[URLQ.get('tab')]) state.open[SEC_OF[URLQ.get('tab')]] = true;     // older links with ?tab=
+  let mapVisible = false;
+  function openSec(n, scroll) {
+    state.open[n] = true; render();
+    if (scroll) document.getElementById('sec' + n).scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  function setTab(t) { openSec(SEC_OF[t] || 4, true); }
+  document.querySelectorAll('.dsechead').forEach(b => b.addEventListener('click', () => {
+    const n = +b.dataset.sec; state.open[n] = !state.open[n]; render(); }));
+  document.getElementById('openAll').addEventListener('click', () => { for (let i = 1; i <= 6; i++) state.open[i] = true; render(); });
+  document.getElementById('closeAll').addEventListener('click', () => { for (let i = 1; i <= 6; i++) state.open[i] = false; render(); });
   document.getElementById('whyTerms').addEventListener('click', e => {
     e.preventDefault(); setView('methods');
     const d = document.getElementById('mthTerms'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  document.querySelectorAll('#tabs button[role=tab]').forEach(b => {
-    b.addEventListener('click', () => setTab(b.dataset.tab));
-    b.addEventListener('keydown', e => {                       // arrow keys move between tabs
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const keys = Object.keys(TABS), i = keys.indexOf(b.dataset.tab);
-      const n = keys[(i + (e.key === 'ArrowRight' ? 1 : keys.length - 1)) % keys.length];
-      setTab(n); document.getElementById('tab-' + n).focus();
-    });
   });
   // ── introduction and the worked example ─────────────────────────────────
 
@@ -2422,6 +2479,7 @@ details.mth > p { padding: 0 0 10px; }
       `<p class="kpinote">${/^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? `Data through ${fmtD(M.snapshot)}. ` : ''}Each dot is a show with enough episodes in this period. ${unplaced > 0 ? `The other ${unplaced} had too few (0 to 2) to be placed.` : 'Every show in this group is placed.'}</p>`;
     const q = MODE_Q[state.mapMode] || MODE_Q.overall;
     document.getElementById('mapTitle').textContent = q[0];
+    document.getElementById('sect3').textContent = state.mapMode === 'overall' ? 'Which shows use similar vocabulary during the focused time interval?' : q[0];
     document.getElementById('modeDesc').innerHTML = `<b>How to read it:</b> ${q[1]}`;
     const h = document.getElementById('selHint'), k = kind();
     h.className = k === 'one' ? 'next' : '';
@@ -2481,6 +2539,63 @@ details.mth > p { padding: 0 0 10px; }
       `<div class="pairtext"><p class="who">${who}</p><p class="find">${find}</p>${note ? `<p class="note">${note}</p>` : ''}</div></div>`;
   }
 
+  // Closed sections show a one-line summary of the current choices.
+  function drawSums() {
+    const set = (n, t) => { document.getElementById('sums' + n).textContent = t; };
+    set(1, `'${TERM}' · ${M.host_group}`);
+    set(2, `${fmtP(state.p)} (interval ${placedPeriods.indexOf(state.p) + 1} of ${placedPeriods.length})`);
+    const here = NODES.filter(n => n.period === state.p && !isThin(n)).length;
+    const sel = state.mode === 'groups' ? [state.ga, state.gb].filter(Boolean) : selectedShows().map(short);
+    set(3, `${here} shows on the map` + (sel.length ? ` · selected: ${sel.join(', ')}` : ''));
+    const what = state.mode === 'groups' ? (state.ga && state.gb ? `${state.ga} vs ${state.gb}` : 'Pick two groups first')
+      : state.a && state.b ? `${short(state.a)} vs ${short(state.b)}` : state.a ? `${short(state.a)} vs the other shows on the map` : 'Pick a show on the map first';
+    set(4, what); set(5, what + (state.a || state.ga ? ', every interval' : '')); set(6, what);
+  }
+  // "Now studying": the term, group, interval and the shows (or groups), each show swappable from here.
+  function drawNowBar() {
+    document.getElementById('nbTerm').innerHTML = `<b>'${esc(TERM)}'</b>`;
+    document.getElementById('nbGroup').textContent = M.host_group;
+    document.getElementById('nbPer').textContent = fmtP(state.p);
+    const box = document.getElementById('nbShows');
+    const mark = c => `style="box-shadow: inset 4px 0 0 ${c}"`;
+    if (state.mode === 'groups') {
+      const opt = (cur, other) => '<option value="">(choose a group)</option>' + groupNames.filter(g => g !== other)
+        .map(g => `<option value="${esc(g)}"${g === cur ? ' selected' : ''}>${esc(g)}</option>`).join('');
+      box.innerHTML = `<select data-k="ga" aria-label="Group A" ${mark(css('--a'))}>${opt(state.ga, state.gb)}</select><span class="vs">vs</span>` +
+        `<select data-k="gb" aria-label="Group B" ${mark(css('--b'))}>${opt(state.gb, state.ga)}</select>`;
+    } else {
+      const onMap = new Set(NODES.filter(n => n.period === state.p).map(n => n.show));
+      const opts = (cur, first) => first + shows.map(s => `<option value="${esc(s)}"${s === cur ? ' selected' : ''}>${esc(short(s))}${onMap.has(s) ? '' : ' (not on the map now)'}</option>`).join('');
+      const restOn = !state.b && state.view.words.one === 'rest';
+      let h = `<select data-k="a" aria-label="Show A" ${mark(css('--a'))}>${opts(state.a, '<option value="">(choose a show)</option>')}</select>`;
+      if (state.a) h += `<span class="vs">vs</span><select data-k="b" aria-label="Show B" ${state.b ? mark(css('--b')) : ''}>` +
+        opts(state.b, `<option value=""${!state.b && !restOn ? ' selected' : ''}>None</option><option value="__rest"${restOn ? ' selected' : ''}>The other shows on the map</option>`) + '</select>';
+      if (state.b) for (const k of ['c', 'd']) if (state[k])
+        h += `<select data-k="${k}" aria-label="Show ${k.toUpperCase()}" ${mark(colorOf(state[k]))}>${opts(state[k], '')}</select><button type="button" class="xbtn" data-x="${k}" aria-label="Remove ${esc(short(state[k]))}">×</button>`;
+      const n = [state.a, state.b, state.c, state.d].filter(Boolean).length;
+      if (state.b && n < 4) h += state.adding
+        ? `<select data-k="${state.c ? 'd' : 'c'}" aria-label="Add a show">${opts('', '<option value="">(choose a show)</option>')}</select>`
+        : '<button type="button" class="addbtn" id="nbAdd">+ Add a show</button>';
+      box.innerHTML = h;
+    }
+    box.querySelectorAll('select').forEach(sel => sel.addEventListener('change', () => {
+      const k = sel.dataset.k, v = sel.value; state.adding = false;
+      if (k === 'ga' || k === 'gb') { state[k] = v; render(); return; }
+      if (k === 'b' && v === '__rest') { state.b = state.c = state.d = ''; state.view.words.one = 'rest'; render(); return; }
+      state[k] = v; state.starter = '';
+      if (state.a && state.a === state.b) state.b = '';
+      if (!state.a && state.b) { state.a = state.b; state.b = ''; }
+      if (!state.b) state.c = '';
+      if (!state.c) state.d = '';
+      render();
+    }));
+    box.querySelectorAll('.xbtn').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.x === 'c') { state.c = state.d; state.d = ''; } else state.d = '';
+      render(); }));
+    const add = document.getElementById('nbAdd');
+    if (add) add.addEventListener('click', () => { state.adding = true; render(); });
+  }
+
   // ── render ────────────────────────────────────────────────────────────
   function render() {
     if (state.wPfor !== state.p) { state.wP = null; state.wPfor = state.p; }
@@ -2516,16 +2631,19 @@ details.mth > p { padding: 0 0 10px; }
     const roughSel = selectedShows().map(x => nodeAt(x, state.p)).filter(isThin);
     document.getElementById('status').textContent = `Showing: ${who}, ${fmtP(state.p)}, '${TERM}'` +
       (roughSel.length ? ` (few episodes: ${roughSel.map(n => `${short(n.show)} n=${n.n}`).join(', ')})` : '');
-    for (const [t, id] of Object.entries(TABS)) {
-      document.getElementById(id).hidden = t !== state.tab;
-      document.getElementById('tab-' + t).setAttribute('aria-selected', t === state.tab);
-      document.getElementById('tab-' + t).tabIndex = t === state.tab ? 0 : -1;
+    document.getElementById('status').className = 'sr';
+    for (let n = 1; n <= 6; n++) {
+      const o = !!state.open[n];
+      document.getElementById('secb' + n).hidden = !o;
+      document.getElementById('sech' + n).setAttribute('aria-expanded', o);
     }
-    drawThin(); drawMap(); drawContext(); drawPairSum();
-    // Only the visible tab is drawn (charts in hidden panels would get zero width).
-    if (state.tab === 'ts') drawTs();
-    if (state.tab === 'words') drawWords();
-    if (state.tab === 'pas') drawPas();
+    if (state.open[3] && !mapVisible) { cy.resize(); fitted = false; }
+    mapVisible = !!state.open[3];
+    drawThin(); if (mapVisible) drawMap(); drawContext(); drawPairSum(); drawNowBar(); drawSums();
+    // Only open sections are drawn (charts in hidden sections would get zero width).
+    if (state.open[4]) drawWords();
+    if (state.open[5]) drawTs();
+    if (state.open[6]) drawPas();
     syncURL();
   }
   // Keep the address bar in step with the view, so copying it gives a link to exactly this comparison.
@@ -2540,7 +2658,8 @@ details.mth > p { padding: 0 0 10px; }
     else { set('s1', state.a); set('s2', state.b); set('s3', state.c); set('s4', state.d); }
     set('p', periods[state.p] && periods[state.p].start);
     if (state.mapMode === 'centred') set('map', 'centred');
-    if (state.tab && state.tab !== 'words') set('tab', state.tab);
+    const op = [1, 2, 3, 4, 5, 6].filter(n => state.open[n]).join('');
+    if (op !== '1234') set('open', op || '0');
     const s = '?' + q.toString();
     if (s !== location.search) try { history.replaceState(null, '', s + location.hash); } catch (e) {}
     updateCite(s);
@@ -2563,22 +2682,6 @@ details.mth > p { padding: 0 0 10px; }
     catch (e) { b.textContent = 'Select the text to copy'; }
     setTimeout(() => { b.textContent = 'Copy'; }, 1500);
   }));
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
-  // Theme button: Auto (follows the computer) -> Light -> Dark. Remembered in this browser if possible.
-  const themeBtn = document.getElementById('themeBtn');
-  const applyTheme = t => {
-    if (t === 'auto') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', t);
-    themeBtn.textContent = 'Theme: ' + { auto: 'Auto', light: 'Light', dark: 'Dark' }[t];
-    try { localStorage.setItem('dashTheme', t); } catch (e) {}
-  };
-  let theme = 'auto';
-  try { theme = localStorage.getItem('dashTheme') || 'auto'; } catch (e) {}
-  applyTheme(theme);
-  themeBtn.addEventListener('click', () => {
-    theme = { auto: 'light', light: 'dark', dark: 'auto' }[theme];
-    applyTheme(theme); render();
-  });
   let rt = null;
   window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { cy.resize(); fitted = false; render(); }, 150); });
   // ── site sections and the front-page story ───────────────────────────────
@@ -2597,6 +2700,7 @@ details.mth > p { padding: 0 0 10px; }
     VIEW = v;
     storyView.hidden = v !== 'story'; exploreView.hidden = v !== 'explore';
     methodsPanel.hidden = v !== 'methods'; aboutView.hidden = v !== 'about';
+    document.getElementById('corpusStrip').hidden = v !== 'story';
     document.querySelectorAll('#siteNav button').forEach(b => {
       if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (v === 'explore') { cy.resize(); fitted = false; render(); }
@@ -2607,12 +2711,13 @@ details.mth > p { padding: 0 0 10px; }
   // Leave the story for the map, set up on the story's comparison.
   const toExplore = (tab) => {
     if (IS_STORY) { state.mode = 'shows'; state.a = STORY.a; state.b = STORY.b; state.c = state.d = ''; if (STORY_P >= 0) state.p = STORY_P; }
-    if (tab) { state.tab = tab; }
+    if (tab && SEC_OF[tab]) state.open[SEC_OF[tab]] = true;
     setView('explore');
+    if (tab && SEC_OF[tab]) document.getElementById('sec' + SEC_OF[tab]).scrollIntoView({ block: 'start' });
   };
   document.getElementById('stSkip').addEventListener('click', e => { e.preventDefault(); toExplore(); });
 
-  const STEPS = ['Word', 'Two shows', 'The map', 'Movement', 'Over time', 'Questions'];
+  const STEPS = ['Term', 'One show', 'Two shows', 'The map', 'Movement', 'Over time', 'Questions'];
   const tech = (title, html) => `<div class="stTech lv-tech"><b>${title}</b>${html}</div>`;
   const viewLink = (path, extra) => `?view=explore&b=${encodeURIComponent(path)}${extra ? '&' + extra : ''}`;
   // Map frame shared by steps 3 and 4: this period's dots plus both trails, aspect ratio kept.
@@ -2703,7 +2808,7 @@ details.mth > p { padding: 0 0 10px; }
   }
   function drawStory() {
     const chaps = document.getElementById('stChaps');
-    chaps.innerHTML = STEPS.map((t, i) => `<button type="button" data-i="${i}"${i === stStep ? ' aria-current="step"' : ''}>${i + 1}. ${t}</button>`).join('');
+    chaps.innerHTML = STEPS.map((t, i) => `<button type="button" role="tab" data-i="${i}" aria-selected="${i === stStep}">${i + 1}. ${t}</button>`).join('');
     chaps.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { stStep = +b.dataset.i; drawStory(); }));
     document.getElementById('stBack').style.visibility = stStep === 0 ? 'hidden' : 'visible';
     const next = document.getElementById('stNext');
@@ -2713,30 +2818,45 @@ details.mth > p { padding: 0 0 10px; }
     const who = M.host_group === 'Conservative Media' ? 'conservative' : '';
     const newestTerms = [...new Set(INDEX.filter(e => e.snapshot === NEWEST).map(e => e.term))].sort();
     if (stStep === 0) {
+      const others = newestTerms.filter(t => t !== TERM);
       body.innerHTML = `<div class="stStep"><h2>What do political podcasts talk about when they say “${T}”?</h2>
-        <p class="lead">Pick a word. For each show, the map looks at the words that come up around it in every episode, and compares the shows.</p>
-        <div class="stChips">${newestTerms.map(t => { const pth = pathFor(t, STORY.days, 'All shows') || pathFor(t, STORY.days, STORY.hosts);
-          return pth ? `<a href="${t === TERM ? '#' : viewLink(pth)}"${t === TERM ? ' class="on" data-next="1"' : ''}>${esc(t)}</a>` : ''; }).join('')}</div>
-        <p class="note">Hand-picked example words, not a sample of all political topics. This story follows “${T}”; any other word opens the map.</p>
+        <p class="lead">For each show, the map looks at the words that come up around a word in every episode, and compares the shows.</p>
+        <div class="stTerm"><span class="stOn">${T}</span><span>This tutorial uses “${T}” for every step.</span><a href="#" id="stSkip2">Skip the tutorial →</a></div>
+        ${others.length ? `<p class="stOthersLab">Other words you can explore on the dashboard</p><div class="stOthers">${others.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}
+        <p class="note">Hand-picked example words, not a sample of all political topics.</p>
         ${tech('How a word is matched', 'Terms are single lemmatized words, so phrases and spelling variants are handled only through a corrections list. An episode counts for a show when it uses the term 3+ times; a show is placed in a period when it has 8+ such episodes (3 to 7 gives a faded, rough dot).')}</div>`;
-      const on = body.querySelector('a.on'); if (on) on.addEventListener('click', e => { e.preventDefault(); stStep = 1; drawStory(); });
+      document.getElementById('stSkip2').addEventListener('click', e => { e.preventDefault(); toExplore(); });
     } else if (stStep === 1) {
+      body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart on “${T}”?</h2>
+        <p class="lead">Start with one show. ${HAS_CLOUD && state.wChart !== 'bars'
+          ? `Each dot is a word: across is how close it sits to ${esc(A)}’s language around “${T}”, up is how close to the average of the other ${who} shows on the map, ${esc(fmtP(P))}. Blue words lean toward ${esc(A)}.`
+          : `On one side are the words that sit closer in meaning to ${esc(A)}’s language around “${T}” than to the average of the other ${who} shows on the map, ${esc(fmtP(P))}; on the other side, the other way round.`} These are not the words the show uses most often: they are the words nearest to the parts of its language that differ from everyone else’s.</p>
+        <div class="stBox"><div id="stRest"></div></div>
+        <p class="note">The words leaning toward ${esc(A)} are the interesting ones; the other side is mostly the shared, more generic language of the rest.</p>
+        ${tech('Show vs the rest', 'Word-pull between the show’s vector and the equal-weight average of the other placed shows on the map in the same period (leave-one-out, the same average as the distance from the group). Candidate words are the neighbours of either vector; x and y are the cosine similarities to each side, and the diagonal lines mark equal ratios.')}</div>`;
+      const n = nodeAt(STORY.a, P), el = document.getElementById('stRest');
+      if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest',
+        colA: css('--a'), colB: css('--node-edge'), sides: null, key: `r|${STORY.a}|${P}`, p: P, redraw: drawStory });
+      else el.textContent = 'Not available for this period.';
+    } else if (stStep === 2) {
       body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart from ${esc(Bn)} on the vocabulary they use around “${T}”</h2>
         <p class="lead">Two ${who} hosts, ${esc(fmtP(P))}. On each side are the words that sit closer in meaning to one host’s language around “${T}” than to the other’s. They are the words closest to how each host talks, not this project’s description of either. They point you to what to read; the passages show what was actually said.</p>
         <div class="stBox"><div id="stWords"></div></div>
         <div class="stLinks"><a href="#" id="stToPas">Read the passages behind these words →</a><span class="note">This compares language, not opinion.</span></div>
         ${tech('How the words are picked', 'Each mention becomes a vector: the word2vec vectors of its context window are averaged and multiplied by the à la carte transform (Khodak et al. 2018; Rodriguez, Spirling and Stewart 2023), which corrects for common words dominating the average. Mentions are averaged within episodes, episodes within show and period. Candidate words are the neighbours of either show’s vector, ranked by the log2 ratio of their cosine similarity to one show versus the other. A word can lean toward a show without that show ever saying it.')}</div>`;
       const e = edgeFor(STORY.a, STORY.b, P), el = document.getElementById('stWords');
-      if (e) lollipop(el, e.pull_a, e.pull_b, e.a !== STORY.a, A, Bn, css('--a'), css('--b'), null); else el.textContent = 'No word comparison for this period.';
+      if (e) wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== STORY.a, labA: A, labB: Bn, colA: css('--a'), colB: css('--b'),
+        sides: null, key: `c|${e.period}|${e.a}|${e.b}`, p: P, redraw: drawStory });
+      else el.textContent = 'No word comparison for this period.';
       document.getElementById('stToPas').addEventListener('click', ev => { ev.preventDefault(); toExplore('pas'); });
-    } else if (stStep === 2) {
+    } else if (stStep === 3) {
       body.innerHTML = `<div class="stStep"><h2>Every show on one map</h2>
         <p class="lead">Each dot is one ${who} show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, sit close together. Close means similar language, not similar opinions.</p>
         <div class="stBox"><div id="stMap1"></div></div>
         <p class="note">The two coloured dots are the hosts from the last step. Each end of an axis gets a short label written by an AI model from the words at that end; the words are always shown with it.</p>
         ${tech('How the map is drawn', `Distances between show-period vectors are corrected for sampling noise, then laid out in two dimensions (classical multidimensional scaling, one layout for all periods). Two dimensions keep only part of the variation (${Math.round((M.map_share || 0) * 100)}% for this map), so exact distances are in the charts, not read off the map. Axis labels come from an AI model (Claude) given up to 25 words at each end of an axis; it is told to ignore names and dates, and a label resting on fewer than 4 of those words is marked weak.`)}</div>`;
       storyMap(document.getElementById('stMap1'), false);
-    } else if (stStep === 3) {
+    } else if (stStep === 4) {
       body.innerHTML = `<div class="stStep"><h2>Dots move from period to period</h2>
         <p class="lead" id="stMoveText">Each show leaves a trail of its earlier positions.</p>
         <div class="stBox"><div id="stMap2"></div></div>
@@ -2745,7 +2865,7 @@ details.mth > p { padding: 0 0 10px; }
       const mv = storyMap(document.getElementById('stMap2'), true);
       const s = [mv.a && `${esc(A)}’s dot ${mv.a.txt} over the past ${mv.a.m} months`, mv.b && `${esc(Bn)}’s ${mv.b.txt}`].filter(Boolean).join(', while ');
       document.getElementById('stMoveText').innerHTML = 'Each show leaves a trail of its earlier positions. Read it against the axis labels' + (s ? `: ${s}.` : '.');
-    } else if (stStep === 4) {
+    } else if (stStep === 5) {
       body.innerHTML = `<div class="stStep"><h2>Following two shows over time</h2>
         <p class="lead">How different were ${esc(A)}’s and ${esc(Bn)}’s words around “${T}”, period by period? Higher means more different. The lines show the 90% range; the shaded period is the one above.</p>
         <div class="stBox"><div id="stTs"></div></div><p class="note" id="stTsNote"></p>
@@ -2763,9 +2883,9 @@ details.mth > p { padding: 0 0 10px; }
       const cards = Q.map(([t, kind, q, hosts, extra]) => { const pth = pathFor(t, 91, hosts);
         return pth ? `<a class="stCard" href="${viewLink(pth, extra)}"><span class="tags"><span>“${esc(t)}”</span><span>${esc(kind)}</span></span><span class="q">${esc(q)}</span><span class="go">Open this view →</span></a>` : ''; }).join('');
       body.innerHTML = `<div class="stStep"><h2>Start with a question</h2>
-        <p class="lead">Each one opens the map already set up for it. These are questions to explore, not findings.</p>
+        <p class="lead">Each one opens the dashboard already set up for it. These are questions to explore, not findings.</p>
         <div class="stCards">${cards}</div>
-        <a href="#" class="btnbig" id="stOpen">Or open the full map</a></div>`;
+        <a href="#" class="btnbig" id="stOpen">Or open the full dashboard</a></div>`;
       document.getElementById('stOpen').addEventListener('click', e => { e.preventDefault(); toExplore(); });
     }
   }
