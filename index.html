@@ -393,6 +393,24 @@ details.mth { border-top: 1px solid var(--border); padding: 2px 0; }
 #mapTitle { display: none; }
 #showSel .selrow { display: none; }   /* shows are picked on the map or in the "Now studying" bar */
 #pairSum { margin-bottom: 12px; }
+/* ranked bars (sketch Layout 1): centre zero line, word at the outer end, the two sides staggered */
+.rb { max-width: 980px; }
+.rbHead { display: grid; grid-template-columns: 1fr 1fr; font-size: 14px; font-weight: 700; padding-bottom: 6px; }
+.rbHead span:last-child { text-align: right; }
+.rbGrid { display: grid; grid-template-columns: 1fr 1fr; }
+.rbL { border-right: 2px solid var(--text); display: flex; flex-direction: column; gap: 5px; }
+.rbR { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; }
+.rbRow { display: flex; align-items: center; gap: 8px; background: none; border: 0; border-radius: 0; padding: 0; min-height: 20px; font-size: 14px; color: var(--text); text-align: left; }
+.rbL .rbRow { justify-content: flex-end; }
+.rbRow:hover .w { text-decoration: underline; }
+.rbRow:disabled { cursor: default; }
+.rbRow .w { white-space: nowrap; }
+.rbRow .bar { display: block; flex: none; height: 12px; }
+.rbL .bar { border-radius: 5px 0 0 5px; } .rbR .bar { border-radius: 0 5px 5px 0; }
+.rbAxis { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--muted); margin-top: 8px; }
+.rbAxis > div { position: relative; height: 22px; }
+.rbAxis span { position: absolute; top: 3px; font-size: 12px; color: var(--text-2); }
+.rbTitle { text-align: center; font-size: 13px; color: var(--text-2); }
 /* word chart: scatterplot (2026-11-20) */
 .wtools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 8px; }
 #wordsDiff { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 10px; padding: 8px 12px;
@@ -1938,13 +1956,45 @@ details.mth > p { padding: 0 0 10px; }
   const mixRGB = (c1, c2, t) => 'rgb(' + c1.map((v, i) => Math.round(v + (c2[i] - v) * t)).join(',') + ')';
   // o: {pullA, pullB, flip, labA, labB, colA, colB, sides, key, p}
   function wordChart(el, o) {
-    const bars = () => lollipop(el, o.pullA, o.pullB, o.flip, o.labA, o.labB, o.colA, o.colB, o.sides);
+    const bars = () => rankedBars(el, o);
     if (state.wChart === 'bars' || !HAS_CLOUD || !CLOUD_PERIODS.has(o.p)) return bars();
     if (!cloudPart(o.p)) { message(el, 'Loading the words…'); loadCloud(o.p).then(part => { if (part) (o.redraw || render)(); }); return; }
     const rows = cloudRows(o.p, o.key, o.flip);
     if (!rows || !rows.length) return bars();
     prefetchCloud(o.p);
     wordScatter(el, rows, o);
+  }
+  // Ranked bars: the strongest words on each side, bars growing outward from a centre line, length = how many
+  // times closer the word sits to that side (log scale, 1x at the centre). The two sides are offset so no row reads as a pair.
+  function rankedBars(el, o) {
+    const seen = new Set(), L = [], R = [];
+    for (const w of [...o.pullA, ...o.pullB]) {
+      if (seen.has(w.word)) continue; seen.add(w.word);
+      const x = Math.log2(o.flip ? 1 / w.ratio : w.ratio);
+      (x < 0 ? L : R).push({ w: w.word, x: Math.abs(x) });
+    }
+    if (!L.length && !R.length) return message(el, 'No words lean clearly to either side.');
+    L.sort((a, b) => b.x - a.x); R.sort((a, b) => b.x - a.x);
+    const MAX = Math.max(1, ...L.map(r => r.x), ...R.map(r => r.x));
+    const pct = x => (x / MAX * 82).toFixed(1);             // leave room for the word at the outer end
+    const row = (r, col, side, left) => `<button type="button" class="rbRow" data-w="${esc(r.w)}"${o.sides ? '' : ' disabled'} title="${(2 ** r.x).toFixed(2)}× closer to ${esc(side)}">` +
+      (left ? `<span class="w">${esc(r.w)}</span><span class="bar" style="width:${pct(r.x)}%;background:${col}"></span>`
+                      : `<span class="bar" style="width:${pct(r.x)}%;background:${col}"></span><span class="w">${esc(r.w)}</span>`) + '</button>';
+    const ticks = side => [[0, '1×'], [Math.log2(1.5), '1.5×'], [1, '2×'], ...(MAX >= Math.log2(3) ? [[Math.log2(3), '3×']] : [])]
+      .filter(([v]) => side === 'r' || v > 0)
+      .map(([v, l]) => `<span style="${side === 'l' ? 'right' : 'left'}:${pct(v)}%;transform:translateX(${side === 'l' ? '50%' : '-50%'})">${l}</span>`).join('');
+    const sideA = o.sideA || `Language distinctly marked as ${o.labA}’s`, sideB = o.sideB || `Language distinctly marked as ${o.labB}’s`;
+    Plotly.purge(el);
+    el.innerHTML = `<div class="rb"><div class="rbHead"><span style="color:${o.colA}">← ${esc(sideA)}</span><span style="color:${o.colB}">${esc(sideB)} →</span></div>` +
+      `<div class="rbGrid"><div class="rbL">${L.map(r => row(r, o.colA, o.labA, true)).join('')}</div><div class="rbR">${R.map(r => row(r, o.colB, o.labB, false)).join('')}</div></div>` +
+      `<div class="rbAxis"><div>${ticks('l')}</div><div>${ticks('r')}</div></div>` +
+      `<div class="rbTitle">How many times closer each word sits to one side’s language than to the other’s</div></div>` +
+      `<p class="wsNote"><b>Not a word count.</b> A longer bar does not mean a show said the word more; it may never have said it. Read the words together: they show what kind of difference it is, not how big.</p>`;
+    if (o.sides) el.querySelectorAll('.rbRow').forEach(b => b.addEventListener('click', () => {
+      state.word = Object.assign({ w: b.dataset.w, p: wp() }, o.sides);
+      state.view.pas[kind()] = 'word';
+      render(); setTab('pas');
+    }));
   }
   function wordScatter(el, rows, o) {
     Plotly.purge(el);
@@ -2061,7 +2111,7 @@ details.mth > p { padding: 0 0 10px; }
       : n ? `Too few other shows are placed this period to compare ${esc(short(s))} with.` : `${esc(short(s))} is not placed in this period.`;
     const draw = (box, s) => { const n = nodeAt(s, state.p);
       if (!n || !n.rest) { message(box, why(s, n)); return; }
-      wordChart(box, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: short(s), labB: 'the other shows on the map', lineB: 'the rest',
+      wordChart(box, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: short(s), labB: 'the other shows on the map', lineB: 'the rest', sideB: 'Language of the other shows on the map',
         colA: colorOf(s), colB: css('--node-edge'), sides: null, key: `r|${s}|${state.p}`, p: state.p }); };
     if (shows.length === 1) return draw(el, shows[0]);
     Plotly.purge(el);
@@ -2836,7 +2886,7 @@ details.mth > p { padding: 0 0 10px; }
         <p class="note">The words leaning toward ${esc(A)} are the interesting ones; the other side is mostly the shared, more generic language of the rest.</p>
         ${tech('Show vs the rest', 'Word-pull between the show’s vector and the equal-weight average of the other placed shows on the map in the same period (leave-one-out, the same average as the distance from the group). Candidate words are the neighbours of either vector; x and y are the cosine similarities to each side, and the diagonal lines mark equal ratios.')}</div>`;
       const n = nodeAt(STORY.a, P), el = document.getElementById('stRest');
-      if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest',
+      if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest', sideB: 'Language of the other shows on the map',
         colA: css('--a'), colB: css('--node-edge'), sides: null, key: `r|${STORY.a}|${P}`, p: P, redraw: drawStory });
       else el.textContent = 'Not available for this period.';
     } else if (stStep === 2) {
