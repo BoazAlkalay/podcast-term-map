@@ -355,6 +355,19 @@ h3.restH { font-size: 14px; margin: 10px 0 0; display: flex; align-items: center
 details.help summary { width: auto; height: auto; line-height: 1.4; padding: 3px 10px; text-align: left; font-weight: 600; color: var(--text-2); }
 details.help summary::before { content: "\25B8  "; } details.help[open] summary::before { content: "\25BE  "; }
 details.mth { border-top: 1px solid var(--border); padding: 2px 0; }
+/* word chart: scatterplot (2026-11-20) */
+.wtools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 8px; }
+#wordsDiff { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 10px; padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+#wordsDiff .lab { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+#wordsDiff .num { font-size: 22px; }
+.ws { position: relative; }
+.wsZoom { position: absolute; right: 8px; top: 8px; z-index: 3; display: flex; flex-direction: column; gap: 4px; }
+.wsZoom button { min-width: 32px; padding: 2px 8px; font-size: 14px; }
+.wsKey { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 12px; color: var(--text-2); margin-top: 4px; }
+.wsKey .grad { display: inline-block; width: 180px; height: 10px; border-radius: 5px; }
+.wsNote { font-size: 13px; color: var(--text-2); margin: 6px 0 0; max-width: 90ch; }
+.wsNote b { color: var(--text); }
 details.mth > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 8px 0; }
 details.mth > p { padding: 0 0 10px; }
 
@@ -581,6 +594,10 @@ details.mth > p { padding: 0 0 10px; }
   <section id="wordsPanel" class="panel tabpanel" role="tabpanel" aria-labelledby="tab-words">
     <div class="ph"><span id="wordsTitle"></span><span class="chip" id="wordsChip"></span>
       <span class="perlab" id="wordsPerLab" hidden>Word comparison period</span><span id="wordsPer" class="seg" role="group" aria-label="Period for this chart" hidden></span></div>
+    <div class="wtools" id="wordsTools" hidden><span class="small">Show as</span>
+      <span class="seg" role="group" aria-label="Word chart type"><button type="button" id="wcScatter" aria-pressed="true">Scatterplot</button><button type="button" id="wcBars" aria-pressed="false">Ranked bars</button></span>
+      <span class="small" id="wcNote"></span></div>
+    <div id="wordsDiff" hidden></div>
     <details class="help"><summary>How to read this</summary><span id="wordsHelp"></span></details>
     <div id="words"></div>
   </section>
@@ -805,6 +822,23 @@ details.mth > p { padding: 0 0 10px; }
     }).then(() => { wxLoading = null; render(); });
     return wxLoading;
   }
+
+  // Word clouds for the scatterplot (apply_wordcloud_split.py): one file per period, <bundle>/cloud/p<period>.js,
+  // loaded when a word chart for that period opens; the neighbouring periods are prefetched (Previous / Next / Play).
+  const CLOUD_PERIODS = new Set(M.cloud_periods || []);
+  const HAS_CLOUD = !!CHOSEN && CLOUD_PERIODS.size > 0;
+  const BUNDLE_ID = CHOSEN ? CHOSEN.split('/').slice(-1)[0] : '';
+  const cloudLoading = new Map();
+  const cloudPart = p => (window.CLOUD_PARTS || {})[`${BUNDLE_ID}|${p}`] || null;
+  function loadCloud(p) {
+    if (!HAS_CLOUD || !CLOUD_PERIODS.has(p) || cloudPart(p)) return Promise.resolve(cloudPart(p));
+    if (!cloudLoading.has(p)) cloudLoading.set(p, loadData(BASE + `cloud/p${p}.js`).then(() => { cloudLoading.delete(p); return cloudPart(p); }));
+    return cloudLoading.get(p);
+  }
+  const cloudRows = (p, key, flip) => {
+    const part = cloudPart(p), rows = part && part.c[key];
+    return rows ? rows.map(([i, a, b]) => flip ? { w: part.vocab[i], ca: b / 1000, cb: a / 1000 } : { w: part.vocab[i], ca: a / 1000, cb: b / 1000 }) : null;
+  };
 
   if (M.snapshot === 'SYNTHETIC') {
     const b = document.getElementById('banner');
@@ -1561,6 +1595,13 @@ details.mth > p { padding: 0 0 10px; }
       gcontrast: both(['For each group, the passages that sound most like that group and least like the other.', 'Members\' mentions ranked by projection on ±(μ_GA − μ_GB) from the midpoint.'], NOTE_PAS)
     };
     H.drift2 = H.drift; H.pull2 = H.pull; H.contrast2 = H.contrast;
+    if (state.wChart !== 'bars' && HAS_CLOUD && ['pull', 'pull2', 'pullbc', 'gpull', 'rest', 'rest2'].includes(v)) return [
+      `Each side's language around '${TERM}' is one point in a space of meanings. Each dot is a dictionary word: across is how close it sits to the first side's point, up is how close to the second's. ` +
+      `Words on the diagonal are about equally close to both; the further a word sits from the diagonal, the more it marks one side, and its colour shows which. ` +
+      `The words are landmarks that help you picture what kind of difference it is (the number above says how big). They are a guide to what to read, not proof: click a word for passages.`,
+      `x = cos(w, μ_A), y = cos(w, μ_B), log scales; diagonals = constant ratio (1.5×, 2×). Points: the ${M.settings.cloud_side || 30} words with the largest |log2 ratio| on each side plus ${M.settings.cloud_mid || 15} near-equal words ` +
+      `(|log2| ≤ ${M.settings.shared_max_log2 || 0.1}, ranked by √(cos_A cos_B)), from the union of each side's ${M.settings.pull_candidates || 150} nearest words (≥ ${M.settings.vocab_min_count} corpus uses; the term excluded). ` +
+      `Colour = log2 ratio. Labels: largest |log2 ratio| first, without overlaps. Selected for contrast, so they separate the sides by construction: direct reading, not evidence.`];
     return H[v] || ['', ''];
   };
   // Render a [plain, technical] pair; CSS shows the level picked in the header.
@@ -1824,6 +1865,113 @@ details.mth > p { padding: 0 0 10px; }
       setTab('pas');
     });
   }
+  // ── word chart as a scatterplot (default since 2026-11-20; "Ranked bars" = the lollipop above) ──
+  // x = closeness (cosine) of each word to side A's language, y = to side B's; log scales, so lines of equal
+  // ratio run parallel to the diagonal. Colour = the same lean (log2 cos_B / cos_A). Words from cloud/p<period>.js.
+  state.wChart = 'scatter';
+  try { if (localStorage.getItem('dashWordChart') === 'bars') state.wChart = 'bars'; } catch (e) {}
+  const prefetchCloud = p => { const i = placedPeriods.indexOf(p); [placedPeriods[i - 1], placedPeriods[i + 1]].forEach(q => { if (q !== undefined) loadCloud(q); }); };
+  const hexRGB = h => { h = (h || '#888888').replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+  const mixRGB = (c1, c2, t) => 'rgb(' + c1.map((v, i) => Math.round(v + (c2[i] - v) * t)).join(',') + ')';
+  // o: {pullA, pullB, flip, labA, labB, colA, colB, sides, key, p}
+  function wordChart(el, o) {
+    const bars = () => lollipop(el, o.pullA, o.pullB, o.flip, o.labA, o.labB, o.colA, o.colB, o.sides);
+    if (state.wChart === 'bars' || !HAS_CLOUD || !CLOUD_PERIODS.has(o.p)) return bars();
+    if (!cloudPart(o.p)) { message(el, 'Loading the words…'); loadCloud(o.p).then(part => { if (part) render(); }); return; }
+    const rows = cloudRows(o.p, o.key, o.flip);
+    if (!rows || !rows.length) return bars();
+    prefetchCloud(o.p);
+    wordScatter(el, rows, o);
+  }
+  function wordScatter(el, rows, o) {
+    Plotly.purge(el);
+    el.innerHTML = `<div class="ws"><div class="wsPlot"></div><div class="wsZoom" role="group" aria-label="Zoom the word chart">` +
+      `<button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button>` +
+      `<button type="button" data-z="fit">Fit</button></div></div>` +
+      `<div class="wsKey"><span>Colour:</span><span>closer to ${esc(o.labA)}</span><i class="grad"></i><span>closer to ${esc(o.labB)}</span>` +
+      `<span>· Scrolling moves the page. To zoom, hold Ctrl (⌘ on Mac) and scroll, or use the buttons; drag to pan.</span></div>` +
+      `<p class="wsNote"><b>Not a word count.</b> A dot's position is closeness in meaning, not how often a show said the word; a show may never have said some of these words. Read the labelled words together.</p>`;
+    const plot = el.querySelector('.wsPlot');
+    const cA = hexRGB(o.colA), cB = hexRGB(o.colB), cM = hexRGB(css('--border'));
+    el.querySelector('.grad').style.background = `linear-gradient(90deg, ${mixRGB(cA, cA, 0)}, ${mixRGB(cM, cM, 0)}, ${mixRGB(cB, cB, 0)})`;
+    const pts = rows.filter(r => r.ca > 0 && r.cb > 0).map(r => Object.assign(r, { lean: Math.log2(r.cb / r.ca) }));
+    const L = Math.max(0.3, ...pts.map(r => Math.abs(r.lean)));
+    const colour = r => r.lean < 0 ? mixRGB(cM, cA, Math.min(1, -r.lean / L)) : mixRGB(cM, cB, Math.min(1, r.lean / L));
+    const lg = Math.log10, all = pts.flatMap(r => [r.ca, r.cb]);
+    const lo0 = lg(Math.min(...all)), hi0 = lg(Math.max(...all)), pad = 0.06 * (hi0 - lo0 || 0.2);
+    const R0 = [lo0 - pad, hi0 + pad], vLo = 10 ** R0[0], vHi = 10 ** R0[1];
+    const lines = [], ann = [];
+    for (const [r, dash, col] of [[1, 'solid', css('--text-2')], [1.5, 'dash', o.colB], [2, 'dot', o.colB], [1 / 1.5, 'dash', o.colA], [1 / 2, 'dot', o.colA]]) {
+      const x0 = Math.max(vLo, vLo / r), x1 = Math.min(vHi, vHi / r);
+      if (x1 <= x0) continue;
+      lines.push({ x: [x0, x1], y: [x0 * r, x1 * r], mode: 'lines', hoverinfo: 'skip', showlegend: false,
+        line: { color: col, width: r === 1 ? 1.5 : 1, dash } });
+      const lab = r === 1 ? 'equally close' : r > 1 ? `${+r.toFixed(1)}× closer to ${o.lineB || o.labB}` : `${+(1 / r).toFixed(1)}× closer to ${o.lineA || o.labA}`;
+      ann.push({ x: lg(x1), y: lg(x1 * r), xref: 'x', yref: 'y', showarrow: false, text: esc(lab),
+        xanchor: 'right', yanchor: r >= 1 ? 'top' : 'bottom', font: { size: 11, color: css('--muted') } });
+    }
+    const ratioTxt = r => Math.abs(r.lean) < 0.1 ? 'about equally close to both'
+      : `${(2 ** Math.abs(r.lean)).toFixed(2)}× closer to ${esc(r.lean < 0 ? o.labA : o.labB)}`;
+    const dots = { x: pts.map(r => r.ca), y: pts.map(r => r.cb), mode: 'markers+text', text: pts.map(() => ''),
+      textposition: pts.map(r => r.lean <= 0 ? 'middle right' : 'middle left'), textfont: { size: 12, color: css('--text') },
+      cliponaxis: false, showlegend: false,
+      marker: { size: 9, color: pts.map(colour), line: { color: css('--surface'), width: 1 } },
+      hovertemplate: pts.map(r => `<b>${esc(r.w)}</b><br>${ratioTxt(r)}<br>closeness: ${esc(o.labA)} ${r.ca.toFixed(2)}, ${esc(o.labB)} ${r.cb.toFixed(2)}` +
+        (o.sides ? '<br><i>Click to see how each side uses it</i>' : '') + '<extra></extra>') };
+    const W = plot.clientWidth || el.clientWidth || 700, H = Math.min(640, Math.max(420, W * 0.75));
+    const TV = [0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].filter(v => v >= vLo && v <= vHi);
+    const ticks = { tickvals: TV, ticktext: TV.map(v => String(v)) };
+    const layout = Object.assign(baseLayout(), { height: H, margin: { l: 64, r: 16, t: 12, b: 52 }, dragmode: 'pan', annotations: ann,
+      xaxis: axis(Object.assign({ type: 'log', range: R0.slice(), constrain: 'domain' }, ticks, { title: { text: `Closeness to ${esc(o.labA)}'s language →`, font: { size: 12, color: o.colA } } })),
+      yaxis: axis(Object.assign({ type: 'log', range: R0.slice(), scaleanchor: 'x', scaleratio: 1, constrain: 'domain' }, ticks, { title: { text: `Closeness to ${esc(o.labB)}'s language →`, font: { size: 12, color: o.colB } } })) });
+    const drawn = Plotly.newPlot(plot, [...lines, dots], layout, Object.assign({}, cfg, { scrollZoom: false, doubleClick: false }));
+    const DOT = lines.length;
+    // Labels: the most distinctive visible words first, skipping any that would overlap; zooming in frees room for more.
+    const placeLabels = () => {
+      const fl = plot._fullLayout; if (!fl || !fl.xaxis || !fl.xaxis.l2p) return;
+      const xa = fl.xaxis, ya = fl.yaxis, [x0, x1] = xa.range, [y0, y1] = ya.range, boxes = [], text = pts.map(() => '');
+      const order = pts.map((r, i) => i).sort((i, j) => Math.abs(pts[j].lean) - Math.abs(pts[i].lean));
+      let n = 0;
+      for (const i of order) {
+        const r = pts[i], lx = lg(r.ca), ly = lg(r.cb);
+        if (lx < x0 || lx > x1 || ly < y0 || ly > y1) continue;
+        const px = xa.l2p(lx), py = ya.l2p(ly), w = r.w.length * 6.8 + 6, right = r.lean <= 0;
+        const b = { x1: right ? px + 5 : px - 5 - w, x2: right ? px + 5 + w : px - 5, y1: py - 8, y2: py + 8 };
+        if (b.x1 < -40 || b.x2 > xa._length + 40) continue;
+        if (boxes.some(q => !(b.x2 < q.x1 || b.x1 > q.x2 || b.y2 < q.y1 || b.y1 > q.y2))) continue;
+        boxes.push(b); text[i] = r.w; if (++n >= 45) break;
+      }
+      plot.data[DOT].text = text; Plotly.react(plot, plot.data, plot.layout);        // restyle alone did not redraw the first time
+    };
+    drawn.then(() => {
+    { const fl = plot._fullLayout; Plotly.relayout(plot, { 'xaxis.range': fl.xaxis.range.slice(), 'yaxis.range': fl.yaxis.range.slice() }); }   // fires plotly_relayout -> placeLabels
+    plot.on('plotly_relayout', ev => { if (ev && (ev['xaxis.range[0]'] !== undefined || ev['xaxis.range'] || ev['xaxis.autorange'])) placeLabels(); });
+    const zoom = (f, cx, cy) => {
+      const fl = plot._fullLayout, xr = fl.xaxis.range, yr = fl.yaxis.range;
+      const mx = cx === undefined ? (xr[0] + xr[1]) / 2 : cx, my = cy === undefined ? (yr[0] + yr[1]) / 2 : cy;
+      Plotly.relayout(plot, { 'xaxis.range': [mx - (mx - xr[0]) / f, mx + (xr[1] - mx) / f], 'yaxis.range': [my - (my - yr[0]) / f, my + (yr[1] - my) / f] });
+    };
+    el.querySelectorAll('.wsZoom button').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.z === 'fit') Plotly.relayout(plot, { 'xaxis.range': R0.slice(), 'yaxis.range': R0.slice() });
+      else zoom(b.dataset.z === 'in' ? 1.5 : 1 / 1.5);
+    }));
+    // Plain scrolling scrolls the page; Ctrl / ⌘ (or a trackpad pinch) + scroll zooms around the pointer.
+    plot.addEventListener('wheel', e => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault(); e.stopPropagation();
+      const fl = plot._fullLayout, xa = fl.xaxis, ya = fl.yaxis, rect = plot.getBoundingClientRect();
+      const cx = xa.p2l(e.clientX - rect.left - xa._offset), cy = ya.p2l(e.clientY - rect.top - ya._offset);
+      zoom(e.deltaY < 0 ? 1.25 : 1 / 1.25, cx, cy);
+    }, { passive: false, capture: true });
+    if (o.sides) plot.on('plotly_click', d => {
+      const pt = d.points.find(q => q.curveNumber === DOT); if (!pt) return;
+      state.word = Object.assign({ w: pts[pt.pointNumber].w, p: wp() }, o.sides);
+      state.view.pas[kind()] = 'word';
+      render(); setTab('pas');
+    });
+    });
+  }
   function wordCols(el, cols) {
     Plotly.purge(el);
     el.innerHTML = '<div class="cols">' + cols.map(c => `<div><h3><span class="swatch" style="background:${c.color}"></span>${esc(c.name)}</h3>` +
@@ -1841,7 +1989,8 @@ details.mth > p { padding: 0 0 10px; }
     if (!e && thinOne) return message(el, `Words that separate two shows need ${MIN_EP}+ episodes on both sides. ` +
       `${esc(short(thinOne.show))} has only ${thinOne.n} this period. Its top words and typical passages are available when it is selected alone.`);
     if (!e) return message(el, `${esc(short(a))} and ${esc(short(b))} are not both placed in ${wp() === state.p ? 'this period' : fmtP(wp())}.`);
-    lollipop(el, e.pull_a, e.pull_b, e.a !== a, short(a), short(b), colorOf(a), colorOf(b), { kind: 'c', a, b });
+    wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== a, labA: short(a), labB: short(b), colA: colorOf(a), colB: colorOf(b),
+      sides: { kind: 'c', a, b }, key: `c|${e.period}|${e.a}|${e.b}`, p: e.period });
   }
 
   // A show against the average of the other shows on the map (exported as nodes[].rest).
@@ -1850,7 +1999,8 @@ details.mth > p { padding: 0 0 10px; }
       : n ? `Too few other shows are placed this period to compare ${esc(short(s))} with.` : `${esc(short(s))} is not placed in this period.`;
     const draw = (box, s) => { const n = nodeAt(s, state.p);
       if (!n || !n.rest) { message(box, why(s, n)); return; }
-      lollipop(box, n.rest.pull_a, n.rest.pull_b, false, short(s), 'Other shows on the map', colorOf(s), css('--node-edge'), null); };
+      wordChart(box, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: short(s), labB: 'the other shows on the map', lineB: 'the rest',
+        colA: colorOf(s), colB: css('--node-edge'), sides: null, key: `r|${s}|${state.p}`, p: state.p }); };
     if (shows.length === 1) return draw(el, shows[0]);
     Plotly.purge(el);
     el.innerHTML = shows.map((s, i) => `<h3 class="restH"><span class="swatch" style="background:${colorOf(s)}"></span>${esc(short(s))} vs the rest of the map</h3><div id="restC${i}"></div>`).join('');
@@ -1886,9 +2036,31 @@ details.mth > p { padding: 0 0 10px; }
       const p = +b.dataset.p; state.wP = p === state.p ? null : p; render(); }));
   }
 
+  function drawWordTools(v) {
+    const chartV = ['pull', 'pull2', 'pullbc', 'gpull', 'rest', 'rest2'].includes(v);
+    const tools = document.getElementById('wordsTools'), diff = document.getElementById('wordsDiff');
+    tools.hidden = !(chartV && HAS_CLOUD);
+    document.getElementById('wcScatter').setAttribute('aria-pressed', state.wChart === 'scatter');
+    document.getElementById('wcBars').setAttribute('aria-pressed', state.wChart === 'bars');
+    document.getElementById('wcNote').textContent = state.wChart === 'bars' ? 'Bars list the strongest words on each side in order.' : 'Same words and measure as the bars, plus the words in between.';
+    // How big the difference is: a number with its range. The words say what kind of difference it is.
+    let d = null, what = '';
+    const pp = pullPair(v);
+    if (pp) { const e = pp[0] === 'g' ? gedgeFor(pp[1], pp[2], wp()) : edgeFor(pp[1], pp[2], wp());
+      if (e) { d = e; what = `between ${esc(pp[0] === 'g' ? pp[1] : short(pp[1]))} and ${esc(pp[0] === 'g' ? pp[2] : short(pp[2]))}`; } }
+    if (v === 'rest') { const n = nodeAt(state.a, state.p);
+      if (n && n.dist !== null && n.dist !== undefined) { d = { dist: n.dist, lo: n.lo, hi: n.hi }; what = `between ${esc(short(state.a))} and the other shows on the map`; } }
+    diff.hidden = !d;
+    if (d) diff.innerHTML = `<span class="lab">How different</span><span class="num">${d.dist.toFixed(2)}</span>` +
+      `<span>90% range ${d.lo.toFixed(2)} to ${d.hi.toFixed(2)}, ${what} · ${d.lo > 1e-9 ? 'more than chance' : 'can\'t be told apart from chance'}</span>` +
+      `<span class="small">The words show what kind of difference it is, not how big.</span>`;
+  }
+  document.getElementById('wcScatter').addEventListener('click', () => { state.wChart = 'scatter'; try { localStorage.setItem('dashWordChart', 'scatter'); } catch (e) {} render(); });
+  document.getElementById('wcBars').addEventListener('click', () => { state.wChart = 'bars'; try { localStorage.setItem('dashWordChart', 'bars'); } catch (e) {} render(); });
   function drawWords() {
     const el = document.getElementById('words'), v = setupPanel('words');
     drawWordsPer(v);
+    drawWordTools(v);
     const helpEl = document.getElementById('wordsHelp');
     if (!v) { helpEl.textContent = 'Select one show for its top words, or two shows for the words that separate them.';
       return message(el, state.mode === 'groups' ? 'No groups chosen yet. Pick Group A and Group B above the map.'
@@ -1914,8 +2086,8 @@ details.mth > p { padding: 0 0 10px; }
       const e = gedgeFor(state.ga, state.gb, wp());
       if (!e) return message(el, gnodeAt(state.ga, wp()) && gnodeAt(state.gb, wp())
         ? 'These groups share a show, so they are not compared.' : 'One of the groups has too few shows placed in this period.');
-      return lollipop(el, e.pull_a, e.pull_b, e.a !== state.ga, state.ga, state.gb, colorOf(state.ga), colorOf(state.gb),
-        { kind: 'g', a: state.ga, b: state.gb });
+      return wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== state.ga, labA: state.ga, labB: state.gb,
+        colA: colorOf(state.ga), colB: colorOf(state.gb), sides: { kind: 'g', a: state.ga, b: state.gb }, key: `g|${e.period}|${e.a}|${e.b}`, p: e.period });
     }
   }
 
