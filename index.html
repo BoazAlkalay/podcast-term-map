@@ -2002,7 +2002,7 @@ details.mth > p { padding: 0 0 10px; }
       `<button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button>` +
       `<button type="button" data-z="fit">Fit</button></div></div>` +
       `<div class="wsKey"><span>Colour:</span><span>closer to ${esc(o.labA)}</span><i class="grad"></i><span>closer to ${esc(o.labB)}</span>` +
-      `<span>· Scrolling moves the page. To zoom, hold Ctrl (⌘ on Mac) and scroll, or use the buttons; drag to pan.</span></div>` +
+      (o.sides ? '<span>· Outlined dots: click for passages.</span>' : '') + `<span>· Scrolling moves the page. To zoom, hold Ctrl (⌘ on Mac) and scroll, or use the buttons; drag to pan.</span></div>` +
       `<p class="wsNote"><b>Not a word count.</b> A dot's position is closeness in meaning, not how often a show said the word; a show may never have said some of these words. Read the labelled words together.</p>`;
     const plot = el.querySelector('.wsPlot');
     const cA = hexRGB(o.colA), cB = hexRGB(o.colB), cM = hexRGB(css('--border'));
@@ -2023,14 +2023,16 @@ details.mth > p { padding: 0 0 10px; }
       ann.push({ x: lg(x1), y: lg(x1 * r), xref: 'x', yref: 'y', showarrow: false, text: esc(lab),
         xanchor: 'right', yanchor: r >= 1 ? 'top' : 'bottom', font: { size: 11, color: css('--muted') } });
     }
+    // Passages are stored only for the strongest words on each side (the pull lists); the others are not clickable yet.
+    const hasEx = new Set([...o.pullA, ...o.pullB].map(w => w.word));
     const ratioTxt = r => Math.abs(r.lean) < 0.1 ? 'about equally close to both'
       : `${(2 ** Math.abs(r.lean)).toFixed(2)}× closer to ${esc(r.lean < 0 ? o.labA : o.labB)}`;
     const dots = { x: pts.map(r => r.ca), y: pts.map(r => r.cb), mode: 'markers+text', text: pts.map(() => ''),
       textposition: pts.map(r => r.lean <= 0 ? 'middle right' : 'middle left'), textfont: { size: 12, color: css('--text') },
       cliponaxis: false, showlegend: false,
-      marker: { size: 9, color: pts.map(colour), line: { color: css('--surface'), width: 1 } },
+      marker: { size: 9, color: pts.map(colour), line: { color: pts.map(r => o.sides && hasEx.has(r.w) ? css('--text') : css('--surface')), width: pts.map(r => o.sides && hasEx.has(r.w) ? 1.5 : 1) } },
       hovertemplate: pts.map(r => `<b>${esc(r.w)}</b><br>${ratioTxt(r)}<br>closeness: ${esc(o.labA)} ${r.ca.toFixed(2)}, ${esc(o.labB)} ${r.cb.toFixed(2)}` +
-        (o.sides ? '<br><i>Click to see how each side uses it</i>' : '') + '<extra></extra>') };
+        (o.sides ? (hasEx.has(r.w) ? '<br><i>Click to see how each side uses it</i>' : '<br><i>Passages not stored for this word yet</i>') : '') + '<extra></extra>') };
     const W = plot.clientWidth || el.clientWidth || 700, H = Math.min(640, Math.max(420, W * 0.75));
     const TV = [0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].filter(v => v >= vLo && v <= vHi);
     const ticks = { tickvals: TV, ticktext: TV.map(v => String(v)) };
@@ -2077,7 +2079,7 @@ details.mth > p { padding: 0 0 10px; }
       zoom(e.deltaY < 0 ? 1.25 : 1 / 1.25, cx, cy);
     }, { passive: false, capture: true });
     if (o.sides) plot.on('plotly_click', d => {
-      const pt = d.points.find(q => q.curveNumber === DOT); if (!pt) return;
+      const pt = d.points.find(q => q.curveNumber === DOT); if (!pt || !hasEx.has(pts[pt.pointNumber].w)) return;
       state.word = Object.assign({ w: pts[pt.pointNumber].w, p: wp() }, o.sides);
       state.view.pas[kind()] = 'word';
       render(); setTab('pas');
