@@ -1963,7 +1963,7 @@ details.mth > p { padding: 0 0 10px; }
   // o: {pullA, pullB, flip, labA, labB, colA, colB, sides, key, p}
   function wordChart(el, o) {
     const bars = () => rankedBars(el, o);
-    if (state.wChart === 'bars' || !HAS_CLOUD || !CLOUD_PERIODS.has(o.p)) return bars();
+    if ((state.wChart === 'bars' && !o.scatter) || !HAS_CLOUD || !CLOUD_PERIODS.has(o.p)) return bars();
     if (!cloudPart(o.p)) { message(el, 'Loading the words…'); loadCloud(o.p).then(part => { if (part) (o.redraw || render)(); }); return; }
     const rows = cloudRows(o.p, o.key, o.flip);
     if (!rows || !rows.length) return bars();
@@ -2876,6 +2876,7 @@ details.mth > p { padding: 0 0 10px; }
     const body = document.getElementById('stBody');
     const A = short(STORY.a), Bn = short(STORY.b), T = esc(TERM), P = STORY_P;
     const who = M.host_group === 'Conservative Media' ? 'conservative' : '', who_ = who ? who + ' ' : '';
+    const sc = HAS_CLOUD && CLOUD_PERIODS.has(P);
     const newestTerms = [...new Set(INDEX.filter(e => e.snapshot === NEWEST).map(e => e.term))].sort();
     if (stStep === 0) {
       const others = newestTerms.filter(t => t !== TERM);
@@ -2893,17 +2894,18 @@ details.mth > p { padding: 0 0 10px; }
       body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart on “${T}”?</h2>
         <p class="lead">If you’ve listened to these shows, you probably already have a sense of how each host talks about ${T === 'democrat' ? 'Democrats' : `“${T}”`}. We’re trying to measure that. The catch is that a show’s spot on the map is really a long list of numbers, and nobody can read those directly. What we can do is show which words best fit the difference.</p>
         <p class="lead">We’ll start with one show. The chart compares how ${esc(A)} talks about “${T}” with the average of the other ${who_}shows on the map (${esc(fmtP(P))}). <strong>The words leaning toward ${esc(A)} are the ones that best describe what’s different about the show.</strong></p>
+        ${sc ? `<p class="lead">Think of the chart as a map of the ground between the two sides. Each dot is a word. Across is how close it is in meaning to ${esc(A)}’s language around “${T}”, and up is how close it is to the other shows’. Words on the diagonal line are about as close to both, and the further below the line a word sits, the more it leans toward ${esc(A)}.</p>` : ''}
         ${more('How can a word describe language that never uses it?', `<p>Say someone keeps calling the weather “freezing”, “icy”, “snowy” and “frosty”. <strong>Winter</strong> is a pretty good summary of what they’re saying, even though they never actually said it.</p><p>The words on these charts work the same way. They’re the dictionary words that best fit how a show talks around the term, whether the show says them or not. Their meanings come from how all of the shows use them. Think of them as a summary rather than a count, and use the passages to see what was actually said.</p>`)}
         <div class="stBox"><div id="stRest"></div></div>
-        <p class="note">The other side is mostly the shared, more generic language of the other shows.</p>
+        <p class="note">${sc ? `Words near the line are language ${esc(A)} shares with the other shows. Words above it lean toward the other shows.` : 'The other side is mostly the shared, more generic language of the other shows.'}</p>
         ${tech('Show vs the rest', 'Word-pull between the show’s vector and the equal-weight average of the other placed shows on the map in the same period (leave-one-out, the same average as the distance from the group). Candidate words are the neighbours of either vector; x and y are the cosine similarities to each side, and the diagonal lines mark equal ratios.')}</div>`;
       const n = nodeAt(STORY.a, P), el = document.getElementById('stRest');
-      if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest', sideB: 'Language of the other shows on the map',
+      if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest', sideB: 'Language of the other shows on the map', scatter: true,
         colA: css('--a'), colB: css('--node-edge'), sides: null, key: `r|${STORY.a}|${P}`, p: P, redraw: drawStory });
       else el.textContent = 'Not available for this period.';
     } else if (stStep === 2) {
       body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart from ${esc(Bn)} on the vocabulary they use around “${T}”</h2>
-        <p class="lead">Now we compare two shows head to head (${esc(fmtP(P))}). Each side lists words that are closer in meaning to one show’s language around “${T}” than to the other’s. They summarize how each show talks. They aren’t our labels for either show.</p>
+        <p class="lead">Now we compare two shows head to head (${esc(fmtP(P))}). ${sc ? `Each dot is a word. Across is how close it is in meaning to ${esc(A)}’s language around “${T}”, and up is how close it is to ${esc(Bn)}’s. Words below the diagonal lean toward ${esc(A)} and words above it lean toward ${esc(Bn)}. The colour shows the same thing at a glance.` : `Each side lists words that are closer in meaning to one show’s language around “${T}” than to the other’s.`} They summarize how each show talks. They aren’t our labels for either show.</p>
         <div class="stCall" id="stOneWord" hidden></div>
         <div class="stBox"><div id="stWords"></div></div>
         <div class="stLinks"><a href="#" id="stToPas">Read the passages behind these words →</a><span class="note"><strong>This compares language, not opinion.</strong> The words tell you where to look and the passages show what was said.</span></div>
@@ -2911,7 +2913,7 @@ details.mth > p { padding: 0 0 10px; }
         ${tech('How the words are picked', 'Each mention becomes a vector: the word2vec vectors of its context window are averaged and multiplied by the à la carte transform (Khodak et al. 2018; Rodriguez, Spirling and Stewart 2023), which corrects for common words dominating the average. Mentions are averaged within episodes, episodes within show and period. Candidate words are the neighbours of either show’s vector, ranked by the log2 ratio of their cosine similarity to one show versus the other. A word can lean toward a show without that show ever saying it.')}</div>`;
       const e = edgeFor(STORY.a, STORY.b, P), el = document.getElementById('stWords');
       if (e) {
-        wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== STORY.a, labA: A, labB: Bn, colA: css('--a'), colB: css('--b'),
+        wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== STORY.a, labA: A, labB: Bn, colA: css('--a'), colB: css('--b'), scatter: true,
           sides: null, key: `c|${e.period}|${e.a}|${e.b}`, p: P, redraw: drawStory });
         // "Reading one word": the word that leans most toward the second show, explained in plain terms.
         let top = null;
