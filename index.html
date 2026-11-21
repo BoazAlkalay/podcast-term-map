@@ -308,6 +308,11 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 .stStep p { max-width: 75ch; margin: 0 0 12px; }
 .stStep .lead { font-size: 17px; color: var(--text-2); }
 .stStep .note { font-size: 13px; color: var(--muted); }
+.stStep strong { color: var(--text); font-weight: 700; }
+.stMore { max-width: 75ch; margin: 0 0 14px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--a); border-radius: 0 6px 6px 0; font-size: 15px; line-height: 1.55; color: var(--text-2); }
+.stMore summary { cursor: pointer; font-weight: 600; color: var(--text); }
+.stMore p { margin: 10px 0 0; }
+.stCall { max-width: 75ch; margin: 0 0 14px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; line-height: 1.55; color: var(--text-2); }
 .stTech { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; max-width: 80ch; }
 .stTech b:first-child { display: block; margin-bottom: 2px; }
 .stBox { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
@@ -468,13 +473,13 @@ details.mth > p { padding: 0 0 10px; }
   </section>
   <section id="aboutView" class="panel" aria-label="About" hidden>
     <h2>About this project</h2>
-    <p>Podcast Term Map is a research project by Boaz Alkalay, a graduate student in Data Analytics and Computational Social Science at UMass Amherst. It follows more than 80 political podcasts from 2021 to now, about 88,000 episodes transcribed automatically from their public feeds, and compares the language each show uses around a chosen word, period by period.</p>
-    <p>It measures language, not opinions. Two shows can sit close together on the map and disagree completely; what they share is the vocabulary around the word.</p>
+    <p>Political podcasts reach millions of people every week, and the hosts rarely talk about Democrats, Israel or immigration the same way. I’m Boaz Alkalay, a graduate student in Data Analytics and Computational Social Science at UMass Amherst, and I built this to measure those differences.</p>
+    <p>I transcribed about 88,000 episodes from more than 80 shows, from 2021 to now, and compared the words each show uses around a chosen term. Two shows can land close together on the map and still disagree completely. What they share is how they talk about the word, not what they think of it.</p>
     <p>The data files (word lists, positions and short passages, no full transcripts) are published as a <a href="https://huggingface.co/datasets/aSilkyAnteater/podcast-dashboard-data" target="_blank" rel="noopener">Hugging Face dataset</a>. How to cite the project is at the bottom of every page.</p>
     <p id="aboutWriteup"></p>
   </section>
   <div id="exploreView">
-  <p id="dashIntro">Each section answers one question; open the ones you need. New here? <a href="#" id="introStory">The tutorial</a> walks through one example. <span class="dall"><button type="button" id="openAll">Open all</button><button type="button" id="closeAll">Close all</button></span><span id="status" role="status">Loading…</span></p>
+  <p id="dashIntro">Each section below answers one question. Open the ones you want and close the rest. New here? <a href="#" id="introStory">The tutorial</a> walks through one example. <span class="dall"><button type="button" id="openAll">Open all</button><button type="button" id="closeAll">Close all</button></span><span id="status" role="status">Loading…</span></p>
   <div id="nowBar" aria-label="Now studying"><span class="nl">Now studying</span><span id="nbTerm"></span><span id="nbGroup"></span><span id="nbPer"></span><span id="nbShows"></span><span class="nbHint">Stays at the top as you scroll · up to 4 shows · ← → change the interval</span></div>
   <section class="dsec" id="sec1" aria-labelledby="sech1">
     <button type="button" class="dsechead" id="sech1" data-sec="1" aria-expanded="true" aria-controls="secb1">
@@ -529,7 +534,7 @@ details.mth > p { padding: 0 0 10px; }
   </section>
   <section class="dsec" id="sec3" aria-labelledby="sech3">
     <button type="button" class="dsechead" id="sech3" data-sec="3" aria-expanded="true" aria-controls="secb3">
-      <span class="dnum">3</span><span class="dtx"><span class="dtitle" id="sect3">Which shows use similar vocabulary during the focused time interval?</span><span class="dwhy">Where each show sits. Close dots use similar language around the term, not similar opinions.</span><span class="dsum" id="sums3"></span></span><span class="darr" aria-hidden="true"></span></button>
+      <span class="dnum">3</span><span class="dtx"><span class="dtitle" id="sect3">Which shows use similar vocabulary during the focused time interval?</span><span class="dwhy">Each dot is a show. Shows that talk about the term in similar ways sit close together.</span><span class="dsum" id="sums3"></span></span><span class="darr" aria-hidden="true"></span></button>
     <div class="dsecbody" id="secb3">
   <div id="mapPanel">
     <div class="maphead">
@@ -656,7 +661,7 @@ details.mth > p { padding: 0 0 10px; }
   </section>
   <section class="dsec" id="sec4" aria-labelledby="sech4">
     <button type="button" class="dsechead" id="sech4" data-sec="4" aria-expanded="true" aria-controls="secb4">
-      <span class="dnum">4</span><span class="dtx"><span class="dtitle" id="sect4">What sets them apart?</span><span class="dwhy">The words that mark each side’s language around the term. Read them as a group.</span><span class="dsum" id="sums4"></span></span><span class="darr" aria-hidden="true"></span></button>
+      <span class="dnum">4</span><span class="dtx"><span class="dtitle" id="sect4">What sets them apart?</span><span class="dwhy">The words that best sum up how each side talks about the term. Read them together.</span><span class="dsum" id="sums4"></span></span><span class="darr" aria-hidden="true"></span></button>
     <div class="dsecbody" id="secb4">
   <section id="pairSum" aria-live="polite"></section>
   <div id="wordsPanel">
@@ -673,7 +678,7 @@ details.mth > p { padding: 0 0 10px; }
   </section>
   <section class="dsec" id="sec5" aria-labelledby="sech5">
     <button type="button" class="dsechead" id="sech5" data-sec="5" aria-expanded="true" aria-controls="secb5">
-      <span class="dnum">5</span><span class="dtx"><span class="dtitle" id="sect5">How did it change over time?</span><span class="dwhy">Whether the difference holds up across intervals, with ranges for chance.</span><span class="dsum" id="sums5"></span></span><span class="darr" aria-hidden="true"></span></button>
+      <span class="dnum">5</span><span class="dtx"><span class="dtitle" id="sect5">How did it change over time?</span><span class="dwhy">Whether the difference holds up from one stretch of time to the next.</span><span class="dsum" id="sums5"></span></span><span class="darr" aria-hidden="true"></span></button>
     <div class="dsecbody" id="secb5">
   <div id="tsPanel">
     <div class="ph"><span id="tsTitle"></span><span class="chip" id="tsChip"></span></div>
@@ -685,7 +690,7 @@ details.mth > p { padding: 0 0 10px; }
   </section>
   <section class="dsec" id="sec6" aria-labelledby="sech6">
     <button type="button" class="dsechead" id="sech6" data-sec="6" aria-expanded="true" aria-controls="secb6">
-      <span class="dnum">6</span><span class="dtx"><span class="dtitle" id="sect6">What was actually said?</span><span class="dwhy">The passages behind the words. The words point you here; the passages are the evidence.</span><span class="dsum" id="sums6"></span></span><span class="darr" aria-hidden="true"></span></button>
+      <span class="dnum">6</span><span class="dtx"><span class="dtitle" id="sect6">What was actually said?</span><span class="dwhy">What the shows actually said. The words tell you where to look, and these are the receipts.</span><span class="dsum" id="sums6"></span></span><span class="darr" aria-hidden="true"></span></button>
     <div class="dsecbody" id="secb6">
   <div id="pasPanel">
     <div class="ph"><span id="pasTitle"></span><span class="chip" id="pasChip"></span></div>
@@ -1989,7 +1994,7 @@ details.mth > p { padding: 0 0 10px; }
       `<div class="rbGrid"><div class="rbL">${L.map(r => row(r, o.colA, o.labA, true)).join('')}</div><div class="rbR">${R.map(r => row(r, o.colB, o.labB, false)).join('')}</div></div>` +
       `<div class="rbAxis"><div>${ticks('l')}</div><div>${ticks('r')}</div></div>` +
       `<div class="rbTitle">How many times closer each word sits to one side’s language than to the other’s</div></div>` +
-      `<p class="wsNote"><b>Not a word count.</b> A longer bar does not mean a show said the word more; it may never have said it. Read the words together: they show what kind of difference it is, not how big.</p>`;
+      `<p class="wsNote"><b>This isn’t a word count.</b> A longer bar doesn’t mean a show said the word more, and a show may never have said it. Read the words together.</p>`;
     if (o.sides) el.querySelectorAll('.rbRow').forEach(b => b.addEventListener('click', () => {
       state.word = Object.assign({ w: b.dataset.w, p: wp() }, o.sides);
       state.view.pas[kind()] = 'word';
@@ -2003,7 +2008,7 @@ details.mth > p { padding: 0 0 10px; }
       `<button type="button" data-z="fit">Fit</button></div></div>` +
       `<div class="wsKey"><span>Colour:</span><span>closer to ${esc(o.labA)}</span><i class="grad"></i><span>closer to ${esc(o.labB)}</span>` +
       (o.sides ? '<span>· Outlined dots: click for passages.</span>' : '') + `<span>· Scrolling moves the page. To zoom, hold Ctrl (⌘ on Mac) and scroll, or use the buttons; drag to pan.</span></div>` +
-      `<p class="wsNote"><b>Not a word count.</b> A dot's position is closeness in meaning, not how often a show said the word; a show may never have said some of these words. Read the labelled words together.</p>`;
+      `<p class="wsNote"><b>This isn’t a word count.</b> A dot’s position shows how close the word is in meaning, and a show may never have said it.</p>`;
     const plot = el.querySelector('.wsPlot');
     const cA = hexRGB(o.colA), cB = hexRGB(o.colB), cM = hexRGB(css('--border'));
     el.querySelector('.grad').style.background = `linear-gradient(90deg, ${mixRGB(cA, cA, 0)}, ${mixRGB(cM, cM, 0)}, ${mixRGB(cB, cB, 0)})`;
@@ -2772,6 +2777,7 @@ details.mth > p { padding: 0 0 10px; }
 
   const STEPS = ['Term', 'One show', 'Two shows', 'The map', 'Movement', 'Over time', 'Questions'];
   const tech = (title, html) => `<div class="stTech lv-tech"><b>${title}</b>${html}</div>`;
+  const more = (q, html) => `<details class="stMore"><summary>${q}</summary>${html}</details>`;
   const viewLink = (path, extra) => `?view=explore&b=${encodeURIComponent(path)}${extra ? '&' + extra : ''}`;
   // Map frame shared by steps 3 and 4: this period's dots plus both trails, aspect ratio kept.
   function storyMap(el, withTrails) {
@@ -2868,24 +2874,26 @@ details.mth > p { padding: 0 0 10px; }
     next.hidden = stStep === STEPS.length - 1;
     const body = document.getElementById('stBody');
     const A = short(STORY.a), Bn = short(STORY.b), T = esc(TERM), P = STORY_P;
-    const who = M.host_group === 'Conservative Media' ? 'conservative' : '';
+    const who = M.host_group === 'Conservative Media' ? 'conservative' : '', who_ = who ? who + ' ' : '';
     const newestTerms = [...new Set(INDEX.filter(e => e.snapshot === NEWEST).map(e => e.term))].sort();
     if (stStep === 0) {
       const others = newestTerms.filter(t => t !== TERM);
       body.innerHTML = `<div class="stStep"><h2>What do political podcasts talk about when they say “${T}”?</h2>
-        <p class="lead">For each show, the map looks at the words that come up around a word in every episode, and compares the shows.</p>
+        <p class="lead">Podcasting has become a big part of political communication in this country. We transcribed tens of thousands of episodes and used text analysis to turn them into something we can measure and compare.</p>
+        <p class="lead">It starts with picking a word. <strong>Every time that word comes up in an episode, we look at the words on either side of it and what those words usually mean.</strong></p>
         <div class="stTerm"><span class="stOn">${T}</span><span>This tutorial uses “${T}” for every step.</span><a href="#" id="stSkip2">Skip the tutorial →</a></div>
         ${others.length ? `<p class="stOthersLab">Other words you can explore on the dashboard</p><div class="stOthers">${others.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}
         <p class="note">Hand-picked example words, not a sample of all political topics.</p>
+        ${more('How do you measure what a word means?', `<p>The computer learns what words mean from the company they keep. Words that show up in similar sentences end up with similar meanings. It learns this from every episode we have, so a word’s meaning is based on how all of the shows use it.</p><p>Each time a show says “${T}”, we average the meanings of the words around it. Do that for every mention across a few months of episodes and you get one point for that show. Shows that use similar words around “${T}” end up near each other on the map.</p>`)}
         ${tech('How a word is matched', 'Terms are single lemmatized words, so phrases and spelling variants are handled only through a corrections list. An episode counts for a show when it uses the term 3+ times; a show is placed in a period when it has 8+ such episodes (3 to 7 gives a faded, rough dot).')}</div>`;
       document.getElementById('stSkip2').addEventListener('click', e => { e.preventDefault(); toExplore(); });
     } else if (stStep === 1) {
       body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart on “${T}”?</h2>
-        <p class="lead">Start with one show. ${HAS_CLOUD && state.wChart !== 'bars'
-          ? `Each dot is a word: across is how close it sits to ${esc(A)}’s language around “${T}”, up is how close to the average of the other ${who} shows on the map, ${esc(fmtP(P))}. Blue words lean toward ${esc(A)}.`
-          : `On one side are the words that sit closer in meaning to ${esc(A)}’s language around “${T}” than to the average of the other ${who} shows on the map, ${esc(fmtP(P))}; on the other side, the other way round.`} These are not the words the show uses most often: they are the words nearest to the parts of its language that differ from everyone else’s.</p>
+        <p class="lead">If you’ve listened to these shows, you probably already have a sense of how each host talks about ${T === 'democrat' ? 'Democrats' : `“${T}”`}. We’re trying to measure that. The catch is that a show’s spot on the map is really a long list of numbers, and nobody can read those directly. What we can do is show which words best fit the difference.</p>
+        <p class="lead">We’ll start with one show. The chart compares how ${esc(A)} talks about “${T}” with the average of the other ${who_}shows on the map (${esc(fmtP(P))}). <strong>The words leaning toward ${esc(A)} are the ones that best describe what’s different about the show.</strong></p>
+        ${more('How can a word describe language that never uses it?', `<p>Say someone keeps calling the weather “freezing”, “icy”, “snowy” and “frosty”. <strong>Winter</strong> is a pretty good summary of what they’re saying, even though they never actually said it.</p><p>The words on these charts work the same way. They’re the dictionary words that best fit how a show talks around the term, whether the show says them or not. Their meanings come from how all of the shows use them. Think of them as a summary rather than a count, and use the passages to see what was actually said.</p>`)}
         <div class="stBox"><div id="stRest"></div></div>
-        <p class="note">The words leaning toward ${esc(A)} are the interesting ones; the other side is mostly the shared, more generic language of the rest.</p>
+        <p class="note">The other side is mostly the shared, more generic language of the other shows.</p>
         ${tech('Show vs the rest', 'Word-pull between the show’s vector and the equal-weight average of the other placed shows on the map in the same period (leave-one-out, the same average as the distance from the group). Candidate words are the neighbours of either vector; x and y are the cosine similarities to each side, and the diagonal lines mark equal ratios.')}</div>`;
       const n = nodeAt(STORY.a, P), el = document.getElementById('stRest');
       if (n && n.rest) wordChart(el, { pullA: n.rest.pull_a, pullB: n.rest.pull_b, flip: false, labA: A, labB: 'the other shows on the map', lineB: 'the rest', sideB: 'Language of the other shows on the map',
@@ -2893,18 +2901,27 @@ details.mth > p { padding: 0 0 10px; }
       else el.textContent = 'Not available for this period.';
     } else if (stStep === 2) {
       body.innerHTML = `<div class="stStep"><h2>What sets ${esc(A)} apart from ${esc(Bn)} on the vocabulary they use around “${T}”</h2>
-        <p class="lead">Two ${who} hosts, ${esc(fmtP(P))}. On each side are the words that sit closer in meaning to one host’s language around “${T}” than to the other’s. They are the words closest to how each host talks, not this project’s description of either. They point you to what to read; the passages show what was actually said.</p>
+        <p class="lead">Now we compare two shows head to head (${esc(fmtP(P))}). Each side lists words that are closer in meaning to one show’s language around “${T}” than to the other’s. They summarize how each show talks. They aren’t our labels for either show.</p>
+        <div class="stCall" id="stOneWord" hidden></div>
         <div class="stBox"><div id="stWords"></div></div>
-        <div class="stLinks"><a href="#" id="stToPas">Read the passages behind these words →</a><span class="note">This compares language, not opinion.</span></div>
+        <div class="stLinks"><a href="#" id="stToPas">Read the passages behind these words →</a><span class="note"><strong>This compares language, not opinion.</strong> The words tell you where to look and the passages show what was said.</span></div>
+        ${more('Why look at a group of words instead of one?', '<p>Any one word could be a transcription mistake or a topic that came up once. When a bunch of words point the same way, you can trust the pattern more. Read them together, then check the passages.</p>')}
         ${tech('How the words are picked', 'Each mention becomes a vector: the word2vec vectors of its context window are averaged and multiplied by the à la carte transform (Khodak et al. 2018; Rodriguez, Spirling and Stewart 2023), which corrects for common words dominating the average. Mentions are averaged within episodes, episodes within show and period. Candidate words are the neighbours of either show’s vector, ranked by the log2 ratio of their cosine similarity to one show versus the other. A word can lean toward a show without that show ever saying it.')}</div>`;
       const e = edgeFor(STORY.a, STORY.b, P), el = document.getElementById('stWords');
-      if (e) wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== STORY.a, labA: A, labB: Bn, colA: css('--a'), colB: css('--b'),
-        sides: null, key: `c|${e.period}|${e.a}|${e.b}`, p: P, redraw: drawStory });
+      if (e) {
+        wordChart(el, { pullA: e.pull_a, pullB: e.pull_b, flip: e.a !== STORY.a, labA: A, labB: Bn, colA: css('--a'), colB: css('--b'),
+          sides: null, key: `c|${e.period}|${e.a}|${e.b}`, p: P, redraw: drawStory });
+        // "Reading one word": the word that leans most toward the second show, explained in plain terms.
+        let top = null;
+        for (const w of [...(e.pull_a || []), ...(e.pull_b || [])]) { const x = Math.log2(e.a !== STORY.a ? 1 / w.ratio : w.ratio); if (x > 0 && (!top || x > top.x)) top = { w: w.word, x }; }
+        const ow = document.getElementById('stOneWord');
+        if (top) { ow.hidden = false; ow.innerHTML = `<strong>Reading one word.</strong> <strong>${esc(top.w.charAt(0).toUpperCase() + top.w.slice(1))}</strong> sits closer to ${esc(Bn)}’s language around “${T}” than to ${esc(A)}’s. That means the words ${esc(Bn)} uses around “${T}” look a lot like the words that usually show up around “${esc(top.w)}” across all of the podcasts.`; }
+      }
       else el.textContent = 'No word comparison for this period.';
       document.getElementById('stToPas').addEventListener('click', ev => { ev.preventDefault(); toExplore('pas'); });
     } else if (stStep === 3) {
       body.innerHTML = `<div class="stStep"><h2>Every show on one map</h2>
-        <p class="lead">Each dot is one ${who} show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, sit close together. Close means similar language, not similar opinions.</p>
+        <p class="lead">Each dot is one ${who} show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, sit close together. <strong>Two dots can sit close together and still disagree completely.</strong> Close only means they talk about the term in similar ways.</p>
         <div class="stBox"><div id="stMap1"></div></div>
         <p class="note">The two coloured dots are the hosts from the last step. Each end of an axis gets a short label written by an AI model from the words at that end; the words are always shown with it.</p>
         ${tech('How the map is drawn', `Distances between show-period vectors are corrected for sampling noise, then laid out in two dimensions (classical multidimensional scaling, one layout for all periods). Two dimensions keep only part of the variation (${Math.round((M.map_share || 0) * 100)}% for this map), so exact distances are in the charts, not read off the map. Axis labels come from an AI model (Claude) given up to 25 words at each end of an axis; it is told to ignore names and dates, and a label resting on fewer than 4 of those words is marked weak.`)}</div>`;
@@ -2913,14 +2930,14 @@ details.mth > p { padding: 0 0 10px; }
       body.innerHTML = `<div class="stStep"><h2>Dots move from period to period</h2>
         <p class="lead" id="stMoveText">Each show leaves a trail of its earlier positions.</p>
         <div class="stBox"><div id="stMap2"></div></div>
-        <p class="note">Faded dots are earlier periods, one step per ${M.period_days} days. A move on the map is a clue; the next step checks it.</p>
+        <p class="note">Faded dots are earlier periods, one step per ${M.period_days} days. <strong>A move on the map is a clue; the next step checks it.</strong></p>
         ${tech('Reading a trail', 'All periods share one layout, so a show’s dots in different periods can be compared, but only two dimensions are shown, so part of any move can be the layout rather than the language. Faded (3 to 7 episode) dots move more from noise alone. That is why the distance chart with its ranges, not the trail, is the test.')}</div>`;
       const mv = storyMap(document.getElementById('stMap2'), true);
       const s = [mv.a && `${esc(A)}’s dot ${mv.a.txt} over the past ${mv.a.m} months`, mv.b && `${esc(Bn)}’s ${mv.b.txt}`].filter(Boolean).join(', while ');
       document.getElementById('stMoveText').innerHTML = 'Each show leaves a trail of its earlier positions. Read it against the axis labels' + (s ? `: ${s}.` : '.');
     } else if (stStep === 5) {
       body.innerHTML = `<div class="stStep"><h2>Following two shows over time</h2>
-        <p class="lead">How different were ${esc(A)}’s and ${esc(Bn)}’s words around “${T}”, period by period? Higher means more different. The lines show the 90% range; the shaded period is the one above.</p>
+        <p class="lead">How different were ${esc(A)}’s and ${esc(Bn)}’s words around “${T}”, period by period? <strong>Higher means more different.</strong> The lines show the 90% range; the shaded period is the one above.</p>
         <div class="stBox"><div id="stTs"></div></div><p class="note" id="stTsNote"></p>
         ${tech('What the numbers are', 'Each point is the distance between the two hosts’ vectors in that period minus the distance expected from sampling noise alone (two random sets of episodes from one show also differ a little). 90% intervals come from resampling episodes; a hollow dot means the interval reaches 0, so the difference can’t be told apart from chance.')}</div>`;
       const r = storySeries(document.getElementById('stTs'));
@@ -2936,7 +2953,7 @@ details.mth > p { padding: 0 0 10px; }
       const cards = Q.map(([t, kind, q, hosts, extra]) => { const pth = pathFor(t, 91, hosts);
         return pth ? `<a class="stCard" href="${viewLink(pth, extra)}"><span class="tags"><span>“${esc(t)}”</span><span>${esc(kind)}</span></span><span class="q">${esc(q)}</span><span class="go">Open this view →</span></a>` : ''; }).join('');
       body.innerHTML = `<div class="stStep"><h2>Start with a question</h2>
-        <p class="lead">Each one opens the dashboard already set up for it. These are questions to explore, not findings.</p>
+        <p class="lead">Each one opens the dashboard already set up for it. These are starting points for exploring. <strong>None of them is a finding on its own.</strong></p>
         <div class="stCards">${cards}</div>
         <a href="#" class="btnbig" id="stOpen">Or open the full dashboard</a></div>`;
       document.getElementById('stOpen').addEventListener('click', e => { e.preventDefault(); toExplore(); });
