@@ -299,7 +299,8 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 #stSkip2 { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--a); }
 .stOthersLab { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 0 0 6px; }
 .stOthers { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
-.stOthers span { padding: 5px 12px; border-radius: 999px; font-size: 14px; color: var(--text-2); border: 1px solid var(--border); background: var(--surface); }
+.stOthers span, .stOthers a { padding: 5px 12px; border-radius: 999px; font-size: 14px; color: var(--text-2); border: 1px solid var(--border); background: var(--surface); text-decoration: none; }
+.stOthers a:hover { border-color: var(--text-2); color: var(--text); }
 .stHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0 18px; }
 .stChaps { display: flex; flex-wrap: wrap; gap: 6px; }
 .stChaps button { border-radius: 999px; font-size: 13px; font-weight: 600; padding: 4px 12px; min-height: 36px; }
@@ -2882,7 +2883,8 @@ details.mth > p { padding: 0 0 10px; }
         <p class="lead">Podcasting has become a big part of political communication in this country. We transcribed tens of thousands of episodes and used text analysis to turn them into something we can measure and compare.</p>
         <p class="lead">It starts with picking a word. <strong>Every time that word comes up in an episode, we look at the words on either side of it and what those words usually mean.</strong></p>
         <div class="stTerm"><span class="stOn">${T}</span><span>This tutorial uses “${T}” for every step.</span><a href="#" id="stSkip2">Skip the tutorial →</a></div>
-        ${others.length ? `<p class="stOthersLab">Other words you can explore on the dashboard</p><div class="stOthers">${others.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}
+        ${others.length ? `<p class="stOthersLab">Other words you can explore on the dashboard</p><div class="stOthers">${others.map(t => { const pth = pathFor(t, M.period_days, M.host_group) || pathFor(t, 91, 'All shows');
+          return pth ? `<a href="${viewLink(pth, '')}" title="Open “${esc(t)}” on the dashboard">${esc(t)}</a>` : `<span>${esc(t)}</span>`; }).join('')}</div>` : ''}
         <p class="note">Hand-picked example words, not a sample of all political topics.</p>
         ${more('How do you measure what a word means?', `<p>The computer learns what words mean from the company they keep. Words that show up in similar sentences end up with similar meanings. It learns this from every episode we have, so a word’s meaning is based on how all of the shows use it.</p><p>Each time a show says “${T}”, we average the meanings of the words around it. Do that for every mention across a few months of episodes and you get one point for that show. Shows that use similar words around “${T}” end up near each other on the map.</p>`)}
         ${tech('How a word is matched', 'Terms are single lemmatized words, so phrases and spelling variants are handled only through a corrections list. An episode counts for a show when it uses the term 3+ times; a show is placed in a period when it has 8+ such episodes (3 to 7 gives a faded, rough dot).')}</div>`;
