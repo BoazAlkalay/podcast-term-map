@@ -329,6 +329,8 @@ ul.tiers { margin: 4px 0 6px; padding-left: 18px; }
 .stAx { position: absolute; max-width: 230px; padding: 4px 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px;
   font-size: 13px; line-height: 1.3; color: var(--text); }
 .stAx .axw { display: block; font-size: 11px; color: var(--muted); }
+button.stAx { font: inherit; font-size: 13px; color: var(--text); cursor: help; }
+button.stAx:hover, button.stAx:focus-visible { border-color: var(--text-2); }
 .stCards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 0 0 14px; }
 .stCard { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px;
   background: var(--surface); color: var(--text); text-decoration: none; }
@@ -2352,16 +2354,16 @@ details.mth > p { padding: 0 0 10px; }
   }
   // Click an axis label: the words behind it, with how strongly each leans to this end, and the AI reading.
   const AX_SIDE = { axL: [0, 'neg', 'pos'], axR: [0, 'pos', 'neg'], axT: [1, 'pos', 'neg'], axB: [1, 'neg', 'pos'] };
-  function axisPop(ev, id) {
+  function axisPop(ev, id, forceMk) {
     const [k, side, other] = AX_SIDE[id];
-    if (state.mapMode === 'anchored') {
+    if (!forceMk && state.mapMode === 'anchored') {
       const a = AXES[k === 0 ? state.axX : state.axY];
       const lab = side === 'neg' ? a.neg_label : a.pos_label;
       return openPop(ev, `<h3>${esc(lab)}<button type="button" aria-label="Close">×</button></h3>` +
         `<p class="small">Anchored axis "${esc(a.name)}" (draft). Defined in advance by these anchor words:</p><p>${a[side].map(esc).join(', ')}</p>` +
         ((side === 'neg' ? a.ends_neg : a.ends_pos) ? `<p class="small">Corpus words that sit furthest toward this end: ${(side === 'neg' ? a.ends_neg : a.ends_pos).map(esc).join(', ')}</p>` : ''));
     }
-    const mk = state.mapMode === 'centred' ? 'centred' : 'overall', lab = MAP_AXES[mk] && MAP_AXES[mk][k]; if (!lab) return;
+    const mk = forceMk || (state.mapMode === 'centred' ? 'centred' : 'overall'), lab = MAP_AXES[mk] && MAP_AXES[mk][k]; if (!lab) return;
     const ai = AX_AI && AX_AI.maps[mk] && AX_AI.maps[mk][k];
     const lean = (sd, i) => { const r = lab[sd + '_r'] && lab[sd + '_r'][i]; return r ? ` <span class="small">${(r < 1 ? 1 / r : r).toFixed(2)}×</span>` : ''; };
     const list = sd => `<ol class="ax">${(lab[sd] || []).map((w, i) => `<li>${esc(w)}${lean(sd, i)}</li>`).join('')}</ol>`;
@@ -2385,7 +2387,7 @@ details.mth > p { padding: 0 0 10px; }
     sel.addEventListener('change', () => { state.axLab = sel.value; drawMapExtras(); });
   } else state.axLab = 'words';
   document.addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
-  document.addEventListener('mousedown', e => { if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.annotation') && !e.target.closest('.axl')) pop.hidden = true; });
+  document.addEventListener('mousedown', e => { if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.annotation') && !e.target.closest('.axl') && !e.target.closest('.stAx')) pop.hidden = true; });
   window.addEventListener('scroll', () => { pop.hidden = true; }, { passive: true });
 
   // ── shows with few episodes (rail) and the include banner ─────────────
@@ -2495,7 +2497,7 @@ details.mth > p { padding: 0 0 10px; }
 
   // ── dashboard sections (v2, 2026-11-20): six numbered sections that open and close independently ──
   const SEC_OF = { words: 4, ts: 5, pas: 6 };
-  state.open = { 1: true, 2: true, 3: true, 4: true, 5: false, 6: false };
+  state.open = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false };
   { const q = URLQ.get('open'); if (q && /^[1-6]*$/.test(q)) for (let i = 1; i <= 6; i++) state.open[i] = q.includes(String(i)); }
   if (SEC_OF[URLQ.get('tab')]) state.open[SEC_OF[URLQ.get('tab')]] = true;     // older links with ?tab=
   let mapVisible = false;
@@ -2718,7 +2720,7 @@ details.mth > p { padding: 0 0 10px; }
     set('p', periods[state.p] && periods[state.p].start);
     if (state.mapMode === 'centred') set('map', 'centred');
     const op = [1, 2, 3, 4, 5, 6].filter(n => state.open[n]).join('');
-    if (op !== '1234') set('open', op || '0');
+    if (op !== '1') set('open', op || '0');
     const s = '?' + q.toString();
     if (s !== location.search) try { history.replaceState(null, '', s + location.hash); } catch (e) {}
     updateCite(s);
@@ -2830,11 +2832,16 @@ details.mth > p { padding: 0 0 10px; }
       return L ? `${arrow}<b>${esc(L)}</b> <span class="aibadge">AI${ai[kk][side].weak ? ' · weak' : ''}</span><span class="axw">${words}</span>`
         : words ? `${arrow}<span class="axw">${words}</span>` : '';
     };
-    const ax = [[end(0, 'neg', '← '), 'left:6px;top:50%;transform:translateY(-50%)'], [end(0, 'pos', '→ '), 'right:6px;top:50%;transform:translateY(-50%);text-align:right'],
-      [end(1, 'pos', '↑ '), 'top:6px;left:50%;transform:translateX(-50%);text-align:center'], [end(1, 'neg', '↓ '), 'bottom:6px;left:50%;transform:translateX(-50%);text-align:center']];
-    const axHtml = ax.filter(a => a[0]).map(a => `<div class="stAx"${narrow ? '' : ` style="${a[1]}"`}>${a[0]}</div>`).join('');
+    const ax = [[end(0, 'neg', '← '), 'left:6px;top:50%;transform:translateY(-50%)', 'axL'], [end(0, 'pos', '→ '), 'right:6px;top:50%;transform:translateY(-50%);text-align:right', 'axR'],
+      [end(1, 'pos', '↑ '), 'top:6px;left:50%;transform:translateX(-50%);text-align:center', 'axT'], [end(1, 'neg', '↓ '), 'bottom:6px;left:50%;transform:translateX(-50%);text-align:center', 'axB']];
+    const axHtml = ax.filter(a => a[0]).map(a => `<button type="button" class="stAx" data-ax="${a[2]}"${narrow ? '' : ` style="${a[1]}"`}>${a[0]}</button>`).join('');
     // On narrow screens the edge labels would cover the dots, so they go in a list under the map.
     el.innerHTML = `<div class="stMapIn" style="height:${H}px">${svg}${narrow ? '' : axHtml}</div>` + (narrow && axHtml ? `<div class="stAxList">${axHtml}</div>` : '');
+    // Live tooltip: hovering (or clicking) an edge label opens the same popup as the dashboard map: words, AI label, model's reason.
+    el.querySelectorAll('.stAx').forEach(b => {
+      const show = ev => axisPop(ev, b.dataset.ax, 'overall');
+      b.addEventListener('mouseenter', show); b.addEventListener('click', show); b.addEventListener('focus', ev => { const r = b.getBoundingClientRect(); show({ clientX: r.left, clientY: r.bottom }); });
+    });
     // Plain description of each trail: which edge it moved toward, or that it stayed put.
     const span = Math.max(x1 - x0, y1 - y0) || 1;
     const move = t => {
@@ -2865,6 +2872,33 @@ details.mth > p { padding: 0 0 10px; }
     Plotly.react(el, [tr], layout, cfg);
     const hi = es.reduce((a, b) => b.dist > a.dist ? b : a), lo = es.reduce((a, b) => b.dist < a.dist ? b : a);
     return { n: es.length, z: es.filter(zero).length, hi, lo };
+  }
+  // Step 6: each story show's distance from the group (leave-one-out), one line per show.
+  function storyLoo(el) {
+    const shows = [[STORY.a, css('--a')], [STORY.b, css('--b')]];
+    const out = [], traces = [];
+    shows.forEach(([s, col], si) => {
+      const rows = NODES.filter(n => n.show === s && n.dist !== null && n.dist !== undefined).sort((a, b) => a.period - b.period)
+        .map(n => ({ p: n.period, d: n.dist, lo: n.lo, hi: n.hi, n: n.n }));
+      if (!rows.length) return;
+      const off = (si - 0.5) * 3 * 864e5, hollow = rows.map(r => r.lo <= 1e-9);
+      traces.push({ x: [null], y: [null], name: short(s), mode: 'lines+markers', line: { color: col, width: 2 }, marker: { size: 9, color: col }, hoverinfo: 'skip' });
+      traces.push({ x: rows.map(r => new Date(Date.parse(midP(r.p)) + off).toISOString().slice(0, 10)), y: rows.map(r => r.d), name: short(s), showlegend: false,
+        mode: 'lines+markers', line: { color: col, width: 2 },
+        marker: { size: 9, color: hollow.map(h => h ? css('--surface') : col), line: { color: col, width: 2 } },
+        error_y: { type: 'data', symmetric: false, array: rows.map(r => r.hi - r.d), arrayminus: rows.map(r => r.d - r.lo), color: col, thickness: 1.2, width: 0 },
+        hovertemplate: rows.map(r => `<b>${esc(short(s))}</b><br>${esc(fmtP(r.p))}<br>difference from the group ${r.d.toFixed(2)} (90% range ${r.lo.toFixed(2)} to ${r.hi.toFixed(2)})<br>${r.n} episodes<extra></extra>`) });
+      out.push({ name: short(s), n: rows.length, z: hollow.filter(Boolean).length, hi: rows.reduce((a, b) => b.d > a.d ? b : a) });
+    });
+    if (!traces.length) { el.textContent = 'No comparison available.'; return null; }
+    const sp = periods[STORY_P];
+    const layout = Object.assign(baseLayout(), { height: 360, showlegend: true, legend: { orientation: 'h', y: 1.12, x: 0 },
+      margin: { l: 56, r: 16, t: 36, b: 44 },
+      xaxis: axis({ type: 'date' }), yaxis: axis({ rangemode: 'tozero', title: { text: 'Difference from the group', font: { size: 12 } } }),
+      shapes: sp ? [{ type: 'rect', xref: 'x', yref: 'paper', x0: sp.start, x1: sp.end, y0: 0, y1: 1, fillcolor: css('--shade'), line: { width: 0 } }] : [],
+      annotations: [{ x: 0, xref: 'paper', y: 1, yref: 'paper', xanchor: 'left', yanchor: 'top', showarrow: false, text: '↑ further from the group', font: { size: 11, color: css('--muted') } }] });
+    Plotly.react(el, traces, layout, cfg);
+    return out;
   }
   function drawStory() {
     const chaps = document.getElementById('stChaps');
@@ -2925,35 +2959,35 @@ details.mth > p { padding: 0 0 10px; }
       document.getElementById('stToPas').addEventListener('click', ev => { ev.preventDefault(); toExplore('pas'); });
     } else if (stStep === 3) {
       body.innerHTML = `<div class="stStep"><h2>Every show on one map</h2>
-        <p class="lead">Each dot is one ${who} show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, sit close together. <strong>Two dots can sit close together and still disagree completely.</strong> Close only means they talk about the term in similar ways.</p>
+        <p class="lead">Each dot represents one ${who_}show in ${esc(fmtP(P))}. Shows whose language around “${T}” is similar, on average, appear in closer proximity to each other. However, <strong>two dots can be in very close proximity and still disagree completely.</strong> Close proximity only suggests that similar vocabulary appears.</p>
         <div class="stBox"><div id="stMap1"></div></div>
-        <p class="note">The two coloured dots are the hosts from the last step. Each end of an axis gets a short label written by an AI model from the words at that end; the words are always shown with it.</p>
+        <p class="note">The two coloured dots are the hosts from the last step. Each end of an axis gets a short label written by an AI model from the words at that end, and the words are always shown with it. Hover over a label to see all of its words and the model’s reasoning.</p>
         ${tech('How the map is drawn', `Distances between show-period vectors are corrected for sampling noise, then laid out in two dimensions (classical multidimensional scaling, one layout for all periods). Two dimensions keep only part of the variation (${Math.round((M.map_share || 0) * 100)}% for this map), so exact distances are in the charts, not read off the map. Axis labels come from an AI model (Claude) given up to 25 words at each end of an axis; it is told to ignore names and dates, and a label resting on fewer than 4 of those words is marked weak.`)}</div>`;
       storyMap(document.getElementById('stMap1'), false);
     } else if (stStep === 4) {
       body.innerHTML = `<div class="stStep"><h2>Dots move from period to period</h2>
         <p class="lead" id="stMoveText">Each show leaves a trail of its earlier positions.</p>
         <div class="stBox"><div id="stMap2"></div></div>
-        <p class="note">Faded dots are earlier periods, one step per ${M.period_days} days. <strong>A move on the map is a clue; the next step checks it.</strong></p>
+        <p class="note">Faded dots are earlier positions. Each new dot represents another period, ${M.period_days === 91 ? '91 days by default' : `${M.period_days} days in this view (91 by default)`}. <strong>A move on the map is a clue; the next step checks it.</strong></p>
         ${tech('Reading a trail', 'All periods share one layout, so a show’s dots in different periods can be compared, but only two dimensions are shown, so part of any move can be the layout rather than the language. Faded (3 to 7 episode) dots move more from noise alone. That is why the distance chart with its ranges, not the trail, is the test.')}</div>`;
       const mv = storyMap(document.getElementById('stMap2'), true);
       const s = [mv.a && `${esc(A)}’s dot ${mv.a.txt} over the past ${mv.a.m} months`, mv.b && `${esc(Bn)}’s ${mv.b.txt}`].filter(Boolean).join(', while ');
       document.getElementById('stMoveText').innerHTML = 'Each show leaves a trail of its earlier positions. Read it against the axis labels' + (s ? `: ${s}.` : '.');
     } else if (stStep === 5) {
       body.innerHTML = `<div class="stStep"><h2>Following two shows over time</h2>
-        <p class="lead">How different were ${esc(A)}’s and ${esc(Bn)}’s words around “${T}”, period by period? <strong>Higher means more different.</strong> The lines show the 90% range; the shaded period is the one above.</p>
+        <p class="lead">How different was each host’s language around “${T}” from the other ${who_}shows on the map, period by period? <strong>Higher values on the graph mean further from the group.</strong> The lines show the 90% range, and the shaded period is the one above.</p>
         <div class="stBox"><div id="stTs"></div></div><p class="note" id="stTsNote"></p>
-        ${tech('What the numbers are', 'Each point is the distance between the two hosts’ vectors in that period minus the distance expected from sampling noise alone (two random sets of episodes from one show also differ a little). 90% intervals come from resampling episodes; a hollow dot means the interval reaches 0, so the difference can’t be told apart from chance.')}</div>`;
-      const r = storySeries(document.getElementById('stTs'));
-      if (r) document.getElementById('stTsNote').textContent = `${r.n} periods with enough episodes for both. ` +
-        (r.z ? `In ${r.z} of them the range reaches 0, so the difference can’t be told apart from chance. ` : 'In none of them does the range reach 0: they always differ by more than chance. ') +
-        `Most different: ${fmtP(r.hi.period)}. Least different: ${fmtP(r.lo.period)}.`;
+        ${tech('What the numbers are', 'Each point is a show’s distance from the equal-weight average of the other placed shows in that period (leave-one-out), minus the distance expected from sampling noise alone (two random sets of episodes from one show also differ a little). 90% intervals come from resampling episodes; a hollow dot means the interval reaches 0, so the difference can’t be told apart from chance.')}</div>`;
+      const r = storyLoo(document.getElementById('stTs'));
+      if (r) document.getElementById('stTsNote').textContent = r.map(x => `${x.name} sat furthest from the group in ${fmtP(x.hi.p)}. ` +
+        (x.z ? `Its range reaches 0 in ${x.z} of its ${x.n} periods.` : `Its range stays above 0 in all ${x.n} periods.`)).join(' ') +
+        ' A hollow dot means that period can’t be told apart from chance.';
     } else {
       const Q = [
-        ['immigration', 'Group vs group', 'How do Daily Wire shows and Progressive / Leftist shows talk about immigration?', 'All shows', 'mode=groups&g1=Daily%20Wire&g2=' + encodeURIComponent('Progressive / Leftist')],
-        ['iran', 'Over time', 'How did conservative shows’ language around Iran shift over 2026?', 'Conservative Media', 'tab=ts'],
-        ['israel', 'Two shows', 'Which words separate Mark Levin from Ben Shapiro on Israel?', 'All shows', 's1=' + encodeURIComponent('Mark Levin Podcast') + '&s2=' + encodeURIComponent('The Ben Shapiro Show')],
-        ['epstein', 'Group vs group', 'How do liberal and conservative shows talk about Epstein?', 'All shows', 'mode=groups&g1=Liberal&g2=' + encodeURIComponent('Conservative Media')]];
+        ['immigration', 'Group vs group', 'How do Daily Wire shows and Progressive / Leftist shows talk about immigration?', 'All shows', 'mode=groups&open=134&g1=Daily%20Wire&g2=' + encodeURIComponent('Progressive / Leftist')],
+        ['iran', 'Over time', 'How did conservative shows’ language around Iran shift over 2026?', 'Conservative Media', 'open=15&tab=ts'],
+        ['israel', 'Two shows', 'Which words separate Mark Levin from Ben Shapiro on Israel?', 'All shows', 'open=134&s1=' + encodeURIComponent('Mark Levin Podcast') + '&s2=' + encodeURIComponent('The Ben Shapiro Show')],
+        ['epstein', 'Group vs group', 'How do liberal and conservative shows talk about Epstein?', 'All shows', 'mode=groups&open=134&g1=Liberal&g2=' + encodeURIComponent('Conservative Media')]];
       const cards = Q.map(([t, kind, q, hosts, extra]) => { const pth = pathFor(t, 91, hosts);
         return pth ? `<a class="stCard" href="${viewLink(pth, extra)}"><span class="tags"><span>“${esc(t)}”</span><span>${esc(kind)}</span></span><span class="q">${esc(q)}</span><span class="go">Open this view →</span></a>` : ''; }).join('');
       body.innerHTML = `<div class="stStep"><h2>Start with a question</h2>
