@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Podcast Term Map</title>
+<title>The Voice of Political Podcasts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
@@ -443,7 +443,7 @@ details.mth > p { padding: 0 0 10px; }
 </head>
 <body>
 <header>
-  <h1>Podcast Term Map</h1>
+  <h1>The Voice of Political Podcasts</h1>
   <div id="hdrCtl">
     <span class="small">Explanations</span>
     <span class="seg" role="group" aria-label="Explanation level">
@@ -934,7 +934,7 @@ details.mth > p { padding: 0 0 10px; }
     b.style.display = 'block';
     b.textContent = 'Synthetic demo data with made-up shows. These are not results.';
   }
-  document.title = `'${TERM}', ${M.period_days} days · Podcast Term Map`;
+  document.title = `'${TERM}', ${M.period_days} days · The Voice of Political Podcasts`;
   document.getElementById('snap').textContent = M.snapshot;
   document.getElementById('term').textContent = `'${TERM}'`;
   // Link to the write-up and demo on Boaz's website; hidden until a URL is set.
@@ -2730,11 +2730,11 @@ details.mth > p { padding: 0 0 10px; }
   const SNAP = /^\d{4}-\d\d-\d\d$/.test(M.snapshot) ? M.snapshot : null;
   const YEAR = SNAP ? SNAP.slice(0, 4) : String(new Date().getFullYear());
   document.getElementById('citeAll').textContent =
-    `Alkalay, B. (${YEAR}). Podcast Term Map [Interactive dashboard]. ${SITE_URL}` + (SNAP ? ` (data through ${SNAP}).` : '');
+    `Alkalay, B. (${YEAR}). The Voice of Political Podcasts [Interactive dashboard]. ${SITE_URL}` + (SNAP ? ` (data through ${SNAP}).` : '');
   function updateCite(search) {
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('citeView').textContent =
-      `Alkalay, B. (${YEAR}). Podcast Term Map: '${M.term}', ${M.period_days}-day periods, ${M.host_group} [Interactive dashboard]. ` +
+      `Alkalay, B. (${YEAR}). The Voice of Political Podcasts: '${M.term}', ${M.period_days}-day periods, ${M.host_group} [Interactive dashboard]. ` +
       `${SITE_URL}${search}. Accessed ${today}.`;
   }
   document.querySelectorAll('#cite .citecopy').forEach(b => b.addEventListener('click', async () => {
@@ -2914,7 +2914,7 @@ details.mth > p { padding: 0 0 10px; }
     const newestTerms = [...new Set(INDEX.filter(e => e.snapshot === NEWEST).map(e => e.term))].sort();
     if (stStep === 0) {
       const others = newestTerms.filter(t => t !== TERM);
-      body.innerHTML = `<div class="stStep"><h2>What do political podcasts talk about when they say “${T}”?</h2>
+      body.innerHTML = `<div class="stStep"><h2>When political podcasts say the same word, are they talking about the same thing?</h2>
         <p class="lead">Podcasting has become a big part of political communication in this country. We transcribed tens of thousands of episodes and used text analysis to turn them into something we can measure and compare.</p>
         <p class="lead">It starts with picking a word. <strong>Every time that word comes up in an episode, we look at the words on either side of it and what those words usually mean.</strong></p>
         <div class="stTerm"><span class="stOn">${T}</span><span>This tutorial uses “${T}” for every step.</span><a href="#" id="stSkip2">Skip the tutorial →</a></div>
